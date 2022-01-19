@@ -124,6 +124,12 @@ class BaseCPU(ClockedObject):
         self._ccObject.takeOverFrom(old_cpu._ccObject)
 
 
+    # ACCELERATORS
+    accel_0 = Param.rtlFIFO(NULL, "RTL Accelerator Object")
+
+    num_accels = Param.Int(0, "Number of rtl Objects")
+
+
     system = Param.System(Parent.any, "system object")
     cpu_id = Param.Int(-1, "CPU identifier")
     socket_id = Param.Unsigned(0, "Physical Socket identifier")
@@ -172,6 +178,9 @@ class BaseCPU(ClockedObject):
 
     icache_port = RequestPort("Instruction Port")
     dcache_port = RequestPort("Data Port")
+
+    accel_port_0 = RequestPort("Accelerator Port")
+
     _cached_ports = ['icache_port', 'dcache_port']
 
     _cached_ports += ArchMMU.walkerPorts()

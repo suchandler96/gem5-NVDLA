@@ -342,4 +342,50 @@ MinorCPU::totalOps() const
     return ret;
 }
 
+void
+MinorCPU::startAccel(Addr vaddr, int elements, Addr region_nvdla)
+{
+    // Get the right port based on name. This applies to all the
+    // subclasses of the base CPU and relies on their implementation
+    // of getDataPort and getInstPort. In all cases there methods
+    // return a MasterPort pointer.
+    //RequestPtr req = std::make_shared<Request>(0, vaddr, 64,
+                                         //0x40, 0, 0, contextId);
+
+
+    RequestPtr req = std::make_shared<Request>(vaddr, elements,
+                                               0, Request::funcRequestorId,
+                                               0,0);
+    PacketPtr pkt = new Packet(req, MemCmd::ReadReq, elements);
+    accel_port_0.sendTimingReq(pkt);
+
+    finishedAccelerator = false;
+
+
+}
+
+uint64_t
+MinorCPU::waitAccel(Addr vaddr, int elements)
+{
+    // Get the right port based on name. This applies to all the
+    // subclasses of the base CPU and relies on their implementation
+    // of getDataPort and getInstPort. In all cases there methods
+    // return a MasterPort pointer.
+    //Request req(0,vaddr, 64, 0, Request::funcMasterId,0,0,0);
+    //Packet pkt(&req, MemCmd::ReadReq);
+
+    //ThreadContext *tc = this->getContext(0);
+
+    //Process * p = tc->getProcessPtr();
+    //Addr paddr = Addr(0);
+
+    return 0;
+
+    //Fault fault = p->pTable->translate(&vaddr,paddr);
+    //DPRINTF(Accelerator, "Wait for Accelerator \n");
+
+
+}
+
+
 } // namespace gem5

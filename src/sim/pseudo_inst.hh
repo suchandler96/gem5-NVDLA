@@ -92,6 +92,9 @@ void debugbreak(ThreadContext *tc);
 void switchcpu(ThreadContext *tc);
 void workbegin(ThreadContext *tc, uint64_t workid, uint64_t threadid);
 void workend(ThreadContext *tc, uint64_t workid, uint64_t threadid);
+void startaccel(ThreadContext *tc, Addr addr,
+                uint64_t elements, Addr region_mem);
+uint64_t waitaccel(ThreadContext *tc, Addr addr, uint64_t elements);
 void m5Syscall(ThreadContext *tc);
 void togglesync(ThreadContext *tc);
 void triggerWorkloadEvent(ThreadContext *tc);
@@ -214,8 +217,15 @@ pseudoInstWork(ThreadContext *tc, uint8_t func, uint64_t &result)
         invokeSimcall<ABI>(tc, workend);
         return true;
 
-      case M5OP_RESERVED1:
-      case M5OP_RESERVED2:
+      case M5OP_START_ACCEL:
+        warn("yeah start_accel");
+        invokeSimcall<ABI>(tc, startaccel);
+        return true;
+
+      case M5OP_WAIT_ACCEL:
+        result = invokeSimcall<ABI, store_ret>(tc, waitaccel);
+        return true;
+
       case M5OP_RESERVED3:
       case M5OP_RESERVED4:
       case M5OP_RESERVED5:

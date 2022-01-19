@@ -474,6 +474,8 @@ pc_categories = {
     'do_entUna': 'alignment',
     'do_execve': 'other', # fs/exec.c, include/linux/sched.h,
     'do_exit': 'other', # kernel/exit.c,
+    'do_start_accel': 'other', # Pseudo Instruction start accel,
+    'do_wait_accel': 'other', # Pseudo Instruction wait for accel,
     'do_fcntl' : 'user', # fs/fcntl.c, used to be syscall`
     'do_fork': 'other', # kernel/fork.c, include/linux/sched.h,
     'do_futex': 'other', # kernel/futex.c, include/linux/futex.h,

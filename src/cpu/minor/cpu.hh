@@ -139,6 +139,12 @@ class MinorCPU : public BaseCPU
     /** Processor-specific statistics */
     minor::MinorStats stats;
 
+        // start Accel function
+    void startAccel(Addr addr, int elements, Addr region_nvdla) override;
+
+    // wait Accel function
+    uint64_t waitAccel(Addr addr, int elements) override;
+
     /** Stats interface from SimObject (by way of BaseCPU) */
     void regStats() override;
 

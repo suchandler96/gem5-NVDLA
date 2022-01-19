@@ -151,7 +151,22 @@ class CpuCluster(SubSystem):
         self.l2 = self._l2_type()
         for cpu in self.cpus:
             cpu.connectAllPorts(self.toL2Bus)
+            cpu.accel_0.mem_side = self.toL2Bus.cpu_side_ports
         self.toL2Bus.mem_side_ports = self.l2.cpu_side
+
+    def addPrivateAccelerator(self, clk_domain, membus, options):
+        for cpu in self.cpus:
+            #l2  = None if self._l2_type is None else self._l2_type()
+            #CpuConfig.print_cpu_list()
+
+            #cpu.num_accels = options.numaccel
+            cpu.accel_0 = rtlFIFO()
+
+            cpu.accel_port_0 = cpu.accel_0.cpu_side
+            # enable Tracing
+            cpu.accel_0.enableWaveform = options.enableWaveform
+            # ids
+            #cpu.accel_0.id_accel = 0
 
     def addPMUs(self, ints, events=[]):
         """
@@ -300,6 +315,7 @@ class BaseSimpleSystem(ArmSystem):
         self.vncserver = VncServer()
 
         self.iobus = IOXBar()
+
         # Device DMA -> MEM
         self.mem_ranges = self.getMemRanges(int(Addr(mem_size)))
 
@@ -370,12 +386,15 @@ class SimpleSystem(BaseSimpleSystem):
     """
     Meant to be used with the classic memory model
     """
-    def __init__(self, caches, mem_size, platform=None, **kwargs):
+    def __init__(self, caches, mem_size, accelerators,
+                 platform=None, **kwargs):
         super(SimpleSystem, self).__init__(mem_size, platform, **kwargs)
 
         self.membus = MemBus()
         # CPUs->PIO
         self.iobridge = Bridge(delay='50ns')
+
+        self._accelerators = accelerators
 
         self._caches = caches
         if self._caches:
@@ -400,6 +419,15 @@ class SimpleSystem(BaseSimpleSystem):
         self.realview.attachOnChipIO(self.membus, self.iobridge)
         self.realview.attachIO(self.iobus)
         self.system_port = self.membus.cpu_side_ports
+
+    # Add Accelerators
+    def addAccelerators(self, options):
+        # For now only add one
+        for cluster in self._clusters:
+                #for cpu in cluster.cpu:
+                cluster.addPrivateAccelerator(cluster.clk_domain,
+                                              self.membus.cpu_side_ports,
+                                              options)
 
     def attach_pci(self, dev):
         self.realview.attachPciDevice(dev, self.iobus)

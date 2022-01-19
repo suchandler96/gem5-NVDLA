@@ -588,5 +588,101 @@ workend(ThreadContext *tc, uint64_t workid, uint64_t threadid)
     }
 }
 
+//
+// This function is executed when annotated work items begin.  Depending on
+// what the user specified at the command line, the simulation may exit and/or
+// take a checkpoint when a certain work item begins.
+//
+void
+startaccel(ThreadContext *tc, Addr addr, uint64_t elements, Addr region_mem)
+{
+    DPRINTF(PseudoInst,
+            "PseudoInst::startaccel(%#x, %d)\n", addr, elements);
+
+    ///FSTranslatingPortProxy &vp = tc->getVirtProxy();
+    //char *paddr; //(uint8_t*)
+    //vp.readBlob(addr, paddr, 1);
+
+    //char *buf = new char[4];
+    //CopyOut(tc, buf, addr, 4);
+
+    //DPRINTF(PseudoInst,
+    //        "PseudoInst::startaccel( physical %x)\n", buf[0]);
+
+
+    //System *sys = tc->getSystemPtr();
+    //const System::Params *params = sys->params();
+
+    tc->getCpuPtr()->startAccel(addr,elements, region_mem);
+
+    /*ThreadContext *thread = port.cpu.getContext(
+        inst->id.threadId);
+
+            setState(LSQ::LSQRequest::InTranslation);
+
+        DPRINTFS(MinorMem, (&port), "Submitting DTLB request\n");
+         Submit the translation request.  The response will come through
+         *  finish/markDelayed on the LSQRequest as it bears the Translation
+         *  interface
+        thread->getDTBPtr()->translateTiming(
+            &request, thread, this, (isLoad ? BaseTLB::Read : BaseTLB::Write));
+    } else {
+        disableMemAccess();
+        setState(LSQ::LSQRequest::Complete);*/
+    //sys->workItemBegin(threadid, workid);
+
+    //uint64_t systemWorkBeginCount = sys->incWorkItemsBegin();
+    //int cpuId = tc->getCpuPtr()->cpuId();
+
+
+}
+
+//
+// This function is executed when annotated work items begin.  Depending on
+// what the user specified at the command line, the simulation may exit and/or
+// take a checkpoint when a certain work item begins.
+//
+uint64_t
+waitaccel(ThreadContext *tc, Addr addr, uint64_t elements)
+{
+    DPRINTF(PseudoInst,
+            "PseudoInst::waitaccel(%#x, %d)\n", addr, elements);
+
+    ///FSTranslatingPortProxy &vp = tc->getVirtProxy();
+    //char *paddr; //(uint8_t*)
+    //vp.readBlob(addr, paddr, 1);
+
+    //char *buf = new char[4];
+    //CopyOut(tc, buf, addr, 4);
+
+    return 1;
+
+    //System *sys = tc->getSystemPtr();
+    //const System::Params *params = sys->params();
+
+    //return tc->getCpuPtr()->waitAccel(addr,elements);
+
+    /*ThreadContext *thread = port.cpu.getContext(
+        inst->id.threadId);
+
+            setState(LSQ::LSQRequest::InTranslation);
+
+        DPRINTFS(MinorMem, (&port), "Submitting DTLB request\n");
+         Submit the translation request.  The response will come through
+         *  finish/markDelayed on the LSQRequest as it bears the Translation
+         *  interface
+        thread->getDTBPtr()->translateTiming(
+            &request, thread, this, (isLoad ? BaseTLB::Read : BaseTLB::Write));
+    } else {
+        disableMemAccess();
+        setState(LSQ::LSQRequest::Complete);*/
+    //sys->workItemBegin(threadid, workid);
+
+    //uint64_t systemWorkBeginCount = sys->incWorkItemsBegin();
+    //int cpuId = tc->getCpuPtr()->cpuId();
+
+
+}
+
 } // namespace pseudo_inst
 } // namespace gem5

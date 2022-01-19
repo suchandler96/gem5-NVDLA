@@ -47,12 +47,15 @@
 // Before we do anything else, check if this build is the NULL ISA,
 // and if so stop here
 #include "config/the_isa.hh"
+
 #if THE_ISA == NULL_ISA
 #error Including BaseCPU in a system without CPU support
 #else
 #include "arch/generic/interrupts.hh"
 #include "base/statistics.hh"
+#include "debug/Mwait.hh"
 #include "mem/port_proxy.hh"
+#include "rtl/rtlFIFO.hh"
 #include "sim/clocked_object.hh"
 #include "sim/eventq.hh"
 #include "sim/full_system.hh"
@@ -60,7 +63,6 @@
 #include "sim/probe/pmu.hh"
 #include "sim/probe/probe.hh"
 #include "sim/system.hh"
-#include "debug/Mwait.hh"
 
 namespace gem5
 {
@@ -69,6 +71,7 @@ class BaseCPU;
 struct BaseCPUParams;
 class CheckerCPU;
 class ThreadContext;
+class rtlFIFO;
 
 struct AddressMonitor
 {
@@ -167,6 +170,90 @@ class BaseCPU : public ClockedObject
     static std::unique_ptr<GlobalStats> globalStats;
 
   public:
+
+    class TimingCPUPort : public RequestPort
+    {
+      public:
+
+        TimingCPUPort(const std::string& _name, BaseCPU* _cpu)
+            : RequestPort(_name, _cpu), cpu(_cpu),
+              retryRespEvent([this]{ sendRetryResp(); }, name())
+        { }
+
+      protected:
+
+        BaseCPU* cpu;
+
+        struct TickEvent : public Event
+        {
+            PacketPtr pkt;
+            BaseCPU *cpu;
+
+            TickEvent(BaseCPU *_cpu) : pkt(NULL), cpu(_cpu) {}
+            const char *description() const { return "Timing CPU tick"; }
+            void schedule(PacketPtr _pkt, Tick t);
+        };
+
+        EventFunctionWrapper retryRespEvent;
+    };
+
+    class AccelPort : public TimingCPUPort
+    {
+      public:
+
+        AccelPort(BaseCPU *_cpu, std::string id)
+            : TimingCPUPort(_cpu->name() + ".accel_port" + id, _cpu),
+              tickEvent(_cpu)
+        { }
+
+      protected:
+
+        virtual bool recvTimingResp(PacketPtr pkt);
+
+        virtual void recvReqRetry();
+
+        struct ITickEvent : public TickEvent
+        {
+
+            ITickEvent(BaseCPU *_cpu)
+                : TickEvent(_cpu) {}
+            void process();
+            const char *description() const { return "Timing CPU accel tick"; }
+        };
+
+        ITickEvent tickEvent;
+
+    };
+    AccelPort accel_port_0;
+    //AccelPort nvdla_port_1;
+    //AccelPort nvdla_port_2;
+    //AccelPort nvdla_port_3;
+
+    rtlFIFO* accel_0;
+    //rtlNVDLA* nvdla_1;
+    //rtlNVDLA* nvdla_2;
+    //rtlNVDLA* nvdla_3;
+
+    int num_accels;
+
+
+
+    // Method to use when instruction start accel is used
+    virtual void startAccel(Addr addr, int elements, Addr region_nvdla)  {};
+
+    virtual uint64_t waitAccel(Addr addr, int elements)  {
+        return !finishedAccelerator;
+    };
+
+    bool finishedAccelerator;
+
+    /**
+     * method that returns a reference to the accelerator
+     * port.
+     *
+     * @return a reference to the data port
+     */
+    Port &getAccelPort(int n);
 
     /**
      * Purely virtual method that returns a reference to the data

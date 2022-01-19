@@ -125,11 +125,14 @@ CPUProgressEvent::description() const
 }
 
 BaseCPU::BaseCPU(const Params &p, bool is_checker)
-    : ClockedObject(p), instCnt(0), _cpuId(p.cpu_id), _socketId(p.socket_id),
+    : ClockedObject(p), instCnt(0),
+      _cpuId(p.cpu_id), _socketId(p.socket_id),
       _instRequestorId(p.system->getRequestorId(this, "inst")),
       _dataRequestorId(p.system->getRequestorId(this, "data")),
       _taskId(context_switch_task_id::Unknown), _pid(invldPid),
       _switchedOut(p.switched_out), _cacheLineSize(p.system->cacheLineSize()),
+      accel_port_0(this,"0"),
+      num_accels(p.num_accels),
       interrupts(p.interrupts), numThreads(p.numThreads), system(p.system),
       previousCycle(0), previousState(CPU_STATE_SLEEP),
       functionTraceStream(nullptr), currentFunctionStart(0),
@@ -141,6 +144,8 @@ BaseCPU::BaseCPU(const Params &p, bool is_checker)
       powerGatingOnIdle(p.power_gating_on_idle),
       enterPwrGatingEvent([this]{ enterPwrGating(); }, name())
 {
+    accel_0 = p.accel_0;
+
     // if Python did not provide a valid ID, do it here
     if (_cpuId == -1 ) {
         _cpuId = cpuList.size();
@@ -416,8 +421,25 @@ BaseCPU::getPort(const std::string &if_name, PortID idx)
         return getDataPort();
     else if (if_name == "icache_port")
         return getInstPort();
+    // (guillemlp) Add accelerator port when requested
+    else if (if_name == "accel_port_0")
+        return getAccelPort(0);
     else
         return ClockedObject::getPort(if_name, idx);
+}
+
+// (guillemlp) Function needed to return an accelerator port
+Port &
+BaseCPU::getAccelPort(int n)
+{
+    // Get the right port based on name. This applies to all the
+    // subclasses of the base CPU and relies on their implementation
+    // of getDataPort and getInstPort. In all cases there methods
+    // return a MasterPort pointer.
+    if (n==0) {
+        return accel_port_0;
+    }
+
 }
 
 void
@@ -610,6 +632,8 @@ BaseCPU::takeOverFrom(BaseCPU *oldCPU)
     // we are switching to.
     getInstPort().takeOverFrom(&oldCPU->getInstPort());
     getDataPort().takeOverFrom(&oldCPU->getDataPort());
+
+    getAccelPort(0).takeOverFrom(&oldCPU->getAccelPort(0));
 }
 
 void
@@ -766,6 +790,45 @@ BaseCPU::GlobalStats::GlobalStats(statistics::Group *parent)
 
     hostInstRate = simInsts / hostSeconds;
     hostOpRate = simOps / hostSeconds;
+}
+
+void
+BaseCPU::AccelPort::ITickEvent::process()
+{
+    //cpu->completeIfetch(pkt);
+}
+
+bool
+BaseCPU::AccelPort::recvTimingResp(PacketPtr pkt)
+{
+    //DPRINTF(SimpleCPU, "Received fetch response %#x\n", pkt->getAddr());
+    std::cout << "Received finished addr: " << pkt->getAddr() << std::endl;
+
+    if (pkt->getAddr() == 0) {
+        cpu->finishedAccelerator=true;
+    }
+
+    // we should only ever see one response per cycle since we only
+    // issue a new request once this response is sunk
+    //assert(!tickEvent.scheduled());
+    // delay processing of returned data until next CPU clock edge
+    //tickEvent.schedule(pkt, cpu->clockEdge());
+
+    return true;
+}
+
+void
+BaseCPU::AccelPort::recvReqRetry()
+{
+    // we shouldn't get a retry unless we have a packet that we're
+    // waiting to transmit
+    //assert(cpu->ifetch_pkt != NULL);
+    //assert(cpu->_status == IcacheRetry);
+    //PacketPtr tmp = cpu->ifetch_pkt;
+    //if (sendTimingReq(tmp)) {
+    //    cpu->_status = IcacheWaitResponse;
+    //    cpu->ifetch_pkt = NULL;
+    //}
 }
 
 } // namespace gem5

@@ -1,4 +1,6 @@
-# Copyright 2020 Google, Inc.
+# -*- coding: utf-8 -*-
+# Copyright (c) 2019 Guillem Lopez Paradis
+# All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -22,25 +24,23 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# Authors: Guillem Lopez Paradis
 
-Import('*')
+from m5.params import *
+from m5.proxy import *
+from m5.objects.ClockedObject import ClockedObject
 
-command_ccs = [
-    'addsymbol.cc',
-    'checkpoint.cc',
-    'dumpresetstats.cc',
-    'dumpstats.cc',
-    'exit.cc',
-    'fail.cc',
-    'sum.cc',
-    'initparam.cc',
-    'loadsymbol.cc',
-    'readfile.cc',
-    'resetstats.cc',
-    'writefile.cc',
-    'startaccel.cc',
-    'waitaccel.cc',
-]
+class rtlObject(ClockedObject):
+    type = 'rtlObject'
+    cxx_header = "rtl/rtlObject.hh"
+    abstract = True
 
-command_objs = list(map(env.StaticObject, command_ccs))
-Return('command_objs')
+    cpu_side = SlavePort("CPU side port, receives requests")
+    mem_side = MasterPort("Memory side port, sends requests")
+
+    enableRTLObject = Param.Bool(True,"Enable RTL Object")
+
+    enableWaveform = Param.Bool(False,"Enable Trace Waveform")
+
+    system = Param.System(Parent.any, "System this accelerator belongs to")
