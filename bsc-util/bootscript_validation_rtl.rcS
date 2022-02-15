@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Example how to run the application inside gem5
+cd /romol/bin/
+
+# necessary export for parsec hooks 
+export LD_LIBRARY_PATH=/romol/hooks/lib/shared/cpt:$LD_LIBRARY_PATH
+
+
+./validation_rtl 1600
+
+/sbin/m5 exit
+

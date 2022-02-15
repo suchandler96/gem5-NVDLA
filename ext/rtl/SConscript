@@ -1,6 +1,15 @@
-# -*- coding: utf-8 -*-
-# Copyright (c) 2022 Guillem Lopez Paradis
+# -*- mode:python -*-
+# Copyright (c) 2022 Barcelona Supercomputing Center
 # All rights reserved.
+#
+# The license below extends only to copyright in the software and shall
+# not be construed as granting a license to any other intellectual
+# property including but not limited to intellectual property relating
+# to a hardware implementation of the functionality of the software
+# licensed hereunder.  You may use the software subject to the license
+# terms below provided that you ensure that this notice is replicated
+# unmodified and in its entirety in all distributions of the software,
+# modified or unmodified, in source code or in binary form.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -26,16 +35,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Authors: Guillem Lopez Paradis
-
-from m5.params import *
-from m5.proxy import *
-from m5.objects.rtlObject import rtlObject
-
-
-class rtlFIFO(rtlObject):
-    type = 'rtlFIFO'
-    cxx_header = "rtl/rtlFIFO.hh"
-    cxx_class = 'gem5::rtlFIFO'
-
-    cpu_side  = ResponsePort("CPU side port, receives requests")
-    mem_side  = RequestPort("Memory side port, sends requests")
+import os
+Import('main')
+## Add VERILATOR PATH
+main.Append(CPPPATH=[Dir(os.environ['VERILATOR_ROOT'] + '/include')])
+main.Append(CPPPATH=[Dir(os.environ['VERILATOR_ROOT'] + '/include/vltstd')])
+## FIFO 
+## NEEDS to be Modified for every model model_newrtlObject/verilator_output
+main.Append(CPPPATH=[Dir('.')])
+main.Append(CPPPATH=[Dir('model_fifo/verilator_fifo_vcd')])
+## Find the library path and add library
+main.Append(LIBS=['VerilatorFIFO'])
+main.Prepend(LIBPATH=Dir('.'))
+main.Append(CPPDEFINES=['VM_SC=0', 'VM_TRACE=1','VL_THREADED=0'])

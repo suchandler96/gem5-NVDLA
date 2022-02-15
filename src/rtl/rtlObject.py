@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2019 Guillem Lopez Paradis
+# Copyright (c) 2022 Guillem Lopez Paradis
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,11 @@ from m5.objects.ClockedObject import ClockedObject
 class rtlObject(ClockedObject):
     type = 'rtlObject'
     cxx_header = "rtl/rtlObject.hh"
+    cxx_class = 'gem5::rtlObject'
     abstract = True
 
-    cpu_side = SlavePort("CPU side port, receives requests")
-    mem_side = MasterPort("Memory side port, sends requests")
+    #cpu_side = ResponsePort("CPU side port, receives requests")
+    #mem_side = RequestPort("Memory side port, sends requests")
 
     enableRTLObject = Param.Bool(True,"Enable RTL Object")
 

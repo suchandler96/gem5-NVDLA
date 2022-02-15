@@ -193,6 +193,7 @@ BaseCPU::enableFunctionTrace()
 
 BaseCPU::~BaseCPU()
 {
+    delete accel_0;
 }
 
 void
