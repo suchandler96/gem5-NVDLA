@@ -71,6 +71,7 @@ Finally:
 # Obtain libVerilatorNVDLA.so
 cd ext/rtl/model_nvdla
 make create_library_vcd 
+make install
 ```
 
 ​
