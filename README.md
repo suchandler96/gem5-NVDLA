@@ -56,14 +56,23 @@ We provide some examples on how to build RTL Verilator models: e.g. the fifo exa
 ​
 ```
 make
-make library_vdc
+make library_vcd
 make install
 ```
+
 ## FOR NVDLA
-1. Download repo and follow instructions at [NVDLA](http://nvdla.org/hw/v1/integration_guide.html) to obtain the model and compiling. Make sure you use verilator v3.912 and clang 3.4. Get also the traces and move them to the gem5 image.
+1. Download repo and follow instructions at [NVDLA](http://nvdla.org/hw/v1/integration_guide.html) to obtain the model and compiling. Make sure you use verilator v3.912 and clang 3.4. Get also the traces and move them to the gem5 image. RAM requirements>24GB
 2. Move the verilator output folder to ext/rtl/model_nvdla/verilator_nvdla
 3. To create the library you need to use the same clang v3.4 with stdlib of gcc v6: clang++ -stdlib=libc++ --gcc-toolchain=/path/to/gccv6
-make create_library_vcd *
+
+Finally:
+
+```
+# Obtain libVerilatorNVDLA.so
+cd ext/rtl/model_nvdla
+make create_library_vcd 
+```
+
 ​
 ### Step 2: Adapt script in ext/rtl/SConscript
 ​
