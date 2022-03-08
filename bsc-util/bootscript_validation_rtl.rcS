@@ -7,7 +7,29 @@ cd /romol/bin/
 export LD_LIBRARY_PATH=/romol/hooks/lib/shared/cpt:$LD_LIBRARY_PATH
 
 
-./validation_rtl 1600
+#. /etc/profile
+#module use /opt/arm/modulefiles/
+#module load Generic-AArch64/Ubuntu/16.04/suites/arm-compiler-for-hpc/19.1
+#module load Generic-SVE/Ubuntu/16.04/arm-hpc-compiler-0.0/armpl/0.0.0_sve_ea
+#module load Generic-AArch64/Ubuntu/16.04/arm-hpc-compiler-19.1/armpl/19.1.0
+#googlenet_conv2_3x3_int16 sanity0-1-2-3
+#Running trace:  cc_alexnet_conv5_relu5_int16_dtest_cvsram
+#Running trace:  conv_8x8_fc_int16
+#Running trace:  googlenet_conv2_3x3_int16
+#Running trace:  pdp_max_pooling_int16
+#Running trace:  sanity0
+#Running trace:  sanity1
+#Running trace:  sanity1_cvsram
+#Running trace:  sanity2
+#Running trace:  sanity2_cvsram
+#Running trace:  sanity3
+#Running trace:  sanity3_cvsram
+#Running trace:  sdp_relu_int16
+# sanity1 does not work with timing
+
+
+
+./validation_nvdla traces_nvdla/sanity0/trace.bin
 
 /sbin/m5 exit
 

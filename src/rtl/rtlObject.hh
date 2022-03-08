@@ -180,10 +180,11 @@ public:
         // The object that owns this object (rtlObject)
         rtlObject *owner;
 
+      public:
+
         // If we tried to send a packet and it was blocked, store it here
         PacketPtr blockedPacket;
 
-      public:
         /**
          * Constructor. Just calls the superclass constructor.
          */

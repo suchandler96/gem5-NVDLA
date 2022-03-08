@@ -131,7 +131,10 @@ BaseCPU::BaseCPU(const Params &p, bool is_checker)
       _dataRequestorId(p.system->getRequestorId(this, "data")),
       _taskId(context_switch_task_id::Unknown), _pid(invldPid),
       _switchedOut(p.switched_out), _cacheLineSize(p.system->cacheLineSize()),
-      accel_port_0(this,"0"),
+      nvdla_port_0(this,"0"),
+      nvdla_port_1(this,"1"),
+      nvdla_port_2(this,"2"),
+      nvdla_port_3(this,"3"),
       num_accels(p.num_accels),
       interrupts(p.interrupts), numThreads(p.numThreads), system(p.system),
       previousCycle(0), previousState(CPU_STATE_SLEEP),
@@ -144,7 +147,10 @@ BaseCPU::BaseCPU(const Params &p, bool is_checker)
       powerGatingOnIdle(p.power_gating_on_idle),
       enterPwrGatingEvent([this]{ enterPwrGating(); }, name())
 {
-    accel_0 = p.accel_0;
+    nvdla_0 = p.accel_0;
+    nvdla_1 = p.accel_1;
+    nvdla_2 = p.accel_2;
+    nvdla_3 = p.accel_3;
 
     // if Python did not provide a valid ID, do it here
     if (_cpuId == -1 ) {
@@ -183,6 +189,11 @@ BaseCPU::BaseCPU(const Params &p, bool is_checker)
         fatal("Number of ISAs (%i) assigned to the CPU does not equal number "
               "of threads (%i).\n", params().isa.size(), numThreads);
     }
+
+    finishedAccelerator0=true;
+    finishedAccelerator1=true;
+    finishedAccelerator2=true;
+    finishedAccelerator3=true;
 }
 
 void
@@ -193,7 +204,10 @@ BaseCPU::enableFunctionTrace()
 
 BaseCPU::~BaseCPU()
 {
-    delete accel_0;
+    delete nvdla_0;
+    delete nvdla_1;
+    delete nvdla_2;
+    delete nvdla_3;
 }
 
 void
@@ -425,6 +439,12 @@ BaseCPU::getPort(const std::string &if_name, PortID idx)
     // (guillemlp) Add accelerator port when requested
     else if (if_name == "accel_port_0")
         return getAccelPort(0);
+    else if (if_name == "accel_port_1")
+        return getAccelPort(1);
+    else if (if_name == "accel_port_2")
+        return getAccelPort(2);
+    else if (if_name == "accel_port_3")
+        return getAccelPort(3);
     else
         return ClockedObject::getPort(if_name, idx);
 }
@@ -438,7 +458,13 @@ BaseCPU::getAccelPort(int n)
     // of getDataPort and getInstPort. In all cases there methods
     // return a MasterPort pointer.
     if (n==0) {
-        return accel_port_0;
+        return nvdla_port_0;
+    } else if (n==1) {
+        return nvdla_port_1;
+    } else if (n==1) {
+        return nvdla_port_2;
+    } else {
+        return nvdla_port_3;
     }
 
 }
@@ -806,14 +832,20 @@ BaseCPU::AccelPort::recvTimingResp(PacketPtr pkt)
     std::cout << "Received finished addr: " << pkt->getAddr() << std::endl;
 
     if (pkt->getAddr() == 0) {
-        cpu->finishedAccelerator=true;
+        cpu->finishedAccelerator0=true;
     }
 
-    // we should only ever see one response per cycle since we only
-    // issue a new request once this response is sunk
-    //assert(!tickEvent.scheduled());
-    // delay processing of returned data until next CPU clock edge
-    //tickEvent.schedule(pkt, cpu->clockEdge());
+    else if (pkt->getAddr() == 1) {
+        cpu->finishedAccelerator1=true;
+    }
+
+    else if (pkt->getAddr() == 2) {
+        cpu->finishedAccelerator2=true;
+    }
+
+    else {
+        cpu->finishedAccelerator3=true;
+    }
 
     return true;
 }

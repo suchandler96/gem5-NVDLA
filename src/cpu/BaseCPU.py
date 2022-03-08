@@ -125,7 +125,10 @@ class BaseCPU(ClockedObject):
 
 
     # ACCELERATORS
-    accel_0 = Param.rtlFIFO(NULL, "RTL Accelerator Object")
+    accel_0 = Param.rtlNVDLA(NULL, "RTL NVDLA Accelerator Object")
+    accel_1 = Param.rtlNVDLA(NULL, "RTL NVDLA Accelerator Object")
+    accel_2 = Param.rtlNVDLA(NULL, "RTL NVDLA Accelerator Object")
+    accel_3 = Param.rtlNVDLA(NULL, "RTL NVDLA Accelerator Object")
 
     num_accels = Param.Int(0, "Number of rtl Objects")
 
@@ -180,6 +183,9 @@ class BaseCPU(ClockedObject):
     dcache_port = RequestPort("Data Port")
 
     accel_port_0 = RequestPort("Accelerator Port")
+    accel_port_1 = RequestPort("Accelerator Port")
+    accel_port_2 = RequestPort("Accelerator Port")
+    accel_port_3 = RequestPort("Accelerator Port")
 
     _cached_ports = ['icache_port', 'dcache_port']
 

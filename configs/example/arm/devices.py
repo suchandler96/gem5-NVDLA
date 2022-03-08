@@ -159,14 +159,57 @@ class CpuCluster(SubSystem):
             #l2  = None if self._l2_type is None else self._l2_type()
             #CpuConfig.print_cpu_list()
 
-            #cpu.num_accels = options.numaccel
-            cpu.accel_0 = rtlFIFO()
+            cpu.num_accels = options.numNVDLA
+
+            cpu.accel_0 = rtlNVDLA()
+            cpu.accel_1 = rtlNVDLA()
+            cpu.accel_2 = rtlNVDLA()
+            cpu.accel_3 = rtlNVDLA()
 
             cpu.accel_port_0 = cpu.accel_0.cpu_side
+            cpu.accel_port_1 = cpu.accel_1.cpu_side
+            cpu.accel_port_2 = cpu.accel_2.cpu_side
+            cpu.accel_port_3 = cpu.accel_3.cpu_side
+            # this is high speed
+            cpu.accel_0.sram_port = membus
+            cpu.accel_1.sram_port = membus
+            cpu.accel_2.sram_port = membus
+            cpu.accel_3.sram_port = membus
+            # this is a regular bus
+            cpu.accel_0.dram_port = membus
+            cpu.accel_1.dram_port = membus
+            cpu.accel_2.dram_port = membus
+            cpu.accel_3.dram_port = membus
+            # max num inflight requests
+            cpu.accel_0.maxReq = options.maxReqNVDLA
+            cpu.accel_1.maxReq = options.maxReqNVDLA
+            cpu.accel_2.maxReq = options.maxReqNVDLA
+            cpu.accel_3.maxReq = options.maxReqNVDLA
             # enable Tracing
             cpu.accel_0.enableWaveform = options.enableWaveform
+            cpu.accel_1.enableWaveform = options.enableWaveform
+            cpu.accel_2.enableWaveform = options.enableWaveform
+            cpu.accel_3.enableWaveform = options.enableWaveform
+            # enable Timing
+            cpu.accel_0.enableTimingAXI = options.enableTimingAXI
+            cpu.accel_1.enableTimingAXI = options.enableTimingAXI
+            cpu.accel_2.enableTimingAXI = options.enableTimingAXI
+            cpu.accel_3.enableTimingAXI = options.enableTimingAXI
             # ids
-            #cpu.accel_0.id_accel = 0
+            cpu.accel_0.id_nvdla = 0
+            cpu.accel_1.id_nvdla = 1
+            cpu.accel_2.id_nvdla = 2
+            cpu.accel_3.id_nvdla = 3
+            # DRAM base addr
+            cpu.accel_0.base_addr_dram = 0xA0000000
+            cpu.accel_1.base_addr_dram = 0xB0000000
+            cpu.accel_2.base_addr_dram = 0xC0000000
+            cpu.accel_3.base_addr_dram = 0xD0000000
+            # SRAM base addr
+            cpu.accel_0.base_addr_sram = 0xA5000000
+            cpu.accel_1.base_addr_sram = 0xB5000000
+            cpu.accel_2.base_addr_sram = 0xC5000000
+            cpu.accel_3.base_addr_sram = 0xD5000000
 
     def addPMUs(self, ints, events=[]):
         """

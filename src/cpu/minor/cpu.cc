@@ -345,46 +345,62 @@ MinorCPU::totalOps() const
 void
 MinorCPU::startAccel(Addr vaddr, int elements, Addr region_nvdla)
 {
-    // Get the right port based on name. This applies to all the
-    // subclasses of the base CPU and relies on their implementation
-    // of getDataPort and getInstPort. In all cases there methods
-    // return a MasterPort pointer.
-    //RequestPtr req = std::make_shared<Request>(0, vaddr, 64,
-                                         //0x40, 0, 0, contextId);
+    if (num_accels>3) {
+        RequestPtr req = std::make_shared<Request>(vaddr, elements,
+                                  0, Request::funcRequestorId,0,0);
+        PacketPtr pkt = new Packet(req, MemCmd::ReadReq, elements);
+        nvdla_port_3.sendTimingReq(pkt);
 
+        finishedAccelerator3 = false;
+    }
+    if (num_accels>2) {
+        RequestPtr req = std::make_shared<Request>(vaddr, elements,
+                                  0, Request::funcRequestorId,0,0);
+        PacketPtr pkt = new Packet(req, MemCmd::ReadReq, elements);
+        nvdla_port_2.sendTimingReq(pkt);
 
-    RequestPtr req = std::make_shared<Request>(vaddr, elements,
-                                               0, Request::funcRequestorId,
-                                               0,0);
-    PacketPtr pkt = new Packet(req, MemCmd::ReadReq, elements);
-    accel_port_0.sendTimingReq(pkt);
+        finishedAccelerator2 = false;
+    }
+    if (num_accels>1) {
+        RequestPtr req = std::make_shared<Request>(vaddr, elements,
+                                  0, Request::funcRequestorId,0,0);
+        PacketPtr pkt = new Packet(req, MemCmd::ReadReq, elements);
+        nvdla_port_1.sendTimingReq(pkt);
 
-    finishedAccelerator = false;
+        finishedAccelerator1 = false;
+    }
+    if (num_accels>0) {
+        RequestPtr req = std::make_shared<Request>(vaddr, elements,
+                                  0, Request::funcRequestorId,0,0);
+        PacketPtr pkt = new Packet(req, MemCmd::ReadReq, elements);
+        nvdla_port_0.sendTimingReq(pkt);
 
+        finishedAccelerator0 = false;
+    }
 
 }
 
 uint64_t
 MinorCPU::waitAccel(Addr vaddr, int elements)
 {
-    // Get the right port based on name. This applies to all the
-    // subclasses of the base CPU and relies on their implementation
-    // of getDataPort and getInstPort. In all cases there methods
-    // return a MasterPort pointer.
-    //Request req(0,vaddr, 64, 0, Request::funcMasterId,0,0,0);
-    //Packet pkt(&req, MemCmd::ReadReq);
 
-    //ThreadContext *tc = this->getContext(0);
-
-    //Process * p = tc->getProcessPtr();
-    //Addr paddr = Addr(0);
-
-    return 0;
-
-    //Fault fault = p->pTable->translate(&vaddr,paddr);
-    //DPRINTF(Accelerator, "Wait for Accelerator \n");
-
-
+    // DPRINTF(Accelerator, "Wait for Accelerator \n");
+    // std::cout << "Wait Accelerator " << std::endl;
+    if (num_accels == 1) {
+        return !finishedAccelerator0;
+    } else if (num_accels == 2) {
+        return !finishedAccelerator0 |
+               !finishedAccelerator1;
+    } else if (num_accels == 3) {
+        return !finishedAccelerator0 |
+               !finishedAccelerator1 |
+               !finishedAccelerator2;
+    } else {
+        return !finishedAccelerator0 |
+               !finishedAccelerator1 |
+               !finishedAccelerator2 |
+               !finishedAccelerator3;
+    }
 }
 
 

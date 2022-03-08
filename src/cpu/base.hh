@@ -55,7 +55,7 @@
 #include "base/statistics.hh"
 #include "debug/Mwait.hh"
 #include "mem/port_proxy.hh"
-#include "rtl/rtlFIFO.hh"
+#include "rtl/rtlNVDLA.hh"
 #include "sim/clocked_object.hh"
 #include "sim/eventq.hh"
 #include "sim/full_system.hh"
@@ -71,7 +71,7 @@ class BaseCPU;
 struct BaseCPUParams;
 class CheckerCPU;
 class ThreadContext;
-class rtlFIFO;
+class rtlNVDLA;
 
 struct AddressMonitor
 {
@@ -224,15 +224,15 @@ class BaseCPU : public ClockedObject
         ITickEvent tickEvent;
 
     };
-    AccelPort accel_port_0;
-    //AccelPort nvdla_port_1;
-    //AccelPort nvdla_port_2;
-    //AccelPort nvdla_port_3;
+    AccelPort nvdla_port_0;
+    AccelPort nvdla_port_1;
+    AccelPort nvdla_port_2;
+    AccelPort nvdla_port_3;
 
-    rtlFIFO* accel_0;
-    //rtlNVDLA* nvdla_1;
-    //rtlNVDLA* nvdla_2;
-    //rtlNVDLA* nvdla_3;
+    rtlNVDLA* nvdla_0;
+    rtlNVDLA* nvdla_1;
+    rtlNVDLA* nvdla_2;
+    rtlNVDLA* nvdla_3;
 
     int num_accels;
 
@@ -242,10 +242,15 @@ class BaseCPU : public ClockedObject
     virtual void startAccel(Addr addr, int elements, Addr region_nvdla)  {};
 
     virtual uint64_t waitAccel(Addr addr, int elements)  {
-        return !finishedAccelerator;
+        std::cout << "THIS SHOULD NOT BE PRINTED, " <<
+        " HENCE WAIT ACCEL NOT IMPLMENTED" << std::endl;
+        return !finishedAccelerator0;
     };
 
-    bool finishedAccelerator;
+    bool finishedAccelerator0;
+    bool finishedAccelerator1;
+    bool finishedAccelerator2;
+    bool finishedAccelerator3;
 
     /**
      * method that returns a reference to the accelerator

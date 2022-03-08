@@ -27,23 +27,26 @@
 #
 # Authors: Guillem Lopez Paradis
 
-Import('*')
+from m5.params import *
+from m5.proxy import *
+from m5.objects.rtlObject import rtlObject
 
-# NVDLA
-Source('traceLoaderGem5.cc')
-SimObject('rtlNVDLA.py')
-Source('rtlNVDLA.cc')
+class rtlNVDLA(rtlObject):
+    type = 'rtlNVDLA'
+    cxx_header = "rtl/rtlNVDLA.hh"
+    cxx_class = 'gem5::rtlNVDLA'
 
-#rtlObject
-SimObject('rtlObject.py')
-Source('rtlObject.cc')
+    cpu_side  = ResponsePort("CPU side port, receives requests")
+    mem_side  = RequestPort("Memory side port, sends requests")
+    sram_port = RequestPort("High Speed port to SRAM, sends requests")
+    dram_port = RequestPort("Regular Speed to DRAM, sends requests")
 
-# rtlFIFO
-#SimObject('rtlFIFO.py')
-#Source('rtlFIFO.cc')
+    id_nvdla = Param.UInt64(0,"id of the NVDLA")
 
-# Flags
-DebugFlag('rtlObject')
-DebugFlag('rtlObjectDebug')
-DebugFlag('rtlNVDLA')
-DebugFlag('rtlNVDLADebug')
+    maxReq = Param.UInt64(4,"Max Request inglight for NVDLA")
+
+    base_addr_dram = Param.UInt64(0xA0000000,"Max Request inglight for NVDLA")
+
+    base_addr_sram = Param.UInt64(0xB0000000,"Max Request inglight for NVDLA")
+
+    enableTimingAXI = Param.Bool(False,"Enable Timing mode in AXI")

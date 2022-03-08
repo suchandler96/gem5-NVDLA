@@ -35,16 +35,22 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Authors: Guillem Lopez Paradis
+
 import os
 Import('main')
+
 ## Add VERILATOR PATH
 main.Append(CPPPATH=[Dir(os.environ['VERILATOR_ROOT'] + '/include')])
 main.Append(CPPPATH=[Dir(os.environ['VERILATOR_ROOT'] + '/include/vltstd')])
-## FIFO 
-## NEEDS to be Modified for every model model_newrtlObject/verilator_output
-main.Append(CPPPATH=[Dir('.')])
-main.Append(CPPPATH=[Dir('model_fifo/verilator_fifo_vcd')])
+
+## Compiling flags
+main.Append(CCFLAGS=['-Wno-error=undef'])
+
+## NVDLA ##
+main.Append(CPPPATH=[Dir('model_nvdla')])
+main.Append(CPPPATH=[Dir('model_nvdla/verilator_nvdla')])
+
 ## Find the library path and add library
-main.Append(LIBS=['VerilatorFIFO'])
+main.Append(LIBS=['VerilatorNVDLA'])
 main.Prepend(LIBPATH=Dir('.'))
 main.Append(CPPDEFINES=['VM_SC=0', 'VM_TRACE=1','VL_THREADED=0'])

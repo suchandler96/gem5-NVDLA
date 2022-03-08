@@ -301,15 +301,19 @@ main['TCMALLOC_CCFLAGS'] = []
 CXX_version = readCommand([main['CXX'], '--version'], exception=False)
 
 main['GCC'] = CXX_version and CXX_version.find('g++') >= 0
+
 main['CLANG'] = CXX_version and CXX_version.find('clang') >= 0
-if main['GCC'] + main['CLANG'] > 1:
-    error('Two compilers enabled at once?')
+#if main['GCC'] + main['CLANG'] > 1:
+#    error('Two compilers enabled at once?')
 
 # Set up default C++ compiler flags
 if main['GCC'] or main['CLANG']:
     # As gcc and clang share many flags, do the common parts here
     main.Append(CCFLAGS=['-pipe'])
     main.Append(CCFLAGS=['-fno-strict-aliasing'])
+    #main.Append(CXXFLAGS=['-Wno-defaulted-function-deleted'])
+    main.Append(CXXFLAGS=['-Wno-gnu-designator'])
+    main.Append(CXXFLAGS=['-Wno-bad-function-cast'])
 
     # Enable -Wall and -Wextra and then disable the few warnings that
     # we consistently violate
@@ -370,6 +374,9 @@ if main['GCC']:
                                   '-fno-builtin-realloc', '-fno-builtin-free'])
 
 elif main['CLANG']:
+    #main.Append(CXXFLAGS=['-Wno-defaulted-function-deleted'])
+    main.Append(CXXFLAGS=['-Wno-gnu-designator'])
+    main.Append(CXXFLAGS=['-Wno-bad-function-cast'])
     if compareVersions(main['CXXVERSION'], "6") < 0:
         error('clang version 6 or newer required.\n'
               'Installed version:', main['CXXVERSION'])
@@ -380,11 +387,15 @@ elif main['CLANG']:
             main[var] = ['-flto']
 
     # clang has a few additional warnings that we disable.
-    with gem5_scons.Configure(main) as conf:
-        conf.CheckCxxFlag('-Wno-c99-designator')
-        conf.CheckCxxFlag('-Wno-defaulted-function-deleted')
+    #with gem5_scons.Configure(main) as conf:
+        #conf.CheckCxxFlag('-Wno-c99-designator')
+        #conf.CheckCxxFlag('-Wno-defaulted-function-deleted')
 
     main.Append(TCMALLOC_CCFLAGS=['-fno-builtin'])
+    #main.Append(TCMALLOC_CCFLAGS=['-Wno-defaulted-function-deleted'])
+    main.Append(TCMALLOC_CCFLAGS=['-Wno-gnu-designator'])
+    main.Append(TCMALLOC_CCFLAGS=['-Wno-bad-function-cast'])
+    main.Append(TCMALLOC_CCFLAGS=['-Wno-missing-declarations'])
 
     # On Mac OS X/Darwin we need to also use libc++ (part of XCode) as
     # opposed to libstdc++, as the later is dated.

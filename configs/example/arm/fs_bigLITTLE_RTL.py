@@ -49,7 +49,7 @@ from common import FSConfig
 from common import SysPaths
 from common import ObjectList
 from common import Options
-from common.cores.arm import ex5_big, ex5_LITTLE
+from common.cores.arm import ex5_LITTLE
 
 import devices
 from devices import AtomicCluster, KvmCluster, FastmodelCluster
@@ -205,9 +205,19 @@ def addOptions(parser):
                         help="Use the gem5 GIC in a KVM simulation")
     parser.add_argument("--accelerators", action="store_true", default=False,
                         help="Instantiate Accelerator")
+    # options.maxReqNVDLA
+    parser.add_argument("--maxReqNVDLA", type=int, default=128,
+                        help="max requests Inflight in NVDLA")
     # options.enableWaveform
     parser.add_argument("--enableWaveform", action="store_true", default=False,
-                        help="Enable tracing waveform of accels")
+                        help="Enable tracing waveform of NVDLA")
+    # options.enableTiming
+    parser.add_argument("--enableTimingAXI", action="store_true",
+                        default=False,
+                        help="Enable Timing memory requests NVDLA")
+    # options.numNVDLA
+    parser.add_argument("--numNVDLA", type=int, default=1,
+                        help="number of NVDLAs")
 
     parser.add_argument("-P", "--param", action="append", default=[],
         help="Set a SimObject parameter relative to the root node. "
