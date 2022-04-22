@@ -31,3 +31,13 @@ m5out
 configs/example/memcheck.cfg
 configs/dram/lowp_sweep.cfg
 .pyenv
+
+
+.idea/
+*.o
+*.so
+bsc-util/validation_nvdla
+ext/rtl/model_nvdla/verilator_nvdla/
+m5out/
+*m5out/
+*.vcd

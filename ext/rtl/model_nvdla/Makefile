@@ -45,7 +45,7 @@ DIR=${DIR_VCD}
 #make -f VNV_nvdla.mk CC=clang CXX=clang++ CXXFLAGS+="-fPIC"  VM_PARALLEL_BUILDS=1 OPT_FAST="-Os -fno-stack-protector"
 #GCC=/usr/bin/gcc-4.9
 #CPP=/usr/bin/cpp-4.9
-VERILATOR_ROOT=..
+VERILATOR_ROOT=/usr/local/share/verilator
 CC=clang
 CXX=clang++
 CLANG=/home/glopez/BSC/MasterThesis/src/sw/clang-3.4/bin/clang

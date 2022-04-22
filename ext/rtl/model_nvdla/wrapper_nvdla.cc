@@ -69,7 +69,7 @@ Wrapper_nvdla::Wrapper_nvdla(bool traceOn, std::string name,const unsigned int m
     // otherwise this function launch an error
     Verilated::traceEverOn(true);
     tfp = new VerilatedVcdC;
-    dla->trace(tfp, 99);
+    // dla->trace(tfp, 99);
     tfp->open(name.c_str());
     if (!tfp) {
         return;

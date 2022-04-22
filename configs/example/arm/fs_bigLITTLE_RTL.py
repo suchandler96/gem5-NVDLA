@@ -54,9 +54,10 @@ from common.cores.arm import ex5_LITTLE
 import devices
 from devices import AtomicCluster, KvmCluster, FastmodelCluster
 
-default_kernel = 'vmlinux-4.15.aarch64'
+default_kernel = '/home/lactose/gem5_linux_images/ \
+    aarch-system-20210904/binaries/vmlinux.arm64'
 
-default_disk = 'gem5-ubuntu16.04-aarch64-20190523.img'
+default_disk = '/home/lactose/gem5_linux_images/ubuntu-18.04-arm64-docker.img'
 
 default_mem_size= "2GB"
 
