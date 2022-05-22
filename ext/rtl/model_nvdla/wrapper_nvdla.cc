@@ -284,7 +284,7 @@ void Wrapper_nvdla::init() {
 
 void Wrapper_nvdla::addReadReq(bool read_sram, bool read_timing,
                 uint32_t read_addr, uint32_t read_bytes) {
-    
+
     output.read_valid = true;
     read_req_entry_t rd;
     rd.read_sram      = read_sram;

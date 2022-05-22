@@ -11,6 +11,9 @@
 #define __TRACE_LOADER__GEM5__
 
 //#include "accelerator.hh"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "axiResponder.hh"
 #include "csbMaster.hh"
 
@@ -62,7 +65,7 @@ public:
 
         void load(char *fname) ;
 
-        void axievent();
+        void axievent(int* waiting_for_gem5_mem);
 
         int test_passed();
 

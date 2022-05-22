@@ -108,6 +108,13 @@ public:
 
     uint8_t read(uint32_t addr);
 
+    // In this function, we get read requests from traceLoaderGem5 and access memory for it
+    void read_for_traceLoaderGem5(uint32_t start_addr, uint32_t length);
+
+    // In this function, we check whether the read requests from traceLoaderGem5 have been responded by memory
+    // If so, we forward the response to traceLoaderGem5
+    uint32_t read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* data_buffer);
+
     // In this function we read from memory
     const uint8_t* read_variable(uint32_t addr, bool timing,
                                  unsigned int bytes);

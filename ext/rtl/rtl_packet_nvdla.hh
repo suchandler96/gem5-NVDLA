@@ -44,35 +44,30 @@
 #include <iostream>
 #include <queue>
 
-struct read_resp_entry_t
-{
+struct read_resp_entry_t {
     bool        read_valid;
     uint32_t    read_addr;
     uint8_t*    read_data;
 };
-struct inputNVDLA
-{
+struct inputNVDLA {
     read_resp_entry_t read_dbbif;
     read_resp_entry_t read_sram;
 };
 
-struct write_req_entry_t
-{
+struct write_req_entry_t {
     uint8_t     write_data;
     uint32_t    write_addr;
     bool        write_sram;
     bool        write_timing;
 };
-struct read_req_entry_t
-{
+struct read_req_entry_t {
     uint32_t    read_addr;
     uint32_t    read_bytes;
     bool        read_sram;
     bool        read_timing;
 };
 
-struct outputNVDLA
-{
+struct outputNVDLA {
     bool                             read_valid;
     std::queue<read_req_entry_t>     read_buffer;
     bool                             write_valid;

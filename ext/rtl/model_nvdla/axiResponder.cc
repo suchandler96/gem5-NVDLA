@@ -504,7 +504,7 @@ AXIResponder::eval_timing() {
             // put in req the txn
             inflight_req_order.push(addr);
 
-            read_variable(addr, true, 512/8);
+            read_variable(addr, true, AXI_WIDTH/8);
 
             addr += AXI_WIDTH / 8;
             i++;
@@ -719,6 +719,59 @@ AXIResponder::read(uint32_t addr) {
     //printf("Compare reading gem5ram: %08lx, ram: %08lx \n",
     //        readGem5, readRam);
     return 0;//readGem5;
+}
+
+void
+AXIResponder::read_for_traceLoaderGem5(uint32_t start_addr, uint32_t length) {
+    uint64_t txn_start_addr = (uint64_t)start_addr & ~(uint64_t)(AXI_WIDTH / 8 - 1);
+
+    for (uint32_t delta_addr = 0; txn_start_addr + delta_addr < start_addr + length; delta_addr += (AXI_WIDTH / 8)) {
+        uint32_t txn_addr = txn_start_addr + delta_addr;
+        axi_r_txn txn;
+        txn.rvalid = 0;
+        txn.burst = true;
+        txn.rlast = (txn_start_addr + delta_addr + (AXI_WIDTH / 8) >= start_addr + length);
+        // put txn to the map
+        inflight_req[txn_addr].push_back(txn);
+        // put in req the txn
+        inflight_req_order.push(txn_addr);
+
+        read_variable(txn_addr, true, AXI_WIDTH / 8);
+    }
+}
+
+// this function assumes start_addr is aligned to (AXI_WIDTH / 8)
+uint32_t
+AXIResponder::read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* data_buffer) {
+    // check status of memory reading request
+    assert(!inflight_req_order.empty());
+    uint32_t addr_front = inflight_req_order.front();
+
+    if (addr_front != start_addr) {
+        // this should not happen
+        printf("addr_front(0x%08x) does not match start_addr (0x%08x)", addr_front, start_addr);
+        abort();
+    }
+
+    assert(!inflight_req[addr_front].empty());
+    axi_r_txn txn = inflight_req[addr_front].front();
+    if (txn.rvalid) {
+        printf("memory request at 0x%08x has arrived.\n", start_addr);
+        inflight_req[addr_front].pop_front();
+        if (inflight_req[addr_front].empty())
+            inflight_req.erase(addr_front);
+
+        inflight_req_order.pop();
+
+        // get the value
+        for (uint32_t byte_id = 0; byte_id < AXI_WIDTH / 8; byte_id++)
+            data_buffer[byte_id] = (txn.rdata[byte_id / 4] >> (8 * (byte_id % 4))) & (uint32_t)0xFF;
+
+        return 1;
+    } else {
+        printf("still waiting for memory request at 0x%08x\n", start_addr);
+        return 0;
+    }
 }
 
 uint32_t

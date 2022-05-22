@@ -36,8 +36,11 @@ configs/dram/lowp_sweep.cfg
 .idea/
 *.o
 *.so
+*.a
 bsc-util/validation_nvdla
 ext/rtl/model_nvdla/verilator_nvdla/
 m5out/
 *m5out/
 *.vcd
+*.dat
+.vscode/

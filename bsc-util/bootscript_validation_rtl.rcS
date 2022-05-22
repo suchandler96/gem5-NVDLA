@@ -1,10 +1,10 @@
 #!/bin/sh
 
 # Example how to run the application inside gem5
-cd /romol/bin/
+# cd /romol/bin/
 
 # necessary export for parsec hooks 
-export LD_LIBRARY_PATH=/romol/hooks/lib/shared/cpt:$LD_LIBRARY_PATH
+# export LD_LIBRARY_PATH=/romol/hooks/lib/shared/cpt:$LD_LIBRARY_PATH
 
 
 #. /etc/profile
@@ -29,7 +29,34 @@ export LD_LIBRARY_PATH=/romol/hooks/lib/shared/cpt:$LD_LIBRARY_PATH
 
 
 
-./validation_nvdla traces_nvdla/sanity0/trace.bin
+# ./validation_nvdla traces_nvdla/sanity0/trace.bin
 
+
+
+# begin running nvdla_validation_test:
+echo "begin running nvdla test..."
+# echo "begin sanity 0:"
+# /home/validation_nvdla /home/sanity0/trace.bin
+# echo "begin sanity 1:"
+# /home/validation_nvdla /home/sanity1/trace.bin
+
+# echo "begin sanity 1 cvsram:"
+# /home/validation_nvdla /home/sanity1_cvsram/trace.bin
+
+# echo "begin sanity 2:"
+# /home/validation_nvdla /home/sanity2/sanity2_converted_input.txn.bin
+
+# echo "begin sanity 3:"
+# /home/validation_nvdla /home/sanity3/trace.bin
+
+echo "begin conv_8x8_fc_int16:"
+/home/validation_nvdla /home/conv_8x8_fc_int16/trace.bin
+
+# echo "begin sdp_relu_int16:"
+# /home/validation_nvdla /home/sdp_relu_int16/trace.bin
+
+# echo "begin googlenet_conv2_3x3_int16:"
+# this test is supposed to fail with csb read mismatch, but the output memory dump should be fine
+# /home/validation_nvdla /home/googlenet_conv2_3x3_int16/trace.bin
 /sbin/m5 exit
 

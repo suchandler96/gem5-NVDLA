@@ -19,9 +19,25 @@
 
 int main(int argc, char *argv[])
 {
-    std::ifstream stream(argv[1], std::ios::in | std::ios::binary);
+    std::ifstream stream;
+    stream.open(argv[1], std::ios::in | std::ios::binary);
+
+    if (!stream) {
+        std::cout << "Trace file open failed.\n";
+        return 0;
+    } else {
+        std::cout << "Trace file opened successfully.\n";
+    }
+
     std::vector<char> trace((std::istreambuf_iterator<char>(stream)),
                                 std::istreambuf_iterator<char>());
+
+    std::cout << "Check trace contents from validation_nvdla:\n\n";
+
+    for (int i = 0; i < 30; i++)
+        printf("trace[%d] = 0x%02x, char = '%c'\n", \
+        i, (uint8_t)(trace[i]), trace[i]);
+
     int size = 0;
     void *region_nvdla;
     size = trace.size();

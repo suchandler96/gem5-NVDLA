@@ -47,7 +47,8 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     timingMode(params.enableTimingAXI),
     id_nvdla(params.id_nvdla),
     baseAddrDRAM(params.base_addr_dram),
-    baseAddrSRAM(params.base_addr_sram)
+    baseAddrSRAM(params.base_addr_sram),
+    waiting_for_gem5_mem(0)
 {
 
     initNVDLA();
@@ -151,7 +152,9 @@ rtlNVDLA::processOutput(outputNVDLA out) {
     if (out.read_valid) {
         while (!out.read_buffer.empty()) {
             read_req_entry_t aux = out.read_buffer.front();
-            std::cout << std::hex << "read req: "<< aux.read_addr << std::endl;
+            printf("read req: %08x\n", aux.read_addr);
+            // std::cout << std::hex << "read req: " \
+            // << aux.read_addr << std::endl;
             readAXIVariable(aux.read_addr,
                             aux.read_sram,
                             aux.read_timing,
@@ -162,6 +165,10 @@ rtlNVDLA::processOutput(outputNVDLA out) {
     if (out.write_valid) {
         while (!out.write_buffer.empty()) {
             write_req_entry_t aux = out.write_buffer.front();
+            printf("write req: addr %08x, data %02x\n", \
+            aux.write_addr, aux.write_data);
+            // std::cout << std::hex << "write req: addr " <<\
+            // aux.write_addr << ", data " << aux.write_data << std::endl;
             writeAXI(aux.write_addr,
                      aux.write_data,
                      aux.write_sram,
@@ -173,12 +180,17 @@ rtlNVDLA::processOutput(outputNVDLA out) {
 
 void
 rtlNVDLA::runIterationNVDLA() {
+    wr->clearOutput();
+
     int extevent;
 
-    extevent = wr->csb->eval(waiting);
+    if (!waiting_for_gem5_mem)
+        extevent = wr->csb->eval(waiting);
+    else
+        extevent = 0;
 
-    if (extevent == TraceLoaderGem5::TRACE_AXIEVENT)
-        trace->axievent();
+    if (extevent == TraceLoaderGem5::TRACE_AXIEVENT || waiting_for_gem5_mem)
+        trace->axievent(&waiting_for_gem5_mem);
     else if (extevent == TraceLoaderGem5::TRACE_WFI) {
         waiting = 1;
         printf("(%lu) waiting for interrupt...\n", wr->tickcount);
@@ -189,7 +201,6 @@ rtlNVDLA::runIterationNVDLA() {
         waiting = 0;
     }
 
-    wr->clearOutput();
 
     if (timingMode) {
         wr->axi_dbb->eval_timing();
@@ -210,7 +221,7 @@ rtlNVDLA::tick() {
     // if we are still running trace
     // runIteration
     // schedule new iteration
-    if (!wr->csb->done() || (quiesc_timer--)) {
+    if (!wr->csb->done() || (quiesc_timer--) || waiting_for_gem5_mem) {
         // Update stats
         stats.nvdla_avgReqCVSRAM.sample(wr->axi_cvsram->getRequestsOnFlight());
         stats.nvdla_avgReqDBBIF.sample(wr->axi_dbb->getRequestsOnFlight());
@@ -292,7 +303,7 @@ rtlNVDLA::runTraceNVDLA(char *ptr) {
         extevent = wr->csb->eval(waiting);
 
         if (extevent == TraceLoaderGem5::TRACE_AXIEVENT)
-            trace->axievent();
+            trace->axievent(&waiting_for_gem5_mem);
         else if (extevent == TraceLoaderGem5::TRACE_WFI) {
             waiting = 1;
             printf("(%lu) waiting for interrupt...\n", wr->tickcount);
@@ -650,8 +661,8 @@ rtlNVDLA::writeAXI(uint32_t addr, uint8_t data, bool sram, bool timing) {
     uint32_t real_addr = getRealAddr(addr,sram);
 
     DPRINTF(rtlNVDLA,
-            "Write AXI Variable addr: %#x, real_addr %#x\n",
-            addr, real_addr);
+            "Write AXI Variable addr: %#x, real_addr %#x, data_to_write 0x%02x\n",
+            addr, real_addr, data);
     //Request(Addr paddr, unsigned size, Flags flags, MasterID mid)
     // addr is the physical addr
     // size is one byte

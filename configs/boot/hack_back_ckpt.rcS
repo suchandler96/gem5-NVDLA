@@ -32,13 +32,13 @@ else
 fi
 
 # Checkpoint the first execution
-echo "skip Checkpointing simulation..."
-# /sbin/m5 checkpoint
+echo "Checkpointing simulation..."
+/sbin/m5 checkpoint
 
 # begin running nvdla_validation_test:
-echo "begin running nvdla test..."
-/home/validation_nvdla /home/sanity0_converted_input.txn.bin
-
+# echo "begin running nvdla test..."
+# /home/validation_nvdla /home/sanity3/sanity3_converted_input.txn.bin
+# echo "finish running nvdla test..."
 
 # Test if we previously okayed ourselves to run this script
 if [ "$RUNSCRIPT_VAR" -eq 1 ]
@@ -64,9 +64,7 @@ then
 fi
 
 # echo "Fell through script. Exiting..."
-# /sbin/m5 exit
-
-echo "reached the end of script. Begin the modified part..."
+/sbin/m5 exit
 
 
 
