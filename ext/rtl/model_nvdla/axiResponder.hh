@@ -53,7 +53,7 @@ private:
 #define AXI_BLOCK_SIZE 4096
 #define AXI_WIDTH 512
 
-    const static int AXI_R_LATENCY = 32;
+    const static int AXI_R_LATENCY = 2;
     const static int AXI_R_DELAY = 0;
 
     struct axi_r_txn {
@@ -96,6 +96,13 @@ private:
     bool sram;
     unsigned int max_req_inflight;
 
+
+    std::queue<uint64_t> dma_addr_fifo;
+    std::map<uint64_t, uint32_t> dma_addr_record;
+    std::list<uint64_t> waiting_for_dma_txn_addr_order;
+    std::map<uint64_t, std::list<axi_r_txn>> waiting_for_dma_txn;
+    // std::queue<std::pair<uint32_t, axi_r_txn>> spm_access_txn_fifo;
+
 public:
     AXIResponder(struct connections _dla, Wrapper_nvdla *_wrapper,
                      const char *_name,
@@ -137,5 +144,7 @@ public:
     void inflight_resp_atomic(uint32_t addr,
                               const uint8_t* data,
                               axi_r_txn *txn);
+
+    void inflight_dma_resp(uint64_t addr, const uint8_t* data, uint32_t len);
 };
 #endif

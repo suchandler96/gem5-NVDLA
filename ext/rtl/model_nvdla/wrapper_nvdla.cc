@@ -52,11 +52,15 @@ double sc_time_stamp(){
   return double_t(0);
 }
 
-Wrapper_nvdla::Wrapper_nvdla(bool traceOn, std::string name,const unsigned int maxReq) :
+Wrapper_nvdla::Wrapper_nvdla(bool traceOn, std::string name,const unsigned int maxReq,
+                             int _dma_enable, int _spm_line_size, int _spm_line_num) :
         tickcount(0),
         tfp(NULL),
         tfpname(name),
-        traceOn(traceOn) {
+        traceOn(traceOn),
+        dma_enable(_dma_enable),
+        spm_line_size(_spm_line_size),
+        spm_line_num(_spm_line_num) {
 
     int argcc = 1;
     char* buf[] = {(char*)"aaa",(char*)"bbb"};
@@ -313,11 +317,12 @@ void Wrapper_nvdla::clearOutput() {
     while (!output.write_buffer.empty()) {
         output.write_buffer.pop();
     }
+    // dma_read_buffer should be kept because dma_engine cannot be issued with multiple tasks at once
     //memset(&output,0,sizeof(outputNVDLA));
     //output.write_buffer = new std::queue<write_req_entry_t>();
 }
 
-outputNVDLA Wrapper_nvdla::tick(inputNVDLA in) {
+outputNVDLA& Wrapper_nvdla::tick(inputNVDLA in) {
     
     dla->dla_core_clk = 1;
     dla->dla_csb_clk = 1;
@@ -332,4 +337,24 @@ outputNVDLA Wrapper_nvdla::tick(inputNVDLA in) {
     advanceTickCount();
 
     return output;    
+}
+
+uint8_t Wrapper_nvdla::read_spm(uint64_t addr) {
+    uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
+    assert(spm.find(addr_base) != spm.end());
+    uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
+    return spm[addr_base][offset];
+}
+
+// write is temporarily not used
+void Wrapper_nvdla::write_spm(uint64_t addr, uint8_t data) {
+    uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
+    assert(spm.find(addr_base) != spm.end());
+
+    uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
+    spm[addr_base][offset] = data;
+}
+
+void Wrapper_nvdla::addDMAReadReq(uint64_t read_addr, uint32_t read_bytes) {
+    output.dma_read_buffer.push(std::make_pair(read_addr, read_bytes));
 }

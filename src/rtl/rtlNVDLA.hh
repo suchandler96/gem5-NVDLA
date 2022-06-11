@@ -33,6 +33,9 @@
 
 #include <string>
 #include <vector>
+#include <utility>
+
+#include "dev/dma_device.hh"
 
 #include "cpu/base.hh"
 #include "cpu/translation.hh"
@@ -218,7 +221,7 @@ class rtlNVDLA : public rtlObject
         statistics::Histogram nvdla_avgReqDBBIF;
     };
     nvdla_stats stats;
-    void processOutput(outputNVDLA out);
+    void processOutput(outputNVDLA& out);
 
 public:
 
@@ -265,6 +268,19 @@ public:
      * Register the stats
      */
     void regStats() override;
+
+    uint32_t spm_line_size;
+    uint32_t spm_line_num;
+
+    int dma_enable;
+    DmaPort dmaPort;
+    DmaReadFifo* dma_engine;
+    uint32_t dma_try_get_length;
+    uint64_t last_dma_nvdla_addr;
+    uint32_t last_dma_actual_size;
+    uint32_t last_dma_got_size;
+
+    void try_get_dma_read_data(uint32_t size);
 };
 
 } //End namespace gem5

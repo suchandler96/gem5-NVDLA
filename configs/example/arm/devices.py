@@ -152,6 +152,8 @@ class CpuCluster(SubSystem):
         for cpu in self.cpus:
             cpu.connectAllPorts(self.toL2Bus)
             cpu.accel_0.mem_side = self.toL2Bus.cpu_side_ports
+            # cpu.accel_0.sram_port = self.toL2Bus.cpu_side_ports
+            # cpu.accel_0.dram_port = self.toL2Bus.cpu_side_ports
         self.toL2Bus.mem_side_ports = self.l2.cpu_side
 
     def addPrivateAccelerator(self, clk_domain, membus, options):
@@ -161,7 +163,7 @@ class CpuCluster(SubSystem):
 
             cpu.num_accels = options.numNVDLA
 
-            cpu.accel_0 = rtlNVDLA()
+            cpu.accel_0 = rtlNVDLA(dma_enable=1, spm_line_size=1024)
             cpu.accel_1 = rtlNVDLA()
             cpu.accel_2 = rtlNVDLA()
             cpu.accel_3 = rtlNVDLA()
@@ -170,6 +172,8 @@ class CpuCluster(SubSystem):
             cpu.accel_port_1 = cpu.accel_1.cpu_side
             cpu.accel_port_2 = cpu.accel_2.cpu_side
             cpu.accel_port_3 = cpu.accel_3.cpu_side
+
+            cpu.accel_0.dma_port = membus
             # this is high speed
             cpu.accel_0.sram_port = membus
             cpu.accel_1.sram_port = membus

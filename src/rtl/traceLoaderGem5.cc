@@ -186,8 +186,7 @@ TraceLoaderGem5::axievent(int* waiting_for_gem5_mem) {
 
         if (!*waiting_for_gem5_mem) {
             // create the file to dump to
-            printf("AXI: dumping memory to %s, length = %d\n",\
-            op.fname, op.len);
+            printf("AXI: dumping memory to %s, length = %d\n", op.fname, op.len);
             fd = creat(op.fname, 0666);
             if (!fd) {
                 perror("creat(dumpmem)");

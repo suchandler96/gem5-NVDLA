@@ -85,7 +85,7 @@
 
 
 
-
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -114,11 +114,12 @@ class AXIResponder;
 class Wrapper_nvdla {
 
     public:
-        Wrapper_nvdla(bool traceOn, std::string name, const unsigned int maxReq);
+        Wrapper_nvdla(bool traceOn, std::string name, const unsigned int maxReq,
+                      int _dma_enable, int _spm_line_size, int _spm_line_num);
         ~Wrapper_nvdla();
 
         void tick();
-        outputNVDLA tick(inputNVDLA in);
+        outputNVDLA& tick(inputNVDLA in);
         uint64_t getTickCount();
         void enableTracing();
         void disableTracing();
@@ -146,6 +147,20 @@ class Wrapper_nvdla {
 
         // RTL Packet
         outputNVDLA output;
+
+        // SPM & DMA
+        int dma_enable;
+        // all the sizes are in bytes
+        const uint32_t spm_line_size;
+        const uint32_t spm_line_num;
+        std::map<uint64_t, std::vector<uint8_t> > spm;
+
+        // const int spm_rd_latency = 2;
+        // const int spm_wr_latency = 3;
+        void addDMAReadReq(uint64_t read_addr, uint32_t read_bytes);
+
+        uint8_t read_spm(uint64_t addr);
+        void write_spm(uint64_t addr, uint8_t data);
 };
 
 #endif 

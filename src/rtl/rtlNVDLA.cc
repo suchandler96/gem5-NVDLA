@@ -48,7 +48,14 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     id_nvdla(params.id_nvdla),
     baseAddrDRAM(params.base_addr_dram),
     baseAddrSRAM(params.base_addr_sram),
-    waiting_for_gem5_mem(0)
+    waiting_for_gem5_mem(0),
+    spm_line_size(params.spm_line_size),
+    spm_line_num(params.spm_line_num),
+    dma_enable(params.dma_enable),
+    dmaPort(this, params.system),
+    dma_try_get_length(spm_line_size / params.dma_try_get_fraction),
+    last_dma_actual_size(0),
+    last_dma_got_size(0)
 {
 
     initNVDLA();
@@ -59,11 +66,19 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
               << " Base Addr SRAM: " << baseAddrSRAM << std::endl;
     // Clear input
     memset(&input,0,sizeof(inputNVDLA));
+
+    if (dma_enable)
+        dma_engine = new DmaReadFifo(dmaPort, spm_line_size * spm_line_num,
+                                    spm_line_size, spm_line_num, Request::UNCACHEABLE);
+    else
+        dma_engine = nullptr;
 }
 
 
 rtlNVDLA::~rtlNVDLA() {
     delete wr;
+    if (dma_engine != nullptr)
+        delete dma_engine;
 }
 
 Port &
@@ -77,6 +92,8 @@ rtlNVDLA::getPort(const std::string &if_name, PortID idx)
         return sramPort;
     } else if (if_name == "dram_port") {
         return dramPort;
+    } else if (if_name == "dma_port") {
+        return dmaPort;
     } else {
         panic_if(true, "Asking to rtlNVDLA for a port different\
                         than cpu or mem");
@@ -113,7 +130,7 @@ rtlNVDLA::handleRequest(PacketPtr pkt)
 void
 rtlNVDLA::initNVDLA() {
     // Wrapper
-    wr = new Wrapper_nvdla(traceEnable, "trace.vcd",max_req_inflight);
+    wr = new Wrapper_nvdla(traceEnable, "trace.vcd",max_req_inflight, dma_enable, spm_line_size, spm_line_num);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
 }
@@ -147,12 +164,12 @@ rtlNVDLA::loadTraceNVDLA(char *ptr) {
 }
 
 void
-rtlNVDLA::processOutput(outputNVDLA out) {
+rtlNVDLA::processOutput(outputNVDLA& out) {
 
     if (out.read_valid) {
         while (!out.read_buffer.empty()) {
             read_req_entry_t aux = out.read_buffer.front();
-            printf("read req: %08x\n", aux.read_addr);
+            printf("read req addr: %08x, size %d\n", aux.read_addr, aux.read_bytes);
             // std::cout << std::hex << "read req: " \
             // << aux.read_addr << std::endl;
             readAXIVariable(aux.read_addr,
@@ -165,8 +182,7 @@ rtlNVDLA::processOutput(outputNVDLA out) {
     if (out.write_valid) {
         while (!out.write_buffer.empty()) {
             write_req_entry_t aux = out.write_buffer.front();
-            printf("write req: addr %08x, data %02x\n", \
-            aux.write_addr, aux.write_data);
+            printf("write req: addr %08x, data %02x\n", aux.write_addr, aux.write_data);
             // std::cout << std::hex << "write req: addr " <<\
             // aux.write_addr << ", data " << aux.write_data << std::endl;
             writeAXI(aux.write_addr,
@@ -174,6 +190,32 @@ rtlNVDLA::processOutput(outputNVDLA out) {
                      aux.write_sram,
                      aux.write_timing);
             out.write_buffer.pop();
+        }
+    }
+
+
+    //! use dma_engine to process reading requests
+    // memory requests already in spm is dealt with in wrapper_nvdla
+    // only one DMA request can be tackled at once
+    if (!out.dma_read_buffer.empty()) {
+        std::pair aux = out.dma_read_buffer.front();
+
+        uint32_t real_addr = getRealAddr(aux.first, false);      // always suppose dram DMA fetch
+        // if DMA request not sent, have to stop here
+        if (!dma_engine->atEndOfBlock()) {
+            printf("DMA engine busy, can't deal with req: addr 0x%08lx, len %d, try again later!\n", aux.first, aux.second);
+        } else if(last_dma_got_size < last_dma_actual_size) {
+            printf("DMA get too slow! Waiting for previous Get (addr 0x%08lx) to read the dma buffer.\n", last_dma_nvdla_addr);
+            printf("last_dma_got_size = %d, last_dma_actual_size = %d\n", last_dma_got_size, last_dma_actual_size);
+        } else {
+            last_dma_nvdla_addr = aux.first;
+            last_dma_actual_size = aux.second;
+            last_dma_got_size = 0;
+
+            dma_engine->startFill(real_addr, aux.second);
+            printf("DMA read req is issued: addr %08x, len %d\n", aux.first, aux.second);
+            // after successfully calling DMA, pop aux
+            out.dma_read_buffer.pop();
         }
     }
 }
@@ -211,7 +253,10 @@ rtlNVDLA::runIterationNVDLA() {
     }
 
 
-    outputNVDLA output = wr->tick(input);
+    outputNVDLA& output = wr->tick(input);
+
+    if(dma_enable)
+        try_get_dma_read_data(dma_try_get_length);
     processOutput(output);
 }
 
@@ -286,7 +331,7 @@ rtlNVDLA::tmpRunTraceNVDLA() {
 void
 rtlNVDLA::runTraceNVDLA(char *ptr) {
     // Run whole trace for debug purposes
-    wr = new Wrapper_nvdla(traceEnable, "trace.vcd",max_req_inflight);
+    wr = new Wrapper_nvdla(traceEnable, "trace.vcd",max_req_inflight, dma_enable, spm_line_size, spm_line_num);
     wr->disableTracing();
 
     TraceLoaderGem5 *trace;
@@ -633,11 +678,11 @@ rtlNVDLA::readAXIVariable(uint32_t addr, bool sram,
     uint32_t real_addr = getRealAddr(addr,sram);
 
     DPRINTF(rtlNVDLA,
-            "Read AXI Variable addr: %#x, real_addr %#x\n",
-            addr, real_addr);
+            "Read AXI Variable addr: %#x, real_addr %#x, size %d\n",
+            addr, real_addr, size);
 
     RequestPtr req = std::make_shared<Request>(real_addr, size,
-                                               Request::UNCACHEABLE, 0);
+                                               0, 0);
     PacketPtr packet = nullptr;
     // we create the real packet, write request
     packet = Packet::createRead(req);
@@ -684,6 +729,20 @@ rtlNVDLA::writeAXI(uint32_t addr, uint8_t data, bool sram, bool timing) {
         dramPort.sendPacket(packet, timing);
     }
 
+}
+
+void
+rtlNVDLA::try_get_dma_read_data(uint32_t size) {
+    // printf("function try_get_dma_read_data() called.\n");
+    uint8_t dma_temp_buffer[size];
+    bool get_success = dma_engine->tryGet(dma_temp_buffer, size);
+    // int get_result = get_success;
+    // printf("Get result:%d\n\n", get_result);
+    if(get_success) {
+        last_dma_got_size += size;
+        // todo: remember whether this DMA request comes from CVSRAM or DBBIF
+        wr->axi_dbb->inflight_dma_resp(last_dma_nvdla_addr, dma_temp_buffer, size);
+    }
 }
 
 void
