@@ -505,19 +505,27 @@ AXIResponder::eval_timing() {
                 txn.rid = *dla.ar_arid;
 
                 // if yes, get them in spm (and previously intend to put it in countdown queue (spm_access_txn_fifo))
+                //! only when waiting_for_dma_txn_addr_order is empty, we can get spm data directly to r_fifo
                 if (wrapper->spm.find(spm_line_addr) != wrapper->spm.end()) {  // this key exists in spm
-                    // transfer from spm to nvdla
-                    txn.rvalid = 1;
 
-                    for (int k = 0; k < AXI_WIDTH / 32; k++) {
-                        uint32_t da = wrapper->read_spm(start_addr + k * 4) +
-                                      (wrapper->read_spm(start_addr + k * 4 + 1) << 8) +
-                                      (wrapper->read_spm(start_addr + k * 4 + 2) << 16) +
-                                      (wrapper->read_spm(start_addr + k * 4 + 3) << 24);
-                        txn.rdata[k] = da;
+                    if(!waiting_for_dma_txn_addr_order.empty()) {
+                        // we must follow the order of read requests issued by nvdla
+                        txn.rvalid = 0;
+                        waiting_for_dma_txn_addr_order.push_back(start_addr);
+                        waiting_for_dma_txn[start_addr].push_back(txn);
+                    } else {
+                        // directly transfer from spm to nvdla
+                        txn.rvalid = 1;
+
+                        for (int k = 0; k < AXI_WIDTH / 32; k++) {
+                            uint32_t da = wrapper->read_spm(start_addr + k * 4) +
+                                          (wrapper->read_spm(start_addr + k * 4 + 1) << 8) +
+                                          (wrapper->read_spm(start_addr + k * 4 + 2) << 16) +
+                                          (wrapper->read_spm(start_addr + k * 4 + 3) << 24);
+                            txn.rdata[k] = da;
+                        }
+                        r_fifo.push(txn);   // this txn will be delayed by AXI_R_LATENCY cycles (r_fifo & r0_fifo)
                     }
-                    r_fifo.push(txn);   // this txn will be delayed by AXI_R_LATENCY cycles (r_fifo & r0_fifo)
-
                 } else { // else, start dma fill
                     txn.rvalid = 0;
                     // first check whether this (AXI_WIDTH/8)-long txn is covered by a previous DMA
