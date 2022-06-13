@@ -163,7 +163,7 @@ class CpuCluster(SubSystem):
 
             cpu.num_accels = options.numNVDLA
 
-            cpu.accel_0 = rtlNVDLA(dma_enable=1, spm_line_size=1024)
+            cpu.accel_0 = rtlNVDLA(dma_enable=1, dma_try_get_fraction=2, spm_line_size=1024)
             cpu.accel_1 = rtlNVDLA()
             cpu.accel_2 = rtlNVDLA()
             cpu.accel_3 = rtlNVDLA()

@@ -733,7 +733,6 @@ rtlNVDLA::writeAXI(uint32_t addr, uint8_t data, bool sram, bool timing) {
 
 void
 rtlNVDLA::try_get_dma_read_data(uint32_t size) {
-    // printf("function try_get_dma_read_data() called.\n");
     uint8_t dma_temp_buffer[size];
     bool get_success = dma_engine->tryGet(dma_temp_buffer, size);
     // int get_result = get_success;

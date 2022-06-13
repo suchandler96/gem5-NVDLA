@@ -766,14 +766,14 @@ AXIResponder::inflight_dma_resp(uint64_t addr, const uint8_t* data, uint32_t len
 
     uint64_t addr_recorded = dma_addr_fifo.front();
     // printf("addr_recorded = 0x%08lx, addr = 0x%08lx\n", addr_recorded, addr);
-    assert(addr_recorded == addr);      //! DMA should be in-order
+    assert(addr_recorded == addr);      //! DMA transfer should be in-order
 
     uint32_t old_size_remaining = dma_addr_record[addr];
     uint32_t size_remaining = old_size_remaining - len;
     dma_addr_record[addr] = size_remaining;
 
     std::vector<uint8_t>& entry_vector = wrapper->spm[addr];
-    entry_vector.resize(wrapper->spm_line_size, 0);
+    entry_vector.resize(wrapper->spm_line_size - size_remaining, 0);
     for (int i = 0; i < len; i++)
         entry_vector[wrapper->spm_line_size - old_size_remaining + i] = data[i];
 
@@ -782,7 +782,9 @@ AXIResponder::inflight_dma_resp(uint64_t addr, const uint8_t* data, uint32_t len
     for (auto addr_it = waiting_for_dma_txn_addr_order.begin(); addr_it != waiting_for_dma_txn_addr_order.end(); addr_it++) {
         // judge whether the data for this (AXI_WIDTH/8)-long txn has arrived
         uint64_t dma_transfer_addr = (*addr_it) & ~(uint64_t)(wrapper->spm_line_size - 1);
-        if (wrapper->spm.find(dma_transfer_addr) == wrapper->spm.end()) {
+        if (wrapper->spm.find(dma_transfer_addr) == wrapper->spm.end() || *addr_it - dma_transfer_addr >= entry_vector.size()) {
+            // the first condition says the entire DMA line has not arrived
+            // the second says part of this DMA line has arrived, but data for this txn hasn't
             printf("data for 0x%08lx has not arrived in spm, so stop updating spm, and go on to do DMA.\n", *addr_it);
             break;
         }
@@ -792,7 +794,8 @@ AXIResponder::inflight_dma_resp(uint64_t addr, const uint8_t* data, uint32_t len
         // Get the correct ptr
         while (it != waiting_for_dma_txn[*addr_it].end() and it->rvalid)
             it++;
-        assert(it != waiting_for_dma_txn[*addr_it].end());
+        if(it == waiting_for_dma_txn[*addr_it].end())   // this txn has been covered by a previous partial get of this DMA
+            continue;                                   // continue checking other transactions that may be covered by this partial get
 
         for (int i = 0; i < AXI_WIDTH / 32; i++) {
             uint32_t da = wrapper->read_spm(*addr_it + i * 4) +
