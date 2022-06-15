@@ -578,8 +578,10 @@ AXIResponder::eval_timing() {
                 // delete in the queue order
                 waiting_for_dma_txn_addr_order.pop_front();
                 *dla.ar_arready = 0;
-            } else
+            } else if(waiting_for_dma_txn_addr_order.size() <= max_req_inflight)
                 *dla.ar_arready = 1;
+            else
+                *dla.ar_arready = 0;
 
         } else {
 #ifdef PRINT_DEBUG

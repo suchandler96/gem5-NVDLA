@@ -121,8 +121,9 @@ def createSystem(caches, kernel, accelerators, bootscript,
                                    object_file=SysPaths.binary(kernel)),
                                readfile=bootscript)
 
-    sys.mem_ctrls = [ SimpleMemory(range=r, port=sys.membus.mem_side_ports)
-                      for r in sys.mem_ranges ]
+    # sys.mem_ctrls = [ SimpleMemory(range=r, port=sys.membus.mem_side_ports) for r in sys.mem_ranges ]
+    sys.mem_ctrls = [MemCtrl(dram=DDR3_1600_8x8(range=r), port=sys.membus.mem_side_ports) for r in sys.mem_ranges]
+
 
     sys.connect()
 

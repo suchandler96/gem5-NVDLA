@@ -76,10 +76,12 @@ int main(int argc, char *argv[])
     while (needToWaitForNVDLA) {
         needToWaitForNVDLA = m5_wait_accel((uint64_t)region_nvdla,size);
         // loose time?
+        /*
         int sum = 0;
         for (int i=0;i<1000;i++) {
             sum+=i;
         }
+         */
     }
 
 

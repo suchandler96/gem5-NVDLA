@@ -203,10 +203,10 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
         uint32_t real_addr = getRealAddr(aux.first, false);      // always suppose dram DMA fetch
         // if DMA request not sent, have to stop here
         if (!dma_engine->atEndOfBlock()) {
-            printf("DMA engine busy, can't deal with req: addr 0x%08lx, len %d, try again later!\n", aux.first, aux.second);
+            // printf("DMA engine busy, can't deal with req: addr 0x%08lx, len %d, try again later!\n", aux.first, aux.second);
         } else if(last_dma_got_size < last_dma_actual_size) {
-            printf("DMA get too slow! Waiting for previous Get (addr 0x%08lx) to read the dma buffer.\n", last_dma_nvdla_addr);
-            printf("last_dma_got_size = %d, last_dma_actual_size = %d\n", last_dma_got_size, last_dma_actual_size);
+            // printf("DMA get too slow! Waiting for previous Get (addr 0x%08lx) to read the dma buffer.\n", last_dma_nvdla_addr);
+            // printf("last_dma_got_size = %d, last_dma_actual_size = %d\n", last_dma_got_size, last_dma_actual_size);
         } else {
             last_dma_nvdla_addr = aux.first;
             last_dma_actual_size = aux.second;
@@ -740,7 +740,14 @@ rtlNVDLA::try_get_dma_read_data(uint32_t size) {
     if(get_success) {
         last_dma_got_size += size;
         // todo: remember whether this DMA request comes from CVSRAM or DBBIF
-        wr->axi_dbb->inflight_dma_resp(last_dma_nvdla_addr, dma_temp_buffer, size);
+        if ((last_dma_nvdla_addr & 0xF0000000) == 0x80000000)
+            wr->axi_dbb->inflight_dma_resp(last_dma_nvdla_addr, dma_temp_buffer, size);
+        else if ((last_dma_nvdla_addr & 0xF0000000) == 0x50000000)
+            wr->axi_cvsram->inflight_dma_resp(last_dma_nvdla_addr, dma_temp_buffer, size);
+        else {
+            printf("Unexpected address offset, aborting...\n");
+            abort();
+        }
     }
 }
 
