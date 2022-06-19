@@ -65,7 +65,7 @@ AXIResponder::write_ram(uint32_t addr, uint8_t data) {
 }
 
 void
-AXIResponder::write(uint32_t addr, uint8_t data,bool timing) {
+AXIResponder::write(uint32_t addr, uint8_t data, bool timing) {
     // always write to fake ram
     write_ram(addr,data);
     // we access gem5 memory

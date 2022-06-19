@@ -203,8 +203,10 @@ TraceLoaderGem5::axievent(int* waiting_for_gem5_mem) {
             uint32_t bytes_to_write = AXI_WIDTH / 8;
             bool aligned = true;
             if (op.addr != txn_start_addr) {
-                // this txn is not aligned to AXI_WIDTH / 8
+                printf("this dump_mem is not aligned to AXI_WIDTH / 8, op.addr = %d\n", op.addr);
                 bytes_to_write = AXI_WIDTH / 8 - (op.addr - txn_start_addr);
+                if(op.len < bytes_to_write)
+                    bytes_to_write = op.len;
                 aligned = false;
             } else if (op.len < AXI_WIDTH / 8) {
                 // this txn is aligned but of length < AXI_WIDTH / 8
@@ -216,6 +218,7 @@ TraceLoaderGem5::axievent(int* waiting_for_gem5_mem) {
             uint32_t got_response = axi->read_response_for_traceLoaderGem5(txn_start_addr, read_response_buffer);
 
             if (got_response) {
+                uint32_t old_op_addr = op.addr;
                 // first we update the op info, which is related to the next txn (if there is)
                 if (!aligned) {
                     op.addr += bytes_to_write;
@@ -236,13 +239,10 @@ TraceLoaderGem5::axievent(int* waiting_for_gem5_mem) {
                 } else
                     printf("file %s has been re-opened successfully\n", op.fname);
 
-                if (aligned)
-                    write(fd, read_response_buffer, bytes_to_write);
-                else
-                    write(fd, read_response_buffer + (AXI_WIDTH / 8 - bytes_to_write), bytes_to_write);
+                write(fd, read_response_buffer + (old_op_addr - txn_start_addr), bytes_to_write);
                 close(fd);
 
-                if (op.len == 0) {
+                if (op.len <= 0) {
                     if (axi->getRequestsOnFlight() != 0) {
                         printf("op.len == 0 is not synchronous with inflight_req_order.empty().\n");
                         abort();

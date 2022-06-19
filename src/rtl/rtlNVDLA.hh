@@ -242,7 +242,7 @@ public:
     void tmpRunTraceNVDLA();
 
     // variables for the NVDLA
-    uint32_t quiesc_timer;
+    int quiesc_timer;
     int waiting;
     int waiting_for_gem5_mem;   // an indicator only used for AXI_DUMPMEM
     uint32_t cyclesNVDLA;

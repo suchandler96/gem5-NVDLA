@@ -266,7 +266,7 @@ rtlNVDLA::tick() {
     // if we are still running trace
     // runIteration
     // schedule new iteration
-    if (!wr->csb->done() || (quiesc_timer--) || waiting_for_gem5_mem) {
+    if (!wr->csb->done() || (quiesc_timer-- > 0) || waiting_for_gem5_mem) {
         // Update stats
         stats.nvdla_avgReqCVSRAM.sample(wr->axi_cvsram->getRequestsOnFlight());
         stats.nvdla_avgReqDBBIF.sample(wr->axi_dbb->getRequestsOnFlight());
@@ -713,7 +713,7 @@ rtlNVDLA::writeAXI(uint32_t addr, uint8_t data, bool sram, bool timing) {
     // size is one byte
     // flags is physical (vaddr is also the physical one)
     RequestPtr req = std::make_shared<Request>(real_addr, 1,
-                                               Request::UNCACHEABLE, 0);
+                                               0, 0);
     PacketPtr packet = nullptr;
     // we create the real packet, write request
     packet = Packet::createWrite(req);

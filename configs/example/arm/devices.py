@@ -82,7 +82,7 @@ class L2(L2Cache):
     response_latency = 5
     mshrs = 32
     tgts_per_mshr = 8
-    size = '64kB'
+    size = '1MB'
     assoc = 16
     write_buffers = 8
     clusivity='mostly_excl'
@@ -163,12 +163,12 @@ class CpuCluster(SubSystem):
 
             cpu.num_accels = options.numNVDLA
 
-            cpu.accel_0 = rtlNVDLA(dma_enable=0, dma_try_get_fraction=1, spm_line_size=1024)
+            cpu.accel_0 = rtlNVDLA(dma_enable=1, dma_try_get_fraction=1, spm_line_size=1024)
             cpu.accel_1 = rtlNVDLA()
             cpu.accel_2 = rtlNVDLA()
             cpu.accel_3 = rtlNVDLA()
 
-
+            '''
             self.accel_toL2Bus = L2XBar(width=64, clk_domain=clk_domain)
             self.accel_l2 = self._l2_type()
             self.accel_toL2Bus.mem_side_ports = self.accel_l2.cpu_side
@@ -176,7 +176,7 @@ class CpuCluster(SubSystem):
 
             cpu.accel_0.sram_port = self.accel_toL2Bus.cpu_side_ports
             cpu.accel_0.dram_port = self.accel_toL2Bus.cpu_side_ports
-
+            '''
 
             cpu.accel_port_0 = cpu.accel_0.cpu_side
             cpu.accel_port_1 = cpu.accel_1.cpu_side
@@ -185,12 +185,12 @@ class CpuCluster(SubSystem):
 
             cpu.accel_0.dma_port = membus
             # this is high speed
-            # cpu.accel_0.sram_port = membus
+            cpu.accel_0.sram_port = membus
             cpu.accel_1.sram_port = membus
             cpu.accel_2.sram_port = membus
             cpu.accel_3.sram_port = membus
             # this is a regular bus
-            # cpu.accel_0.dram_port = membus
+            cpu.accel_0.dram_port = membus
             cpu.accel_1.dram_port = membus
             cpu.accel_2.dram_port = membus
             cpu.accel_3.dram_port = membus
