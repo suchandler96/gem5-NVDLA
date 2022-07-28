@@ -220,6 +220,11 @@ def addOptions(parser):
     # options.numNVDLA
     parser.add_argument("--numNVDLA", type=int, default=1,
                         help="number of NVDLAs")
+    # options.dma_enable
+    parser.add_argument("--dma-enable", action="store_true", default=False, help="Use scratchpad in NVDLA aided with DMA")
+
+    # options.add_accel_private_cache
+    parser.add_argument("--add-accel-private-cache", action="store_true", default=False, help="Add private cache for NVDLA")
 
     parser.add_argument("-P", "--param", action="append", default=[],
         help="Set a SimObject parameter relative to the root node. "
