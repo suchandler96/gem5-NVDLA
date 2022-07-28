@@ -97,7 +97,10 @@ Before executing you need to set up the LIBRARY_PATH to the place where the shar
 export LD_LIBRARY_PATH="gem5+RTL_FOLDER/ext/rtl"
 ```
 ​
-Since this framework runs in full system mode, you need to prepare a linux kernel and disk image. One choice is use those provided in [gem5 doc ARM fs binaries](https://www.gem5.org/documentation/general_docs/fullsystem/guest_binaries). Once prepared, update the paths to them in the first few lines in `configs/example/arm/fs_bigLITTLE_RTL.py`. Files can be moved to the disk image by first mounting it using the `gem5-rtl-nvdla/util/gem5img.py` script. Remember checkpoints have to be regenerated after adding new files to the disk image.
+Since this framework runs in full system mode, you need to prepare a linux kernel and disk image. One choice is to use those provided in [gem5 doc ARM fs binaries](https://www.gem5.org/documentation/general_docs/fullsystem/guest_binaries). Once prepared, update the paths to them in the first few lines in `configs/example/arm/fs_bigLITTLE_RTL.py`. Files can be moved to the disk image by first mounting it using the `gem5-rtl-nvdla/util/gem5img.py` script. Remember checkpoints have to be regenerated after adding new files to the disk image.
+
+​
+The NVDLA workload should be defined in the full system simulation. This is done through cross-compiling an ARM CPU binary that will invoke the NVDLA accelerator. The binary, whose source code is in `bsc-util/my_validation_nvdla.c`, is cross-compiled with `aarch64-linux-gnu-g++-7`. In addition, an assembly file (`util/m5/src/abi/arm64/m5op.S`) defining the gem5-specific operations should also be cross-compiled. So you may compile them separately into *.o's and link them together.
 
 ​
 To run a simulation you can use the already prepared `configs/example/arm/fs_bigLITTLE_RTL.py` configuration script to generate checkpoints and execute simulations:
@@ -125,7 +128,7 @@ The application used in the example `bootscript_validation_rtl.rcS` can be found
 ​
 
 ### Step 4: Design the memory subsystem architecture as you want
-Currently classic memory models (no ruby memory system) are used in the simulation. The major codes describing the memory connection are in `configs/example/arm/devices` which will be imported by the `fs_bigLITTLE_RTL.py` script. The codes of interest are in `CpuCluster.addPrivateAccelerator` function. Connecting NVDLA to main memory directly through membus is the default setting. This configuration can be changed with two options: `--dma-enable` and `--add-accel-private-cache`. These two options are parsed in `devices.py` to connect the memory system.
+Currently classic memory models (no ruby memory system) are used in the simulation. The major codes describing the memory connection are in `configs/example/arm/devices` which will be imported by the `fs_bigLITTLE_RTL.py` script. The codes of interest are in `CpuCluster.addPrivateAccelerator` function, where connecting NVDLA to main memory directly through membus is the default setting. This configuration can be changed with two options: `--dma-enable` and `--add-accel-private-cache`. These two options are parsed in `devices.py` to connect the memory system.
 
 ​
 ## Contributing
