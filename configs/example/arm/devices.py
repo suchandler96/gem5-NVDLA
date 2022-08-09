@@ -152,6 +152,9 @@ class CpuCluster(SubSystem):
         for cpu in self.cpus:
             cpu.connectAllPorts(self.toL2Bus)
             cpu.accel_0.mem_side = self.toL2Bus.cpu_side_ports  # mem_side is for loading NVDLA traces, not for runtime memory accesses
+            cpu.accel_1.mem_side = self.toL2Bus.cpu_side_ports
+            cpu.accel_2.mem_side = self.toL2Bus.cpu_side_ports
+            cpu.accel_3.mem_side = self.toL2Bus.cpu_side_ports
             # cpu.accel_0.sram_port = self.toL2Bus.cpu_side_ports
             # cpu.accel_0.dram_port = self.toL2Bus.cpu_side_ports
         self.toL2Bus.mem_side_ports = self.l2.cpu_side
@@ -190,17 +193,34 @@ class CpuCluster(SubSystem):
             cpu.accel_0.dma_port = membus   # we still keep the dma_port for a cache-based configuration to avoid disconnection errors
             # this is high speed
 
-            if options.dma_enable or not options.add_accel_private_cache:
-                cpu.accel_0.sram_port = membus
-            cpu.accel_1.sram_port = membus
-            cpu.accel_2.sram_port = membus
-            cpu.accel_3.sram_port = membus
-            # this is a regular bus
-            if options.dma_enable or not options.add_accel_private_cache:
-                cpu.accel_0.dram_port = membus
-            cpu.accel_1.dram_port = membus
-            cpu.accel_2.dram_port = membus
-            cpu.accel_3.dram_port = membus
+            if options.add_accel_shared_cache:
+                self.accel_toL3Bus = L2XBar(width=64, clk_domain=clk_domain)
+                self.accel_l3 = self._l2_type()
+                self.accel_toL3Bus.mem_side_ports = self.accel_l3.cpu_side
+                self.accel_l3.mem_side = membus
+
+                cpu.accel_0.sram_port = self.accel_toL3Bus.cpu_side_ports
+                cpu.accel_0.dram_port = self.accel_toL3Bus.cpu_side_ports
+                cpu.accel_1.sram_port = self.accel_toL3Bus.cpu_side_ports
+                cpu.accel_1.dram_port = self.accel_toL3Bus.cpu_side_ports
+                cpu.accel_2.sram_port = self.accel_toL3Bus.cpu_side_ports
+                cpu.accel_2.dram_port = self.accel_toL3Bus.cpu_side_ports
+                cpu.accel_3.sram_port = self.accel_toL3Bus.cpu_side_ports
+                cpu.accel_3.dram_port = self.accel_toL3Bus.cpu_side_ports
+
+            else:
+                if options.dma_enable or not options.add_accel_private_cache:
+                    cpu.accel_0.sram_port = membus
+                cpu.accel_1.sram_port = membus
+                cpu.accel_2.sram_port = membus
+                cpu.accel_3.sram_port = membus
+                # this is a regular bus
+                if options.dma_enable or not options.add_accel_private_cache:
+                    cpu.accel_0.dram_port = membus
+                cpu.accel_1.dram_port = membus
+                cpu.accel_2.dram_port = membus
+                cpu.accel_3.dram_port = membus
+
             # max num inflight requests
             cpu.accel_0.maxReq = options.maxReqNVDLA
             cpu.accel_1.maxReq = options.maxReqNVDLA
@@ -223,9 +243,9 @@ class CpuCluster(SubSystem):
             cpu.accel_3.id_nvdla = 3
             # DRAM base addr
             cpu.accel_0.base_addr_dram = 0xA0000000
-            cpu.accel_1.base_addr_dram = 0xB0000000
-            cpu.accel_2.base_addr_dram = 0xC0000000
-            cpu.accel_3.base_addr_dram = 0xD0000000
+            cpu.accel_1.base_addr_dram = 0xA0000000
+            cpu.accel_2.base_addr_dram = 0xA0000000
+            cpu.accel_3.base_addr_dram = 0xA0000000
             # SRAM base addr
             cpu.accel_0.base_addr_sram = 0xA5000000
             cpu.accel_1.base_addr_sram = 0xB5000000

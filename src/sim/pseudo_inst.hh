@@ -94,7 +94,10 @@ void workbegin(ThreadContext *tc, uint64_t workid, uint64_t threadid);
 void workend(ThreadContext *tc, uint64_t workid, uint64_t threadid);
 void startaccel(ThreadContext *tc, Addr addr,
                 uint64_t elements, Addr region_mem);
+void startaccelid(ThreadContext *tc, Addr addr,
+                uint64_t elements, Addr region_mem, int accel_id);
 uint64_t waitaccel(ThreadContext *tc, Addr addr, uint64_t elements);
+uint64_t waitaccelid(ThreadContext *tc, int accel_id);
 void m5Syscall(ThreadContext *tc);
 void togglesync(ThreadContext *tc);
 void triggerWorkloadEvent(ThreadContext *tc);
@@ -222,12 +225,19 @@ pseudoInstWork(ThreadContext *tc, uint8_t func, uint64_t &result)
         invokeSimcall<ABI>(tc, startaccel);
         return true;
 
+      case M5OP_START_ACCEL_ID:
+        warn("start_accel_id");
+        invokeSimcall<ABI>(tc, startaccelid);
+        return true;
+
       case M5OP_WAIT_ACCEL:
         result = invokeSimcall<ABI, store_ret>(tc, waitaccel);
         return true;
 
-      case M5OP_RESERVED3:
-      case M5OP_RESERVED4:
+      case M5OP_WAIT_ACCEL_ID:
+        result = invokeSimcall<ABI, store_ret>(tc, waitaccelid);
+        return true;
+
       case M5OP_RESERVED5:
         warn("Unimplemented m5 op (%#x)\n", func);
         return false;

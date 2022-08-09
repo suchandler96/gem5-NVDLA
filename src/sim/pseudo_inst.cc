@@ -604,6 +604,21 @@ startaccel(ThreadContext *tc, Addr addr, uint64_t elements, Addr region_mem)
 
 }
 
+
+//
+// This function is executed when annotated work items begin.  Depending on
+// what the user specified at the command line, the simulation may exit and/or
+// take a checkpoint when a certain work item begins.
+//
+void
+startaccelid(ThreadContext *tc, Addr addr, uint64_t elements, Addr region_mem, int accel_id)
+{
+    DPRINTF(PseudoInst,
+            "PseudoInst::startaccelid(%#x, %d, %d)\n", addr, elements, accel_id);
+
+    tc->getCpuPtr()->startAccelID(addr, elements, region_mem, accel_id);
+}
+
 //
 // This function is executed when annotated work items begin.  Depending on
 // what the user specified at the command line, the simulation may exit and/or
@@ -618,6 +633,20 @@ waitaccel(ThreadContext *tc, Addr addr, uint64_t elements)
     return tc->getCpuPtr()->waitAccel(addr,elements);
 
 
+}
+
+//
+// This function is executed when annotated work items begin.  Depending on
+// what the user specified at the command line, the simulation may exit and/or
+// take a checkpoint when a certain work item begins.
+//
+uint64_t
+waitaccelid(ThreadContext *tc, int accel_id)
+{
+    DPRINTF(PseudoInst,
+            "PseudoInst::waitaccelid(%d)\n", accel_id);
+
+    return tc->getCpuPtr()->waitAccelID(accel_id);
 }
 
 } // namespace pseudo_inst

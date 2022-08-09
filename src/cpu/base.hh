@@ -241,9 +241,18 @@ class BaseCPU : public ClockedObject
     // Method to use when instruction start accel is used
     virtual void startAccel(Addr addr, int elements, Addr region_nvdla)  {};
 
+    // Method to use when instruction start_accel_id is used
+    virtual void startAccelID(Addr addr, int elements, Addr region_nvdla, int accel_id)  {};
+
     virtual uint64_t waitAccel(Addr addr, int elements)  {
         std::cout << "THIS SHOULD NOT BE PRINTED, " <<
         " HENCE WAIT ACCEL NOT IMPLMENTED" << std::endl;
+        return !finishedAccelerator0;
+    };
+
+    virtual uint64_t waitAccelID(int accel_id)  {
+        std::cout << "THIS SHOULD NOT BE PRINTED, " <<
+        " HENCE WAIT ACCEL ID NOT IMPLMENTED" << std::endl;
         return !finishedAccelerator0;
     };
 

@@ -380,6 +380,34 @@ MinorCPU::startAccel(Addr vaddr, int elements, Addr region_nvdla)
 
 }
 
+void
+MinorCPU::startAccelID(Addr vaddr, int elements, Addr region_nvdla, int accel_id)
+{
+    RequestPtr req = std::make_shared<Request>(vaddr, elements,
+                              0, Request::funcRequestorId,0,0);
+    PacketPtr pkt = new Packet(req, MemCmd::ReadReq, elements);
+    switch (accel_id) {
+        case 0:
+            nvdla_port_0.sendTimingReq(pkt);
+            finishedAccelerator0 = false;
+            break;
+        case 1:
+            nvdla_port_1.sendTimingReq(pkt);
+            finishedAccelerator1 = false;
+            break;
+        case 2:
+            nvdla_port_2.sendTimingReq(pkt);
+            finishedAccelerator2 = false;
+            break;
+        case 3:
+            nvdla_port_3.sendTimingReq(pkt);
+            finishedAccelerator3 = false;
+            break;
+        default:
+            break;
+    }
+}
+
 uint64_t
 MinorCPU::waitAccel(Addr vaddr, int elements)
 {
@@ -400,6 +428,24 @@ MinorCPU::waitAccel(Addr vaddr, int elements)
                !finishedAccelerator1 |
                !finishedAccelerator2 |
                !finishedAccelerator3;
+    }
+}
+
+
+uint64_t
+MinorCPU::waitAccelID(int accel_id)
+{
+    switch (accel_id) {
+        case 0:
+            return !finishedAccelerator0;
+        case 1:
+            return !finishedAccelerator1;
+        case 2:
+            return !finishedAccelerator2;
+        case 3:
+            return !finishedAccelerator3;
+        default:
+            fatal("waitAccelID: Unknown accel id.\n");
     }
 }
 

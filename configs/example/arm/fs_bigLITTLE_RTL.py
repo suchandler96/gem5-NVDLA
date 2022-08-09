@@ -224,7 +224,10 @@ def addOptions(parser):
     parser.add_argument("--dma-enable", action="store_true", default=False, help="Use scratchpad in NVDLA aided with DMA")
 
     # options.add_accel_private_cache
-    parser.add_argument("--add-accel-private-cache", action="store_true", default=False, help="Add private cache for NVDLA")
+    parser.add_argument("--add-accel-private-cache", action="store_true", default=False, help="Add private cache for NVDLA; Currently it conly applies for nvdla0")
+
+    # options.add_accel_shared_cache
+    parser.add_argument("--add-accel-shared-cache", action="store_true", default=False, help="Add shared cache for numNVDLA * NVDLA")
 
     parser.add_argument("-P", "--param", action="append", default=[],
         help="Set a SimObject parameter relative to the root node. "
