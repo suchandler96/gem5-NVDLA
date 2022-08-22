@@ -1,6 +1,8 @@
 # gem5-RTL-NVDLA
 gem5-RTL-NVDLA is a specialized version of gem5-RTL that is designed to be used with the NVDLA verilog model. For gem5+RTL framework that this project is based on, see its original repo [gem5-RTL](https://gitlab.bsc.es/glopez/gem5-rtl.git). Here we show most of the original readme file for gem5+RTL, but a lot more details are added regarding the installation process to make it more newcomer-friendly.
 
+Apart from specialized adaption of gem5 memeory system for NVDLA, this project also enables the conversion from any NVDLA-supported caffe NN model to NVDLA register transaction traces (i.e., something like input.txn [here](https://github.com/nvdla/hw/tree/nvdlav1/verif/traces/traceplayer)). The code and detailed usage of this conversion utility can be found in `bsc-util/nvdla_utilities`.
+
 # gem5+RTL
 ​
 gem5+RTL is a flexible framework that enables the simulation of RTL models inside the gem5 full-system software simulator. The framework allows easy integration of RTL models on a simulated system-on-chip (SoC) that is able to boot Linux and run complex multi-threaded and multi-programmed workloads. 
@@ -56,10 +58,12 @@ git checkout use-case-nvdla
 1. Download repo and follow instructions at [NVDLA](http://nvdla.org/hw/v1/integration_guide.html) and switch to nvdlav1 branch to obtain the model and compiling. Make sure you use verilator v3.912 and clang 3.4. RAM requirements>24GB
 2. Before building NVDLA for verilator verification, modify the Makefile at `nvdla/hw/verif/verilator/Makefile`:
 ```
-   VERILATOR_PARAMS ?= --compiler clang --output-split 250000000 -CFLAGS **-fPIC**
+    # add the '-fPIC' flag
+    VERILATOR_PARAMS ?= --compiler clang --output-split 250000000 -CFLAGS **-fPIC**
 
-   $(DEPTH)/outdir/nv_full/verilator/VNV_nvdla.mk: verilator.f ../../outdir/nv_full/vmod # and a lot of RTL...
-   $(VERILATOR) --cc --exe -f verilator.f --Mdir ../../outdir/nv_full/verilator/ nvdla.cpp **$(VERILATOR_PARAMS)**
+    # use the VERILATOR_PARAMS variable defined above:
+    $(DEPTH)/outdir/nv_full/verilator/VNV_nvdla.mk: verilator.f ../../outdir/nv_full/vmod # and a lot of RTL...
+    $(VERILATOR) --cc --exe -f verilator.f --Mdir ../../outdir/nv_full/verilator/ nvdla.cpp **$(VERILATOR_PARAMS)**
 ```
 3. Run some sanity tests provided in `nvdla/hw/verif/traces` as introduced at their website.
 4. Get also the traces (automatically generated after running a sanity test in `nvdla/hw/outdir/nv_full/verilator/test/YOUR_SANITY_TEST/trace.bin`) and move them to the disk image that will be used in gem5 full system simulation.
