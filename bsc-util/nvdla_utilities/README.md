@@ -24,8 +24,9 @@ This is a preprocessing program to convert the debugging log of running [NVDLA V
 4. In the docker, before launching the QEMU simulator, toggle the all the debug flags by typing `export SC_LOG="outfile:sc.log;verbosity_level:sc_debug;csb_adaptor:enable;dbb_adaptor:enable;sram_adaptor:enable"` as shown in section 2.7.1 on NVDLA VP webpage;
 5. Still in the docker, copy the loadable file and an image of handwritten digit to `/usr/local/nvdla/`;
 6. Inside the QEMU simulator, remember to load the NVDLA driver (`insmod drm.ko && insmod opendla_1.ko`);
-7. After the runtime program finishes, exit QEMU and move the `sc.log` file to somewhere in **your computer's** file system. The sc.log file for the provided LeNet test case is around 2.9GB.
+7. After the runtime program finishes, exit QEMU and move the `sc.log` file to somewhere in **your computer's** file system. The sc.log file for the provided LeNet test case is around 2.9GB. But if the patch file in tip 9 below is applied, it can be reduced to about 100MB.
 8. Users may refer to [this blog](https://medium.com/@anakin1028/run-lenet-on-nvdla-837a6fac6f8b) for more details to run a testcase on VP.
+9. Usually, the VP debug info file is SO LARGE that it may overflow the whole hard disk space. To resolve this issue, a patch file is provided in `bsc-util/nvdla_utilities/modify_cmod`. This patch annotates most of the debugging output except those related to NVDLA register transactions and memory traces. Users may need to apply that patch with `git apply /path/to/modify_cmod` under the `nvdla/hw` path, and then rebuild `cmod` and `vp` according to instructions on [NVDLA VP documentation](http://nvdla.org/vp.html#download-the-virtual-simulator) (As for the building environment, the docker provided with VP would be enough). Reducing those IO's not only reduces hard disk usage, but also accelerates simulation process.
 
 ## Convert VP debug info to NVDLA trace file and memory traces with the utility
 1. Compile NVDLAUtil.cpp with any c++ compiler with c++11:
@@ -62,3 +63,4 @@ This is a preprocessing program to convert the debugging log of running [NVDLA V
     ./NVDLAUtil -i1 /path/to/vp/rd/mem/trace -i2 /path/to/lenet/converted/rd/mem/trace --function comp_mem_trace
     ./NVDLAUtil -i1 /path/to/vp/wr/mem/trace -i2 /path/to/lenet/converted/wr/mem/trace --function comp_mem_trace
     ```
+   The result should be "No differences are found". Users may also plot the memory traces to visualize the comparison.

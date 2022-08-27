@@ -56,7 +56,7 @@ git checkout use-case-nvdla
 ### Step 1: (For NVDLA) Build the RTL C++ model using Verilator
 
 1. Download repo and follow instructions at [NVDLA](http://nvdla.org/hw/v1/integration_guide.html) and switch to nvdlav1 branch to obtain the model and compiling. Make sure you use verilator v3.912 and clang 3.4. RAM requirements>24GB
-2. Before building NVDLA for verilator verification, modify the Makefile at `nvdla/hw/verif/verilator/Makefile`:
+2. Before building NVDLA for verilator verification, modify the Makefile at `nvdla/hw/verif/verilator/Makefile` (See also [this pull request](https://github.com/nvdla/hw/pull/312/files)):
 ```
     # add the '-fPIC' flag
     VERILATOR_PARAMS ?= --compiler clang --output-split 250000000 -CFLAGS **-fPIC**
@@ -133,6 +133,11 @@ The application used in the example `bootscript_validation_rtl.rcS` can be found
 
 ### Step 4: Design the memory subsystem architecture as you want
 Currently classic memory models (no ruby memory system) are used in the simulation. The major codes describing the memory connection are in `configs/example/arm/devices` which will be imported by the `fs_bigLITTLE_RTL.py` script. The codes of interest are in `CpuCluster.addPrivateAccelerator` function, where connecting NVDLA to main memory directly through membus is the default setting. This configuration can be changed with two options: `--dma-enable` and `--add-accel-private-cache`. These two options are parsed in `devices.py` to connect the memory system.
+
+
+# Run more test cases on NVDLA with this framework
+In this repo, we have made it feasible to run more tests on NVDLA software simulation flow OTHER THAN the sanity tests provided with NVDLA. For more details, please refer to `bsc-util/nvdla_utilities/README.md`.
+
 
 ​
 ## Contributing
