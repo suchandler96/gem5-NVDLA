@@ -195,7 +195,10 @@ class CpuCluster(SubSystem):
 
             if options.add_accel_shared_cache:
                 self.accel_toL3Bus = L2XBar(width=64, clk_domain=clk_domain)
-                self.accel_l3 = self._l2_type()
+                self.accel_l3 = Cache(tag_latency=12, data_latency=12, response_latency=5, mshrs=32, tgts_per_mshr=8,
+                                      size=options.accel_cache_size, assoc=16, write_buffers=8, clusivity='mostly_excl', prefetcher=eval(options.prefetcher + "Prefetcher(degree=8, latency=1.0)")) \
+                    if options.prefetcher is not None else Cache(tag_latency=12, data_latency=12, response_latency=5, mshrs=32, tgts_per_mshr=8,
+                                                                 size=options.accel_cache_size, assoc=16, write_buffers=8, clusivity='mostly_excl')
                 self.accel_toL3Bus.mem_side_ports = self.accel_l3.cpu_side
                 self.accel_l3.mem_side = membus
 

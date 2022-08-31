@@ -169,7 +169,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
     if (out.read_valid) {
         while (!out.read_buffer.empty()) {
             read_req_entry_t aux = out.read_buffer.front();
-            printf("read req addr: %08x, size %d\n", aux.read_addr, aux.read_bytes);
+            // printf("read req addr: %08x, size %d\n", aux.read_addr, aux.read_bytes);
             // std::cout << std::hex << "read req: " \
             // << aux.read_addr << std::endl;
             readAXIVariable(aux.read_addr,
@@ -182,7 +182,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
     if (out.write_valid) {
         while (!out.write_buffer.empty()) {
             write_req_entry_t aux = out.write_buffer.front();
-            printf("write req: addr %08x, data %02x\n", aux.write_addr, aux.write_data);
+            // printf("write req: addr %08x, data %02x\n", aux.write_addr, aux.write_data);
             // std::cout << std::hex << "write req: addr " <<\
             // aux.write_addr << ", data " << aux.write_data << std::endl;
             writeAXI(aux.write_addr,

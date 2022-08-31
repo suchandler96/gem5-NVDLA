@@ -1,0 +1,21 @@
+diff --git a/verif/verilator/input_txn_to_verilator.pl b/verif/verilator/input_txn_to_verilator.pl
+index 0c2f7e0..22da936 100755
+--- a/verif/verilator/input_txn_to_verilator.pl
++++ b/verif/verilator/input_txn_to_verilator.pl
+@@ -82,6 +82,16 @@ while(<$inf>)
+     if ($values[0] =~ /wait/) {
+       print $ouf pack("C", 1);
+     }
++
++    if ($values[0] =~ /until/) {
++      if($size != 3) { die "\nERROR: in write_reg command: $input_line\n" };
++
++      my $addr = $values[1];
++      my $data = $values[2];
++
++      print $ouf pack("CLL", 6, hex($addr), hex($data));
++    }
++
+     elsif($values[0] =~ /write_reg/) {
+       if($size != 3) { die "\nERROR: in write_reg command: $input_line\n" };
+ 

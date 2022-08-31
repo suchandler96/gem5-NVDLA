@@ -1,0 +1,94 @@
+diff --git a/verif/verilator/nvdla.cpp b/verif/verilator/nvdla.cpp
+index e24becf..5f20a82 100644
+--- a/verif/verilator/nvdla.cpp
++++ b/verif/verilator/nvdla.cpp
+@@ -40,6 +50,7 @@ class CSBMaster {
+ 		int write;
+ 		int tries;
+ 		int reading;
++        int wait_until;
+ 		uint32_t addr;
+ 		uint32_t mask;
+ 		uint32_t data;
+@@ -69,9 +80,25 @@ public:
+ 		op.data = data;
+ 		op.tries = 10;
+ 		op.reading = 0;
++        op.wait_until = 0;
+ 	
+ 		opq.push(op);
+ 	}
++
++    void wait_until(uint32_t addr, uint32_t mask, uint32_t data) {
++        csb_op op;
++
++        op.is_ext = 0;
++        op.write = 0;
++        op.addr = addr;
++        op.mask = mask;
++        op.data = data;
++        op.tries = 10;
++        op.reading = 0;
++        op.wait_until = 1;
++
++        opq.push(op);
++    }
+ 	
+ 	void write(uint32_t addr, uint32_t data) {
+ 		csb_op op;
+@@ -80,6 +107,7 @@ public:
+ 		op.write = 1;
+ 		op.addr = addr;
+ 		op.data = data;
++        op.wait_until = 0;
+ 	
+ 		opq.push(op);
+ 	}
+@@ -113,15 +141,23 @@ public:
+ 			
+ 			if ((dla->nvdla2csb_data & op.mask) != (op.data & op.mask)) {
+ 				op.reading = 0;
+-				op.tries--;
+-				printf("(%lu) invalid response -- trying again\n", ticks);
+-				if (!op.tries) {
+-					printf("(%lu) ERROR: timed out reading response\n", ticks);
+-					_test_passed = 0;
+-					opq.pop();
+-				}
+-			} else
+-				opq.pop();
++
++                if(op.wait_until == 0) {
++                    op.tries--;
++                    printf("(%lu) invalid response -- trying again\n", ticks);
++                    if (!op.tries) {
++                        printf("(%lu) ERROR: timed out reading response\n", ticks);
++                        _test_passed = 0;
++                        opq.pop();
++                    }
++                }
++			} else {
++                if(op.wait_until) printf("(%lu) Intr reg got the expected response 0x%08x\n", ticks, op.data);
++                opq.pop();
++            }
+ 		}
+ 		
+ 		if (!op.write && op.reading)
+ 			
+@@ -557,6 +597,16 @@ public:
+ 				printf("CMD: load_mem %08x bytes to %08x\n", len, addr);
+ 				break;
+ 			}
++            case 6: {
++                uint32_t addr;
++                uint32_t data;
++
++                VERILY_READ(&addr, 4);
++                VERILY_READ(&data, 4);
++                printf("CMD: wait_until %08x %08x\n", addr, data);
++                csb->wait_until(addr, uint32_t(0xffffffff), data);
++                break;
++            }
+ 			case 0xFF:
+ 				printf("CMD: done\n");
+ 				break;

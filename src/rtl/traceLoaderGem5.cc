@@ -129,6 +129,16 @@ TraceLoaderGem5::load(char *trace) {
             printf("CMD: load_mem %08x bytes to %08x\n", len, addr);
             break;
         }
+        case 6: {
+            uint32_t addr;
+            uint32_t data;
+
+            VERILY_READ(&addr, 4);
+            VERILY_READ(&data, 4);
+            printf("CMD: until %08x %08x\n", addr, data);
+            csb->wait_until(addr, uint32_t(0xffffffff), data);
+            break;
+        }
         case 0xFF:
             printf("CMD: done\n");
             break;

@@ -40,39 +40,6 @@ public:
 };
 
 
-class InterruptManager {
-public:
-    int adv_intr_flag;
-    bool is_interrupt_cleared;
-    int print_intr_flag;
-
-    uint32_t try_clear_intr_val;
-    explicit InterruptManager(int print_flag, int adv_flag) : is_interrupt_cleared(true), print_intr_flag(print_flag), try_clear_intr_val(0), adv_intr_flag(adv_flag) {}
-
-    void print_interrupt(const std::string& vp_line) {
-        if(vp_line.find("Cacc") != std::string::npos) {
-            // CACC interrupt is reported two times. Need "CACC" instead of "Cacc"
-            // printf("# skipping a Cacc interrupt\n");
-            return;
-        }
-
-        if(print_intr_flag) {
-            if(print_intr_flag) {
-                if(!is_interrupt_cleared) {
-                    printf("write_reg 0xffff0003 0xffffffff\t\t\t#NVDLA_GLB.S_INTR_STATUS_0\n"
-                           "read_reg 0xffff0003 0xffffffff 0x0\t\t#NVDLA_GLB.S_INTR_STATUS_0\nwait\t\t\t\t\t\t# (%s)\n",
-                           vp_line.c_str());
-                } else {
-                    printf("wait\t\t\t\t\t\t# (%s)\n", vp_line.c_str());
-                }
-            }
-
-            is_interrupt_cleared = false;
-        }
-    }
-};
-
-
 class CSB_Txn {
 public:
     uint32_t addr;
@@ -85,13 +52,12 @@ public:
     uint32_t exp_data;
 
     int print_reg_txn_flag;
+    int change_addr_flag;
 
     bool inputting;
 
-    InterruptManager* intr_mgr;
-
-    CSB_Txn(int flag, InterruptManager* _int_mgr) : addr(0), data(0), is_write(0), n_posted(0), err_bit(0), exp_data(0),
-                                                    inputting(false), print_reg_txn_flag(flag), intr_mgr(_int_mgr) {}
+    CSB_Txn(int flag, int addr_convert_flag) : addr(0), data(0), is_write(0), n_posted(0), err_bit(0), exp_data(0),
+                                               inputting(false), print_reg_txn_flag(flag), change_addr_flag(addr_convert_flag) {}
 
     void clear() {
         inputting = false;
@@ -105,51 +71,25 @@ public:
     }
 
     void print_csb_txn() const {
-        if(is_write && addr == 0x000c && data != 0) {
-            // this indicates an interrupt clearing behavior on VP with this line and the previous line
-            intr_mgr->is_interrupt_cleared = true;
-
-            if(intr_mgr->adv_intr_flag) {
-                if((intr_mgr->try_clear_intr_val & ~data) == 0) {   // capture the 0x000c reg write and return directly
-                    if(print_reg_txn_flag) {
-                        // count number of 0's in intr_mgr->try_clear_intr_val, so that it can try to keep as many original interrupt details as possible
-                        int num_0 = 0;
-                        uint32_t tmp = intr_mgr->try_clear_intr_val;
-                        while(tmp > 0) {
-                            tmp &= (tmp - 1);
-                            num_0++;
-                        }
-                        if(num_0 == 1)
-                            printf("read_reg 0xffff0003 0xffffffff 0x%08x\t#0x000c\n"\
-                                   "write_reg 0xffff0003 0x%08x\t\t\t#0x000c\n", intr_mgr->try_clear_intr_val, data);   // clear interrupt with the original data
-                        else
-                            printf("write_reg 0xffff0003 0xffffffff\t\t\t#0x000c, added by advanced interrupt handling\n");   // clear interrupt with a universal flag
-                    }
-
-
-                    return;
-                } else {
-                    std::cerr << "this cannot be handled by the advanced interrupt handling. Try removing the --adv_intr_hdl flag and inspect the trace manually\n";
-                    exit(1);
-                }
-            }
-        }
-
-
         if(print_reg_txn_flag) {
             uint32_t out_addr =
                     0xffff0000 + (0x0000ffff & ((addr - 0) >> 2));  // write bit will be corrected by txn2verilator
 
             if(is_write) {
-                printf("write_reg 0x%x 0x%08x\t\t\t#0x%04x\n", out_addr, data, addr);
+                if(change_addr_flag && ((data & 0xf0000000) == 0xc0000000)) {
+                    printf("write_reg 0x%x 0x%08x\t\t\t#0x%04x\n", out_addr, (data & 0x0fffffff) | 0x80000000, addr);
+                } else {
+                    printf("write_reg 0x%x 0x%08x\t\t\t#0x%04x\n", out_addr, data, addr);
+                }
             } else {
                 assert(data == 0x0);
 
-                if(addr == 0x000c && intr_mgr->adv_intr_flag && !intr_mgr->is_interrupt_cleared) {
-                    assert(exp_data != 0x0);    // when interrupt is not cleared, 0x000c shouldn't be 0x0
-                    intr_mgr->try_clear_intr_val = exp_data;
+                if(addr == 0x000c && exp_data != 0) {
+                    printf("until 0xffff0003 0x%08x\n", exp_data);
+                } else if(addr == 0xa004) {
+                    printf("read_reg 0x%08x 0x0 0x%08x\t#0x%04x\n", out_addr, exp_data, addr);
                 } else
-                    printf("read_reg 0x%x 0xffffffff 0x%08x\t#0x%04x\n", out_addr, exp_data, addr);
+                    printf("read_reg 0x%08x 0xffffffff 0x%08x\t#0x%04x\n", out_addr, exp_data, addr);
             }
         }
     }
@@ -198,7 +138,8 @@ void parse_args(int argc, char** argv, int* flags, std::vector<std::string>& in_
             }
 
             func_determined = true;
-        } else if(strcmp(argv[i], "--adv_intr_hdl") == 0) {
+        } else if(strcmp(argv[i], "--change_addr") == 0) {
+            // change data address from 0xcxxxxxxxx to 0x8xxxxxxxx
             flags[5] = 1;
         } else if(strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             printf("Usage: ./NVDLAUtil [-i1] in_file_1 ([-i2] in_file_2) [--function <function>] [--print_options]\n\n\n");
@@ -211,19 +152,12 @@ void parse_args(int argc, char** argv, int* flags, std::vector<std::string>& in_
             printf("\t\t--print_mem_wr: print AXI data write addresses (aligned to 0x40)\n");
             printf("\t\t--print_reg_txn: print CSB register transactions\n");
             printf("\t\t--print_wait: print CPU wait instructions for NVDLA interrupts\n");
-            printf("\t\t--adv_intr_hdl: handle wait instructions and interrupt status register traces in an advanced manner to adapt to verilator verification flow\n");
 
             exit(0);
         } else {
             std::cerr << "Error: invalid argument: "<< argv[i] << "\n\nUse \"-h\" option to print help message.\n";
             exit(1);
         }
-    }
-
-    // check legality of combination of flags
-    if(flags[5] && !flags[3]) {
-        std::cerr << "Error: --adv_intr_hdl flag requires --print_wait flag\n\nUse \"-h\" option to print help message.\n";
-        exit(1);
     }
 
     if(!func_determined) {
@@ -235,9 +169,8 @@ void parse_args(int argc, char** argv, int* flags, std::vector<std::string>& in_
 
 void VPLog2Txn(const std::string& vp_trace_file_name, const int* print_flags) {
     std::ifstream vp_trace_file;
-    InterruptManager intr_mgr(print_flags[3], print_flags[5]);
     AXI_Txn axi_txn(print_flags[0], print_flags[1]);
-    CSB_Txn csb_txn(print_flags[2], &intr_mgr);
+    CSB_Txn csb_txn(print_flags[2], print_flags[5]);
 
 
     vp_trace_file.open(vp_trace_file_name, std::ios::in);
@@ -327,7 +260,7 @@ void VPLog2Txn(const std::string& vp_trace_file_name, const int* print_flags) {
             std::cerr << "Unresolved csb line:\n" << vp_file_line << "\n";
             exit(1);
         }
-
+        /*
         if(vp_file_line.find("interrupt") != std::string::npos) {
             size_t pos_of_interrupt = vp_file_line.find_last_of(' ');
             std::string last_word = vp_file_line.substr(pos_of_interrupt + 1);
@@ -336,6 +269,7 @@ void VPLog2Txn(const std::string& vp_trace_file_name, const int* print_flags) {
 
             continue;
         }
+         */
 
         if(vp_file_line.find("NvdlaAxiAdaptor::axi_rd_wr_thread, send") != std::string::npos) {
             if(vp_file_line.find("done") != std::string::npos)

@@ -67,7 +67,7 @@ AXIResponder::write_ram(uint32_t addr, uint8_t data) {
 void
 AXIResponder::write(uint32_t addr, uint8_t data, bool timing) {
     // always write to fake ram
-    write_ram(addr,data);
+    // write_ram(addr,data);
     // we access gem5 memory
     wrapper->addWriteReq(sram,timing,addr,data);
 }
@@ -439,13 +439,11 @@ void
 AXIResponder::eval_timing() {
     /* write request */
     if (*dla.aw_awvalid && *dla.aw_awready) {
-        #ifdef PRINT_DEBUG
             printf("(%lu) %s: write request from dla, addr %08lx id %d\n",
                 wrapper->tickcount,
                 name,
                 *dla.aw_awaddr,
                 *dla.aw_awid);
-        #endif
 
         axi_aw_txn txn;
 

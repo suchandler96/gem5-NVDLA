@@ -229,6 +229,11 @@ def addOptions(parser):
     # options.add_accel_shared_cache
     parser.add_argument("--add-accel-shared-cache", action="store_true", default=False, help="Add shared cache for numNVDLA * NVDLA")
 
+    # options.accel_cache_size
+    parser.add_argument("--accel-cache-size", type=str, default="1MB", help="specify cache size for accelerators")
+
+    parser.add_argument("--prefetcher", type=str, default=None, help="Hardware prefetcher class name prefix")
+
     parser.add_argument("-P", "--param", action="append", default=[],
         help="Set a SimObject parameter relative to the root node. "
              "An extended Python multi range slicing syntax can be used "

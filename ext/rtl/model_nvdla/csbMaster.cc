@@ -19,6 +19,22 @@ void CSBMaster::read(uint32_t addr, uint32_t mask, uint32_t data) {
     op.data = data;
     op.tries = 10;
     op.reading = 0;
+    op.wait_until = 0;
+
+    opq.push(op);
+}
+
+void CSBMaster::wait_until(uint32_t addr, uint32_t mask, uint32_t data) {
+    csb_op op;
+
+    op.is_ext = 0;
+    op.write = 0;
+    op.addr = addr;
+    op.mask = mask;
+    op.data = data;
+    op.tries = 10;
+    op.reading = 0;
+    op.wait_until = 1;
 
     opq.push(op);
 }
@@ -30,6 +46,7 @@ void CSBMaster::write(uint32_t addr, uint32_t data) {
     op.write = 1;
     op.addr = addr;
     op.data = data;
+    op.wait_until = 0;
 
     opq.push(op);
 }
@@ -60,22 +77,28 @@ int CSBMaster::eval(int noop) {
     }
 
     if (!op.write && op.reading && dla->nvdla2csb_valid) {
-        printf("(%lu) read response from nvdla: %08x\n",
+        if(op.wait_until == 0) {
+            printf("(%lu) read response from nvdla: %08x\n",
                 wrapper->tickcount, dla->nvdla2csb_data);
+        }
 
         if ((dla->nvdla2csb_data & op.mask) != (op.data & op.mask)) {
             op.reading = 0;
-            op.tries--;
-            printf("(%lu) invalid response -- trying again\n",
-                    wrapper->tickcount);
-            if (!op.tries) {
-                printf("(%lu) ERROR: timed out reading response\n",
-                        wrapper->tickcount);
-                _test_passed = 0;
-                opq.pop();
+            if(op.wait_until == 0) {
+                op.tries--;
+                printf("(%lu) invalid response -- trying again\n",
+                       wrapper->tickcount);
+                if (!op.tries) {
+                    printf("(%lu) ERROR: timed out reading response\n",
+                           wrapper->tickcount);
+                    _test_passed = 0;
+                    opq.pop();
+                }
             }
-        } else
+        } else {
+            if(op.wait_until) printf("(%lu) Intr reg got the expected response 0x%08x\n", wrapper->tickcount, op.data);
             opq.pop();
+        }
     }
 
     if (!op.write && op.reading)
@@ -102,9 +125,10 @@ int CSBMaster::eval(int noop) {
         dla->csb2nvdla_valid = 1;
         dla->csb2nvdla_addr = op.addr;
         dla->csb2nvdla_write = 0;
-        printf("(%lu) read from nvdla: addr %08x\n",
-                wrapper->tickcount, op.addr);
-
+        if(op.wait_until == 0) {
+            printf("(%lu) read from nvdla: addr %08x\n",
+                   wrapper->tickcount, op.addr);
+        }
         op.reading = 1;
     }
 

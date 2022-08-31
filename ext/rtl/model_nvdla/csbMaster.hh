@@ -21,6 +21,7 @@ class CSBMaster {
         int write;
         int tries;
         int reading;
+        int wait_until;
         uint32_t addr;
         uint32_t mask;
         uint32_t data;
@@ -38,6 +39,8 @@ public:
     CSBMaster(VNV_nvdla *_dla, Wrapper_nvdla *_wrapper);
 
     void read(uint32_t addr, uint32_t mask, uint32_t data);
+
+    void wait_until(uint32_t addr, uint32_t mask, uint32_t data);
 
     void write(uint32_t addr, uint32_t data);
 
