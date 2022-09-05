@@ -110,7 +110,7 @@ class Ex5LittleCluster(devices.CpuCluster):
         super(Ex5LittleCluster, self).__init__(system, num_cpus, cpu_clock,
                                          cpu_voltage, *cpu_config)
 
-def createSystem(caches, kernel, accelerators, bootscript,
+def createSystem(caches, kernel, accelerators, ddr_type, bootscript,
                  machine_type="VExpress_GEM5",disks=[],
                  mem_size=default_mem_size, bootloader=None):
     platform = ObjectList.platform_list.get(machine_type)
@@ -122,7 +122,7 @@ def createSystem(caches, kernel, accelerators, bootscript,
                                readfile=bootscript)
 
     # sys.mem_ctrls = [ SimpleMemory(range=r, port=sys.membus.mem_side_ports) for r in sys.mem_ranges ]
-    sys.mem_ctrls = [MemCtrl(dram=DDR3_1600_8x8(range=r), port=sys.membus.mem_side_ports) for r in sys.mem_ranges]
+    sys.mem_ctrls = [MemCtrl(dram=eval(ddr_type + "(range=r)"), port=sys.membus.mem_side_ports) for r in sys.mem_ranges]
 
 
     sys.connect()
@@ -217,20 +217,52 @@ def addOptions(parser):
     parser.add_argument("--enableTimingAXI", action="store_true",
                         default=False,
                         help="Enable Timing memory requests NVDLA")
+
+    # options.ddr_type
+    parser.add_argument("--ddr-type", type=str, default="DDR3_1600_8x8", help="specify system dram type")
+    # available: DDR4_2400_8x8
+
     # options.numNVDLA
     parser.add_argument("--numNVDLA", type=int, default=1,
                         help="number of NVDLAs")
     # options.dma_enable
     parser.add_argument("--dma-enable", action="store_true", default=False, help="Use scratchpad in NVDLA aided with DMA")
 
+
     # options.add_accel_private_cache
-    parser.add_argument("--add-accel-private-cache", action="store_true", default=False, help="Add private cache for NVDLA; Currently it conly applies for nvdla0")
+    parser.add_argument("--add-accel-private-cache", action="store_true", default=False, help="Add private cache for NVDLA")
+
+    # options.accel_pr_cache_size
+    parser.add_argument("--accel-pr-cache-size", type=str, default="1MB", help="specify private cache size for accelerators")
+    # options.accel_pr_cache_assoc
+    parser.add_argument("--accel-pr-cache-assoc", type=int, default=16, help="specify private cache associativity for accelerators")
+    # options.accel_pr_cache_tag_lat
+    parser.add_argument("--accel-pr-cache-tag-lat", type=int, default=12, help="specify private cache tag latency for accelerators")
+    # options.accel_pr_cache_dat_lat
+    parser.add_argument("--accel-pr-cache-dat-lat", type=int, default=12, help="specify private cache data latency for accelerators")
+    # options.accel_pr_cache_resp_lat
+    parser.add_argument("--accel-pr-cache-resp-lat", type=int, default=5, help="specify private cache response latency for accelerators")
+    # options.accel_pr_cache_mshr
+    parser.add_argument("--accel-pr-cache-mshr", type=int, default=32, help="specify number of private cache mshrs")
+    # options.accel_pr_cache_tgts_per_mshr
+    parser.add_argument("--accel-pr-cache-tgts_per_mshr", type=int, default=8, help="specify number of targets per private cache mshr")
+    # options.accel_pr_cache_wr_buf
+    parser.add_argument("--accel-pr-cache-wr-buf", type=int, default=8, help="specify number of private cache write buffers for accelerators")
+    # options.accel_pr_cache_clus
+    parser.add_argument("--accel-pr-cache-clus", type=str, default='mostly_incl', help="specify private cache size cusivity for accelerators")
+
+
+
 
     # options.add_accel_shared_cache
     parser.add_argument("--add-accel-shared-cache", action="store_true", default=False, help="Add shared cache for numNVDLA * NVDLA")
 
-    # options.accel_cache_size
-    parser.add_argument("--accel-cache-size", type=str, default="1MB", help="specify cache size for accelerators")
+    # options.accel_sh_cache_size
+    parser.add_argument("--accel-sh-cache-size", type=str, default="1MB", help="specify shared cache size for accelerators")
+    # options.accel_sh_cache_assoc
+    parser.add_argument("--accel-sh-cache-assoc", type=int, default=16, help="specify shared cache associativity for accelerators")
+    # options.accel_sh_cache_clus
+    parser.add_argument("--accel-sh-cache-clus", type=str, default='mostly_excl', help="specify shared cache size cusivity for accelerators")
 
     parser.add_argument("--prefetcher", type=str, default=None, help="Hardware prefetcher class name prefix")
 
@@ -271,6 +303,7 @@ def build(options):
     system = createSystem(options.caches,
                           options.kernel,
                           options.accelerators,
+                          options.ddr_type,
                           options.bootscript,
                           options.machine_type,
                           disks=disks,

@@ -61,13 +61,13 @@ int main(int argc, char *argv[])
     }
 
     printf("start_time = %f\n", wall_time());
-    m5_start_accel((uint64_t)region_nvdla,size,(uint64_t)region_nvdla);
+    m5_start_accel_id((uint64_t)region_nvdla, size, (uint64_t)region_nvdla, 0);
 
 
     bool needToWaitForNVDLA = true;
 
     while (needToWaitForNVDLA) {
-        needToWaitForNVDLA = m5_wait_accel((uint64_t)region_nvdla,size);
+        needToWaitForNVDLA = m5_wait_accel_id(0);
     }
 
     printf("end_time = %f\n", wall_time());

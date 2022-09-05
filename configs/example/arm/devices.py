@@ -151,12 +151,10 @@ class CpuCluster(SubSystem):
         self.l2 = self._l2_type()
         for cpu in self.cpus:
             cpu.connectAllPorts(self.toL2Bus)
-            cpu.accel_0.mem_side = self.toL2Bus.cpu_side_ports  # mem_side is for loading NVDLA traces, not for runtime memory accesses
-            cpu.accel_1.mem_side = self.toL2Bus.cpu_side_ports
-            cpu.accel_2.mem_side = self.toL2Bus.cpu_side_ports
-            cpu.accel_3.mem_side = self.toL2Bus.cpu_side_ports
-            # cpu.accel_0.sram_port = self.toL2Bus.cpu_side_ports
-            # cpu.accel_0.dram_port = self.toL2Bus.cpu_side_ports
+            for i in range(4):
+                # mem_side is for loading NVDLA traces, not for runtime memory accesses
+                exec("cpu.accel_%d.mem_side = self.toL2Bus.cpu_side_ports" % i)
+
         self.toL2Bus.mem_side_ports = self.l2.cpu_side
 
     def addPrivateAccelerator(self, clk_domain, membus, options):
@@ -166,84 +164,74 @@ class CpuCluster(SubSystem):
 
             cpu.num_accels = options.numNVDLA
 
-            # in the current phase, we only use one NVDLA accelerator
+            # in the current phase, we only use one NVDLA accelerator, and spm cannot be used with caches
             if options.dma_enable:
-                cpu.accel_0 = rtlNVDLA(dma_enable=1, dma_try_get_fraction=1, spm_line_size=1024)
+                assert not options.add_accel_private_cache and not options.add_accel_shared_cache
+                for i in range(4):
+                    exec("cpu.accel_%d = rtlNVDLA(dma_enable=1, dma_try_get_fraction=1, spm_line_size=1024)" % i)
             else:
-                cpu.accel_0 = rtlNVDLA(dma_enable=0, dma_try_get_fraction=1, spm_line_size=1024)
-            cpu.accel_1 = rtlNVDLA()
-            cpu.accel_2 = rtlNVDLA()
-            cpu.accel_3 = rtlNVDLA()
+                for i in range(4):
+                    exec("cpu.accel_%d = rtlNVDLA(dma_enable=0, dma_try_get_fraction=1, spm_line_size=1024)" % i)
 
-            if options.add_accel_private_cache and not options.dma_enable:
-                self.accel_toL2Bus = L2XBar(width=64, clk_domain=clk_domain)
-                self.accel_l2 = self._l2_type()
-                self.accel_toL2Bus.mem_side_ports = self.accel_l2.cpu_side
-                self.accel_l2.mem_side = membus
+            for i in range(4):
+                exec("cpu.accel_port_%d = cpu.accel_%d.cpu_side" % (i, i))
+                # e.g. cpu.accel_port_0 = cpu.accel_0.cpu_side
 
-                cpu.accel_0.sram_port = self.accel_toL2Bus.cpu_side_ports
-                cpu.accel_0.dram_port = self.accel_toL2Bus.cpu_side_ports
+            outside_ports = ["cpu.accel_%d.dram_port" % i for i in range(4)]
 
+            if options.add_accel_private_cache:
+                for i in range(options.numNVDLA):
+                    exec("self.accel_%d_pr_cache = Cache(tag_latency=options.accel_pr_cache_tag_lat,\
+                                                         data_latency=options.accel_pr_cache_dat_lat,\
+                                                         response_latency=options.accel_pr_cache_resp_lat,\
+                                                         mshrs=options.accel_pr_cache_mshr,\
+                                                         tgts_per_mshr=options.accel_pr_cache_tgts_per_mshr,\
+                                                         size=options.accel_pr_cache_size,\
+                                                         assoc=options.accel_pr_cache_assoc,\
+                                                         write_buffers=options.accel_pr_cache_wr_buf,\
+                                                         clusivity=options.accel_pr_cache_clus)" % i)
 
-            cpu.accel_port_0 = cpu.accel_0.cpu_side
-            cpu.accel_port_1 = cpu.accel_1.cpu_side
-            cpu.accel_port_2 = cpu.accel_2.cpu_side
-            cpu.accel_port_3 = cpu.accel_3.cpu_side
-
-            cpu.accel_0.dma_port = membus   # we still keep the dma_port for a cache-based configuration to avoid disconnection errors
-            # this is high speed
+                for i in range(options.numNVDLA):
+                    exec("%s = self.accel_%d_pr_cache.cpu_side" % (outside_ports[i], i))
+                    outside_ports[i] = "self.accel_%d_pr_cache.mem_side" % i
 
             if options.add_accel_shared_cache:
-                self.accel_toL3Bus = L2XBar(width=64, clk_domain=clk_domain)
-                self.accel_l3 = Cache(tag_latency=12, data_latency=12, response_latency=5, mshrs=32, tgts_per_mshr=8,
-                                      size=options.accel_cache_size, assoc=16, write_buffers=8, clusivity='mostly_excl', prefetcher=eval(options.prefetcher + "Prefetcher(degree=8, latency=1.0)")) \
-                    if options.prefetcher is not None else Cache(tag_latency=12, data_latency=12, response_latency=5, mshrs=32, tgts_per_mshr=8,
-                                                                 size=options.accel_cache_size, assoc=16, write_buffers=8, clusivity='mostly_excl')
-                self.accel_toL3Bus.mem_side_ports = self.accel_l3.cpu_side
-                self.accel_l3.mem_side = membus
+                self.accel_to_shared_bus = L2XBar(width=64, clk_domain=clk_domain)
+                self.accel_sh_cache = Cache(tag_latency=12,
+                                            data_latency=12,
+                                            response_latency=5,
+                                            mshrs=32,
+                                            tgts_per_mshr=8,
+                                            write_allocator=WriteAllocator(),
+                                            size=options.accel_sh_cache_size,
+                                            assoc=options.accel_sh_cache_assoc,
+                                            write_buffers=8,
+                                            clusivity='mostly_excl')
+                self.accel_to_shared_bus.mem_side_ports = self.accel_sh_cache.cpu_side
+                for port in outside_ports:
+                    exec("%s = self.accel_to_shared_bus.cpu_side_ports" % port)
 
-                cpu.accel_0.sram_port = self.accel_toL3Bus.cpu_side_ports
-                cpu.accel_0.dram_port = self.accel_toL3Bus.cpu_side_ports
-                cpu.accel_1.sram_port = self.accel_toL3Bus.cpu_side_ports
-                cpu.accel_1.dram_port = self.accel_toL3Bus.cpu_side_ports
-                cpu.accel_2.sram_port = self.accel_toL3Bus.cpu_side_ports
-                cpu.accel_2.dram_port = self.accel_toL3Bus.cpu_side_ports
-                cpu.accel_3.sram_port = self.accel_toL3Bus.cpu_side_ports
-                cpu.accel_3.dram_port = self.accel_toL3Bus.cpu_side_ports
+                outside_ports = ["self.accel_sh_cache.mem_side"]
 
-            else:
-                if options.dma_enable or not options.add_accel_private_cache:
-                    cpu.accel_0.sram_port = membus
-                cpu.accel_1.sram_port = membus
-                cpu.accel_2.sram_port = membus
-                cpu.accel_3.sram_port = membus
-                # this is a regular bus
-                if options.dma_enable or not options.add_accel_private_cache:
-                    cpu.accel_0.dram_port = membus
-                cpu.accel_1.dram_port = membus
-                cpu.accel_2.dram_port = membus
-                cpu.accel_3.dram_port = membus
+            for port in outside_ports:
+                exec("%s = membus" % port)
 
-            # max num inflight requests
-            cpu.accel_0.maxReq = options.maxReqNVDLA
-            cpu.accel_1.maxReq = options.maxReqNVDLA
-            cpu.accel_2.maxReq = options.maxReqNVDLA
-            cpu.accel_3.maxReq = options.maxReqNVDLA
-            # enable Tracing
-            cpu.accel_0.enableWaveform = options.enableWaveform
-            cpu.accel_1.enableWaveform = options.enableWaveform
-            cpu.accel_2.enableWaveform = options.enableWaveform
-            cpu.accel_3.enableWaveform = options.enableWaveform
-            # enable Timing
-            cpu.accel_0.enableTimingAXI = options.enableTimingAXI
-            cpu.accel_1.enableTimingAXI = options.enableTimingAXI
-            cpu.accel_2.enableTimingAXI = options.enableTimingAXI
-            cpu.accel_3.enableTimingAXI = options.enableTimingAXI
-            # ids
-            cpu.accel_0.id_nvdla = 0
-            cpu.accel_1.id_nvdla = 1
-            cpu.accel_2.id_nvdla = 2
-            cpu.accel_3.id_nvdla = 3
+            for i in range(4):
+                # still keep dma_port for cached config to avoid disconnection errors
+                exec("cpu.accel_%d.dma_port = membus" % i)
+
+                # max num inflight requests
+                exec("cpu.accel_%d.maxReq = options.maxReqNVDLA" % i)
+
+                # enable Tracing
+                exec("cpu.accel_%d.enableWaveform = options.enableWaveform" % i)
+
+                # enable Timing
+                exec("cpu.accel_%d.enableTimingAXI = options.enableTimingAXI" % i)
+
+                # ids
+                exec("cpu.accel_%d.id_nvdla = %d" % (i, i))
+
             # DRAM base addr
             cpu.accel_0.base_addr_dram = 0xA0000000
             cpu.accel_1.base_addr_dram = 0xA0000000

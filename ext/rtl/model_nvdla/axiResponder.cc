@@ -593,6 +593,7 @@ AXIResponder::eval_timing() {
             unsigned int addr_front = inflight_req_order.front();
             // if burst
             if (inflight_req[addr_front].front().rvalid) {
+                // printf("(%lu) read data has returned by gem5 and got in nvdla, addr %08x\n", wrapper->tickcount, addr_front);
                 // push the front one
                 r_fifo.push(inflight_req[addr_front].front());
                 // remove the front

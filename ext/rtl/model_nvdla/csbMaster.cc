@@ -85,15 +85,23 @@ int CSBMaster::eval(int noop) {
         if ((dla->nvdla2csb_data & op.mask) != (op.data & op.mask)) {
             op.reading = 0;
             if(op.wait_until == 0) {
-                op.tries--;
-                printf("(%lu) invalid response -- trying again\n",
-                       wrapper->tickcount);
-                if (!op.tries) {
-                    printf("(%lu) ERROR: timed out reading response\n",
-                           wrapper->tickcount);
-                    _test_passed = 0;
+                if(op.write == 0 && op.addr == 0xffff0003 && op.data == 0x0 && dla->nvdla2csb_data != 0) {
+                    printf("new interrupts come too early, so ignore this reg txn\n");
                     opq.pop();
+                } else {
+                    op.tries--;
+                    printf("(%lu) invalid response -- trying again\n",
+                           wrapper->tickcount);
+                    if (!op.tries) {
+                        printf("(%lu) ERROR: timed out reading response\n",
+                               wrapper->tickcount);
+                        _test_passed = 0;
+                        opq.pop();
+                    }
                 }
+            } else if(((dla->nvdla2csb_data & op.mask) & op.data) == op.data) {
+                printf("(%lu) Intr %0x08x has the expected bit 0x%08x\n", wrapper->tickcount, dla->nvdla2csb_data, op.data);
+                opq.pop();
             }
         } else {
             if(op.wait_until) printf("(%lu) Intr reg got the expected response 0x%08x\n", wrapper->tickcount, op.data);
