@@ -96,6 +96,8 @@ private:
     bool sram;
     unsigned int max_req_inflight;
 
+    int read_resp_ready;
+
 
     std::queue<uint64_t> dma_addr_fifo;
     std::map<uint64_t, uint32_t> dma_addr_record;

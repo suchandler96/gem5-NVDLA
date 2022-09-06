@@ -243,15 +243,15 @@ rtlNVDLA::runIterationNVDLA() {
         waiting = 0;
     }
 
-
-    if (timingMode) {
-        wr->axi_dbb->eval_timing();
-        wr->axi_cvsram->eval_timing();
-    } else {
-        wr->axi_dbb->eval_ram();
-        wr->axi_cvsram->eval_ram();
+    if (!waiting_for_gem5_mem) {
+        if (timingMode) {
+            wr->axi_dbb->eval_timing();
+            wr->axi_cvsram->eval_timing();
+        } else {
+            wr->axi_dbb->eval_ram();
+            wr->axi_cvsram->eval_ram();
+        }
     }
-
 
     outputNVDLA& output = wr->tick(input);
 

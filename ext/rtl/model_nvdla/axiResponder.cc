@@ -30,6 +30,8 @@ AXIResponder::AXIResponder(struct connections _dla,
     *dla.ar_arready = 1;
     *dla.r_rvalid = 0;
 
+    read_resp_ready = 1;
+
     name = _name;
 
     sram = sram_;
@@ -563,6 +565,14 @@ AXIResponder::eval_timing() {
         // next cycle we are not ready
         *dla.ar_arready = 0;
     } else {
+        *dla.ar_arready = wrapper->dma_enable ?
+            (waiting_for_dma_txn_addr_order.size() <= max_req_inflight) : \
+            (inflight_req_order.size() <= max_req_inflight);
+    }
+
+
+    // handle read response from gem5 memory
+    if (read_resp_ready) {
         if (wrapper->dma_enable) {
             uint64_t addr_front = waiting_for_dma_txn_addr_order.front();
             if (waiting_for_dma_txn[addr_front].front().rvalid) {
@@ -575,11 +585,7 @@ AXIResponder::eval_timing() {
                     waiting_for_dma_txn.erase(addr_front);
                 // delete in the queue order
                 waiting_for_dma_txn_addr_order.pop_front();
-                *dla.ar_arready = 0;
-            } else if(waiting_for_dma_txn_addr_order.size() <= max_req_inflight)
-                *dla.ar_arready = 1;
-            else
-                *dla.ar_arready = 0;
+            }
 
         } else {
 #ifdef PRINT_DEBUG
@@ -593,7 +599,7 @@ AXIResponder::eval_timing() {
             unsigned int addr_front = inflight_req_order.front();
             // if burst
             if (inflight_req[addr_front].front().rvalid) {
-                // printf("(%lu) read data has returned by gem5 and got in nvdla, addr %08x\n", wrapper->tickcount, addr_front);
+                printf("(%lu) read data has returned by gem5 and got in nvdla, addr %08x\n", wrapper->tickcount, addr_front);
                 // push the front one
                 r_fifo.push(inflight_req[addr_front].front());
                 // remove the front
@@ -604,13 +610,12 @@ AXIResponder::eval_timing() {
                 }
                 // delete in the queue order
                 inflight_req_order.pop();
-                *dla.ar_arready = 0;
-            } else if (inflight_req_order.size() <= max_req_inflight) {
-                *dla.ar_arready = 1;
-            } else {
-                *dla.ar_arready = 0;
             }
         }
+
+        read_resp_ready = 0;
+    } else {
+        read_resp_ready = 1;
     }
 
     /* now handle the write FIFOs ... */
