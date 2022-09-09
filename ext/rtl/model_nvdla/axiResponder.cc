@@ -508,13 +508,19 @@ AXIResponder::eval_timing() {
                 //! only when waiting_for_dma_txn_addr_order is empty, we can get spm data directly to r_fifo
                 if (wrapper->spm.find(spm_line_addr) != wrapper->spm.end()) {  // this key exists in spm
 
+                    // printf("this spm_line_addr exists in spm, 0x%08lx\n", spm_line_addr);
                     if(!waiting_for_dma_txn_addr_order.empty()) {
                         // we must follow the order of read requests issued by nvdla
+                        // printf("but waiting_for_dma_txn_addr_order is not empty\n");
+                        // printf("waiting_for_dma_txn_addr_order.front() = 0x%08lx\n", waiting_for_dma_txn_addr_order.front());
+                        // printf("current inflight requests: %zu\n", waiting_for_dma_txn_addr_order.size());
                         txn.rvalid = 0;
                         waiting_for_dma_txn_addr_order.push_back(start_addr);
                         waiting_for_dma_txn[start_addr].push_back(txn);
                     } else {
                         // directly transfer from spm to nvdla
+                        // printf("waiting_for_dma_txn_addr_order is empty, so directly transfer from spm to nvdla\n");
+                        printf("(%lu) read data returned by gem5 (already in spm and no pending transfers), addr 0x%08lx\n", wrapper->tickcount, start_addr);
                         txn.rvalid = 1;
 
                         for (int k = 0; k < AXI_WIDTH / 32; k++) {
@@ -574,17 +580,34 @@ AXIResponder::eval_timing() {
     // handle read response from gem5 memory
     if (read_resp_ready) {
         if (wrapper->dma_enable) {
-            uint64_t addr_front = waiting_for_dma_txn_addr_order.front();
-            if (waiting_for_dma_txn[addr_front].front().rvalid) {
-                // push the front one
-                r_fifo.push(waiting_for_dma_txn[addr_front].front());
-                // remove the front
-                waiting_for_dma_txn[addr_front].pop_front();
-                // check if empty to remove entry from map
-                if(waiting_for_dma_txn[addr_front].empty())
-                    waiting_for_dma_txn.erase(addr_front);
-                // delete in the queue order
-                waiting_for_dma_txn_addr_order.pop_front();
+
+            if (dma_addr_fifo.empty()) {
+                // no dma request is in flight, so all txns inflight are actually in spm. can set rvalid to 1
+                if (waiting_for_dma_txn[*waiting_for_dma_txn_addr_order.begin()].front().rvalid == 0) {  // check whether we have already set those rvalids
+                    for (auto addr_order_it = waiting_for_dma_txn_addr_order.begin(); addr_order_it != waiting_for_dma_txn_addr_order.end(); addr_order_it++) {
+                        for (auto txn_it = waiting_for_dma_txn[*addr_order_it].begin(); txn_it != waiting_for_dma_txn[*addr_order_it].end(); txn_it++) {
+                            txn_it->rvalid = 1;
+                        }
+                    }
+                }
+            }
+
+
+            if (!waiting_for_dma_txn_addr_order.empty()) {
+                uint64_t addr_front = waiting_for_dma_txn_addr_order.front();
+
+                if (waiting_for_dma_txn[addr_front].front().rvalid) {
+                    // push the front one
+                    printf("(%lu) read data returned by gem5 dma (or already in spm), addr 0x%08lx\n", wrapper->tickcount, addr_front);
+                    r_fifo.push(waiting_for_dma_txn[addr_front].front());       // todo: add some AXI_R_DELAY txns. currently AXI_R_DELAY = 0
+                    // remove the front
+                    waiting_for_dma_txn[addr_front].pop_front();
+                    // check if empty to remove entry from map
+                    if (waiting_for_dma_txn[addr_front].empty())
+                        waiting_for_dma_txn.erase(addr_front);
+                    // delete in the queue order
+                    waiting_for_dma_txn_addr_order.pop_front();
+                }
             }
 
         } else {
@@ -598,10 +621,11 @@ AXIResponder::eval_timing() {
 
             unsigned int addr_front = inflight_req_order.front();
             // if burst
+            // using inflight_req_order.front().rvalid ensures the order of the response
             if (inflight_req[addr_front].front().rvalid) {
-                printf("(%lu) read data has returned by gem5 and got in nvdla, addr %08x\n", wrapper->tickcount, addr_front);
+
                 // push the front one
-                r_fifo.push(inflight_req[addr_front].front());
+                r_fifo.push(inflight_req[addr_front].front());  // todo: add some AXI_R_DELAY txns. currently AXI_R_DELAY = 0
                 // remove the front
                 inflight_req[addr_front].pop_front();
                 // check if empty to remove entry from map
@@ -722,7 +746,7 @@ AXIResponder::inflight_resp(uint32_t addr, const uint8_t* data) {
     std::list<axi_r_txn>::iterator it = inflight_req[addr].begin();
     // Get the correct ptr
     while (it != inflight_req[addr].end() and it->rvalid) {
-               it++;
+       it++;
     }
     assert(it != inflight_req[addr].end());
     for (int i = 0; i < AXI_WIDTH / 32; i++) {
@@ -735,6 +759,7 @@ AXIResponder::inflight_resp(uint32_t addr, const uint8_t* data) {
                 read_ram(addr+i+0));*/
     }
     it->rvalid = 1;
+    printf("(%lu) read data returned by gem5, addr 0x%08x\n", wrapper->tickcount, addr);
     #ifdef PRINT_DEBUG
         printf("Remaining %d\n", inflight_req_order.size());
         printf("(%lu) %s: Inflight Resp Timing Finished: addr %08lx \n",
@@ -776,7 +801,7 @@ AXIResponder::inflight_resp_atomic(uint32_t addr,
 
 void
 AXIResponder::inflight_dma_resp(uint64_t addr, const uint8_t* data, uint32_t len) {
-    printf("AXIResponder handling DMA return data @0x%08lx with length %d.\n", addr, len);
+    printf("(%lu) AXIResponder handling DMA return data @0x%08lx with length %d.\n", wrapper->tickcount, addr, len);
 
     uint64_t addr_recorded = dma_addr_fifo.front();
     // printf("addr_recorded = 0x%08lx, addr = 0x%08lx\n", addr_recorded, addr);
@@ -796,14 +821,14 @@ AXIResponder::inflight_dma_resp(uint64_t addr, const uint8_t* data, uint32_t len
     for (auto addr_it = waiting_for_dma_txn_addr_order.begin(); addr_it != waiting_for_dma_txn_addr_order.end(); addr_it++) {
         // judge whether the data for this (AXI_WIDTH/8)-long txn has arrived
         uint64_t dma_transfer_addr = (*addr_it) & ~(uint64_t)(wrapper->spm_line_size - 1);
-        if (wrapper->spm.find(dma_transfer_addr) == wrapper->spm.end() || *addr_it - dma_transfer_addr >= entry_vector.size()) {
+        if (wrapper->spm.find(dma_transfer_addr) == wrapper->spm.end() || *addr_it - dma_transfer_addr >= wrapper->spm[dma_transfer_addr].size()) {
             // the first condition says the entire DMA line has not arrived
             // the second says part of this DMA line has arrived, but data for this txn hasn't
             printf("data for 0x%08lx has not arrived in spm, so stop updating spm, and go on to do DMA.\n", *addr_it);
             break;
         }
 
-        printf("data for 0x%08lx is now in spm.\n", *addr_it);
+        printf("(%lu) read data returned by gem5 dma (or already in spm), addr 0x%08lx\n", wrapper->tickcount, *addr_it);
         std::list<axi_r_txn>::iterator it = waiting_for_dma_txn[*addr_it].begin();
         // Get the correct ptr
         while (it != waiting_for_dma_txn[*addr_it].end() and it->rvalid)
@@ -908,5 +933,5 @@ AXIResponder::read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* da
 
 uint32_t
 AXIResponder::getRequestsOnFlight() {
-    return inflight_req_order.size();
+    return wrapper->dma_enable ? waiting_for_dma_txn_addr_order.size() : inflight_req_order.size();
 }
