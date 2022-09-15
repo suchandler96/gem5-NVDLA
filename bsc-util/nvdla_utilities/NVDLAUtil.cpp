@@ -24,12 +24,13 @@ public:
     AXI_Txn(int _print_rd, int _print_wr) : print_rd_flag(_print_rd), print_wr_flag(_print_wr) {}
 
     void print_axi_txn() const {
-        if(is_write) {
-            if(print_wr_flag)
-                printf("%lx\n", address);
-        } else {
-            if(print_rd_flag)
-                printf("%lx\n", address);
+        if(print_rd_flag && print_wr_flag) {
+            if(is_write) printf("w %lx\n", address);
+            else printf("r %lx\n", address);
+        } else if(print_wr_flag && is_write) {
+            printf("%lx\n", address);
+        } else if(print_rd_flag && !is_write) {
+            printf("%lx", address);
         }
     }
 
@@ -119,9 +120,6 @@ void parse_args(int argc, char** argv, int* flags, std::vector<std::string>& in_
         } else if(strcmp(argv[i], "--print_reg_txn") == 0) {
             // print CSB register transactions
             flags[2] = 1;
-        } else if(strcmp(argv[i], "--print_wait") == 0) {
-            // print interrupt signals to inform CPU to wait
-            flags[3] = 1;
         } else if(strcmp(argv[i], "--function") == 0 || strcmp(argv[i], "-f") == 0) {
             // select the function to operate on
             i++;
@@ -151,7 +149,6 @@ void parse_args(int argc, char** argv, int* flags, std::vector<std::string>& in_
             printf("\t\t--print_mem_rd: print AXI data read addresses (aligned to 0x40)\n");
             printf("\t\t--print_mem_wr: print AXI data write addresses (aligned to 0x40)\n");
             printf("\t\t--print_reg_txn: print CSB register transactions\n");
-            printf("\t\t--print_wait: print CPU wait instructions for NVDLA interrupts\n");
 
             exit(0);
         } else {
