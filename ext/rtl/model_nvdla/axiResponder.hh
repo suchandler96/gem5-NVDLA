@@ -53,7 +53,7 @@ private:
 #define AXI_BLOCK_SIZE 4096
 #define AXI_WIDTH 512
 
-    const static int AXI_R_LATENCY = 2;
+    int AXI_R_LATENCY;
     const static int AXI_R_DELAY = 0;
 
     struct axi_r_txn {

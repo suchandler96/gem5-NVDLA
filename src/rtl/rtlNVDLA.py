@@ -46,16 +46,18 @@ class rtlNVDLA(rtlObject):
 
     dma_try_get_fraction = Param.UInt64(1, "Every NVDLA tick, try get (dma_line_length / dma_try_get_fraction) bytes from DMA")
 
-    spm_line_size = Param.UInt64(512, "The minimal granularity to copy data from memory to SPM")
+    spm_latency = Param.UInt64(12, "Latency for NVDLA private scratchpad memory")
+
+    spm_line_size = Param.UInt64(1024, "The minimal granularity to copy data from memory to SPM")
 
     spm_line_num = Param.UInt64(64, "Capacity of SPM, counted in spm line numbers")
 
-    id_nvdla = Param.UInt64(0,"id of the NVDLA")
+    id_nvdla = Param.UInt64(0, "id of the NVDLA")
 
-    maxReq = Param.UInt64(4,"Max Request inglight for NVDLA")
+    maxReq = Param.UInt64(4, "Max Request inflight for NVDLA")
 
     base_addr_dram = Param.UInt64(0xA0000000,"Max Request inglight for NVDLA")
 
     base_addr_sram = Param.UInt64(0xB0000000,"Max Request inglight for NVDLA")
 
-    enableTimingAXI = Param.Bool(False,"Enable Timing mode in AXI")
+    enableTimingAXI = Param.Bool(False, "Enable Timing mode in AXI")

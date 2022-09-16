@@ -168,10 +168,11 @@ class CpuCluster(SubSystem):
             if options.dma_enable:
                 assert not options.add_accel_private_cache and not options.add_accel_shared_cache
                 for i in range(4):
-                    exec("cpu.accel_%d = rtlNVDLA(dma_enable=1, dma_try_get_fraction=1, spm_line_size=1024)" % i)
+                    exec("cpu.accel_%d = rtlNVDLA(dma_enable=1, dma_try_get_fraction=1, spm_latency=options.spm_lat,\
+                        spm_line_size=1024)" % i)
             else:
                 for i in range(4):
-                    exec("cpu.accel_%d = rtlNVDLA(dma_enable=0, dma_try_get_fraction=1, spm_line_size=1024)" % i)
+                    exec("cpu.accel_%d = rtlNVDLA(dma_enable=0)" % i)
 
             for i in range(4):
                 exec("cpu.accel_port_%d = cpu.accel_%d.cpu_side" % (i, i))

@@ -38,6 +38,9 @@ AXIResponder::AXIResponder(struct connections _dla,
 
     max_req_inflight = (maxReq<240) ? maxReq:240;
 
+    AXI_R_LATENCY = wrapper->dma_enable ? wrapper->spm_latency : 0;
+    // for non-spm configuration, this fixed latency is modeled by gem5 memory system
+
     // add some latency...
     for (int i = 0; i < AXI_R_LATENCY; i++) {
         axi_r_txn txn;
@@ -47,7 +50,7 @@ AXIResponder::AXIResponder(struct connections _dla,
         txn.rid = 0;
         txn.rlast = 0;
         for (int i = 0; i < AXI_WIDTH / 32; i++) {
-                txn.rdata[i] = 0xAAAAAAAA;
+            txn.rdata[i] = 0xAAAAAAAA;
         }
 
         r0_fifo.push(txn);

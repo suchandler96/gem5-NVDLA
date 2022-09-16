@@ -223,10 +223,14 @@ def addOptions(parser):
     # available: DDR4_2400_8x8
 
     # options.numNVDLA
-    parser.add_argument("--numNVDLA", type=int, default=1,
-                        help="number of NVDLAs")
+    parser.add_argument("--numNVDLA", type=int, default=1, help="number of NVDLAs")
+
     # options.dma_enable
     parser.add_argument("--dma-enable", action="store_true", default=False, help="Use scratchpad in NVDLA aided with DMA")
+
+    # options.spm_lat
+    parser.add_argument("--spm-lat", type=int, default=12, help="NVDLA private scratchpad memory latency")
+
 
 
     # options.add_accel_private_cache

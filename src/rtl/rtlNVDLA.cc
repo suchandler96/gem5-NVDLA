@@ -49,6 +49,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     baseAddrDRAM(params.base_addr_dram),
     baseAddrSRAM(params.base_addr_sram),
     waiting_for_gem5_mem(0),
+    spm_latency(params.spm_latency),
     spm_line_size(params.spm_line_size),
     spm_line_num(params.spm_line_num),
     dma_enable(params.dma_enable),
@@ -130,7 +131,7 @@ rtlNVDLA::handleRequest(PacketPtr pkt)
 void
 rtlNVDLA::initNVDLA() {
     // Wrapper
-    wr = new Wrapper_nvdla(traceEnable, "trace.vcd",max_req_inflight, dma_enable, spm_line_size, spm_line_num);
+    wr = new Wrapper_nvdla(traceEnable, "trace.vcd",max_req_inflight, dma_enable, spm_latency, spm_line_size, spm_line_num);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
 }
@@ -159,8 +160,8 @@ rtlNVDLA::loadTraceNVDLA(char *ptr) {
     // init some variable before exec of trace
     quiesc_timer = 200;
     waiting = 0;
-    // we run at 1GHz (current system runs at 2Ghz)
-    schedule(tickEvent,nextCycle()+1);
+
+    schedule(tickEvent,nextCycle());
 }
 
 void
@@ -198,7 +199,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
     // memory requests already in spm is dealt with in wrapper_nvdla
     // only one DMA request can be tackled at once
     if (!out.dma_read_buffer.empty()) {
-        std::pair aux = out.dma_read_buffer.front();
+        auto& aux = out.dma_read_buffer.front();
 
         uint32_t real_addr = getRealAddr(aux.first, false);      // always suppose dram DMA fetch
         // if DMA request not sent, have to stop here
@@ -273,7 +274,7 @@ rtlNVDLA::tick() {
         stats.nvdla_cycles++;
         cyclesNVDLA++;
         runIterationNVDLA();
-        schedule(tickEvent,nextCycle()+1);
+        schedule(tickEvent,nextCycle());
     }
     else {
         // we have finished running the trace
@@ -304,82 +305,6 @@ rtlNVDLA::tick() {
     sramPort.tick();
 }
 
-void
-rtlNVDLA::tmpRunTraceNVDLA() {
-
-    printf("Running trace...\n");
-
-    while (!wr->csb->done() || (quiesc_timer--)) {
-        runIterationNVDLA();
-    }
-
-    printf("done at %lu ticks\n", wr->tickcount);
-
-    if (!trace->test_passed()) {
-        printf("*** FAIL: test failed due to output mismatch\n");
-        return ;
-    }
-
-    if (!wr->csb->test_passed()) {
-        printf("*** FAIL: test failed due to CSB read mismatch\n");
-        return ;
-    }
-
-    printf("*** PASS\n");
-}
-
-void
-rtlNVDLA::runTraceNVDLA(char *ptr) {
-    // Run whole trace for debug purposes
-    wr = new Wrapper_nvdla(traceEnable, "trace.vcd",max_req_inflight, dma_enable, spm_line_size, spm_line_num);
-    wr->disableTracing();
-
-    TraceLoaderGem5 *trace;
-    trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
-    trace->load(ptr);
-    wr->init();
-
-    printf("running trace...\n");
-    uint32_t quiesc_timer = 200;
-    int waiting = 0;
-    while (!wr->csb->done() || (quiesc_timer--)) {
-        int extevent;
-
-        extevent = wr->csb->eval(waiting);
-
-        if (extevent == TraceLoaderGem5::TRACE_AXIEVENT)
-            trace->axievent(&waiting_for_gem5_mem);
-        else if (extevent == TraceLoaderGem5::TRACE_WFI) {
-            waiting = 1;
-            printf("(%lu) waiting for interrupt...\n", wr->tickcount);
-        }
-
-        if (waiting && wr->dla->dla_intr) {
-            printf("(%lu) interrupt!\n", wr->tickcount);
-            waiting = 0;
-        }
-
-        wr->axi_dbb->eval_atomic();
-        if (wr->axi_cvsram)
-            wr->axi_cvsram->eval_atomic();
-
-        wr->tick();
-    }
-
-    printf("done at %lu ticks\n", wr->tickcount);
-
-    if (!trace->test_passed()) {
-        printf("*** FAIL: test failed due to output mismatch\n");
-        return ;
-    }
-
-    if (!wr->csb->test_passed()) {
-        printf("*** FAIL: test failed due to CSB read mismatch\n");
-        return ;
-    }
-
-    printf("*** PASS\n");
-}
 
 bool
 rtlNVDLA::handleResponse(PacketPtr pkt)
@@ -546,7 +471,7 @@ rtlNVDLA::MemNVDLAPort::recvRangeChange()
 bool
 rtlNVDLA::MemNVDLAPort::recvTimingResp(PacketPtr pkt)
 {
-    DPRINTF(rtlNVDLA, "Got response SRAM: %d\n", sram);
+    DPRINTF(rtlNVDLA, "Got response SRAM?: %d\n", sram);
     return owner->handleResponseNVDLA(pkt,sram);
 }
 
@@ -740,7 +665,7 @@ rtlNVDLA::try_get_dma_read_data(uint32_t size) {
     if(get_success) {
         last_dma_got_size += size;
         // todo: remember whether this DMA request comes from CVSRAM or DBBIF
-        if ((last_dma_nvdla_addr & 0xF0000000) == 0x80000000)
+        if ((last_dma_nvdla_addr & 0xF0000000) >= 0x80000000)   // check traceLoaderGem5.cc to see why offset can be greater than 0x8
             wr->axi_dbb->inflight_dma_resp(last_dma_nvdla_addr, dma_temp_buffer, size);
         else if ((last_dma_nvdla_addr & 0xF0000000) == 0x50000000)
             wr->axi_cvsram->inflight_dma_resp(last_dma_nvdla_addr, dma_temp_buffer, size);

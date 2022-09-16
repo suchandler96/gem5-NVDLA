@@ -233,13 +233,11 @@ public:
     inputNVDLA input;
 
     ~rtlNVDLA();
-    void runTraceNVDLA(char *ptr);
     void runIterationNVDLA();
     void initNVDLA();
     void initRTLModel() override;
     void endRTLModel() override;
     void loadTraceNVDLA(char *ptr);
-    void tmpRunTraceNVDLA();
 
     // variables for the NVDLA
     int quiesc_timer;
@@ -269,6 +267,7 @@ public:
      */
     void regStats() override;
 
+    uint32_t spm_latency;
     uint32_t spm_line_size;
     uint32_t spm_line_num;
 

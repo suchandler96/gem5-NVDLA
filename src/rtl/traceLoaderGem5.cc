@@ -160,10 +160,10 @@ TraceLoaderGem5::axievent(int* waiting_for_gem5_mem) {
     axi_op &op = opq.front();
 
     AXIResponder *axi;
-    if ((op.addr & 0xF0000000) == 0x50000000)
-        axi = axi_cvsram;
-    else if ((op.addr & 0xF0000000) == 0x80000000)
-        axi = axi_dbb;
+    if ((op.addr & 0xF0000000) == 0x50000000)       // in nvdla.cpp, offset can only be 0x5 or 0x8.
+        axi = axi_cvsram;                           // but here we use 0x8 to denote read-only variables
+    else if ((op.addr & 0xF0000000) >= 0x80000000)  // and 0x9 to denote read-and-write variables
+        axi = axi_dbb;                              // so that different caching policies can be adopted
     else {
         printf("AXI event to bad offset\n");
         abort();

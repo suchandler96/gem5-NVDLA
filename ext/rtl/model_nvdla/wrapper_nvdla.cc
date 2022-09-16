@@ -53,12 +53,13 @@ double sc_time_stamp(){
 }
 
 Wrapper_nvdla::Wrapper_nvdla(bool traceOn, std::string name,const unsigned int maxReq,
-                             int _dma_enable, int _spm_line_size, int _spm_line_num) :
+                             int _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num) :
         tickcount(0),
         tfp(NULL),
         tfpname(name),
         traceOn(traceOn),
         dma_enable(_dma_enable),
+        spm_latency(_spm_latency),
         spm_line_size(_spm_line_size),
         spm_line_num(_spm_line_num) {
 
