@@ -103,7 +103,14 @@ private:
     std::map<uint64_t, uint32_t> dma_addr_record;
     std::list<uint64_t> waiting_for_dma_txn_addr_order;
     std::map<uint64_t, std::list<axi_r_txn>> waiting_for_dma_txn;
-    // std::queue<std::pair<uint32_t, axi_r_txn>> spm_access_txn_fifo;
+
+    struct spm_wr_txn{
+        uint64_t addr;
+        uint64_t mask;
+        uint32_t countdown;
+        uint8_t data[AXI_WIDTH / 8];
+    };
+    std::list<spm_wr_txn> spm_write_queue;
 
 public:
     AXIResponder(struct connections _dla, Wrapper_nvdla *_wrapper,

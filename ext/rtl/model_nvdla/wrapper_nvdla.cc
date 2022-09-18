@@ -350,9 +350,13 @@ uint8_t Wrapper_nvdla::read_spm(uint64_t addr) {
 // write is temporarily not used
 void Wrapper_nvdla::write_spm(uint64_t addr, uint8_t data) {
     uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
-    assert(spm.find(addr_base) != spm.end());
 
     uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
+    if(spm.find(addr_base) == spm.end()) {      // if the element to write is not in spm
+        // assign space to this spm line
+        std::vector<uint8_t>& entry_vector = spm[addr_base];
+        entry_vector.resize(spm_line_size, 0);
+    }
     spm[addr_base][offset] = data;
 }
 

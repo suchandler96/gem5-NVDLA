@@ -71,8 +71,6 @@ AXIResponder::write_ram(uint32_t addr, uint8_t data) {
 
 void
 AXIResponder::write(uint32_t addr, uint8_t data, bool timing) {
-    // always write to fake ram
-    // write_ram(addr,data);
     // we access gem5 memory
     wrapper->addWriteReq(sram,timing,addr,data);
 }
@@ -496,7 +494,9 @@ AXIResponder::eval_timing() {
 
 
         if (wrapper->dma_enable) {
-            // check whether the requested address ranges are already in spm
+            // check whether the requested address ranges are already in spm_write_queue or spm
+            // for now since all variables are aligned to 0x1000,
+            // we think a mem request will not involve one part valid in spm, while another part valid in main mem
             for (int j = 0; j < len + 1; j++) {
                 uint64_t start_addr = addr + j * (AXI_WIDTH / 8);
                 uint64_t spm_line_addr = start_addr & ~((uint64_t)(wrapper->spm_line_size - 1));
@@ -507,9 +507,18 @@ AXIResponder::eval_timing() {
                 txn.rlast = (j == len);
                 txn.rid = *dla.ar_arid;
 
+                // check spm write queue
+                uint8_t* spm_write_queue_data = nullptr;
+                for (auto it = spm_write_queue.begin(); it != spm_write_queue.end(); it++) {
+                    if (it->addr == start_addr) {
+                        spm_write_queue_data = it->data;
+                        break;
+                    }
+                }
+
                 // if yes, get them in spm (and previously intend to put it in countdown queue (spm_access_txn_fifo))
                 //! only when waiting_for_dma_txn_addr_order is empty, we can get spm data directly to r_fifo
-                if (wrapper->spm.find(spm_line_addr) != wrapper->spm.end()) {  // this key exists in spm
+                if (wrapper->spm.find(spm_line_addr) != wrapper->spm.end() || spm_write_queue_data != nullptr) {  // this key exists in spm or write queue
 
                     // printf("this spm_line_addr exists in spm, 0x%08lx\n", spm_line_addr);
                     if(!waiting_for_dma_txn_addr_order.empty()) {
@@ -526,12 +535,20 @@ AXIResponder::eval_timing() {
                         printf("(%lu) read data returned by gem5 (already in spm and no pending transfers), addr 0x%08lx\n", wrapper->tickcount, start_addr);
                         txn.rvalid = 1;
 
-                        for (int k = 0; k < AXI_WIDTH / 32; k++) {
-                            uint32_t da = wrapper->read_spm(start_addr + k * 4) +
-                                          (wrapper->read_spm(start_addr + k * 4 + 1) << 8) +
-                                          (wrapper->read_spm(start_addr + k * 4 + 2) << 16) +
-                                          (wrapper->read_spm(start_addr + k * 4 + 3) << 24);
-                            txn.rdata[k] = da;
+                        if(spm_write_queue_data == nullptr) {
+                            for (int k = 0; k < AXI_WIDTH / 32; k++) {
+                                uint32_t da = wrapper->read_spm(start_addr + k * 4) +
+                                              (wrapper->read_spm(start_addr + k * 4 + 1) << 8) +
+                                              (wrapper->read_spm(start_addr + k * 4 + 2) << 16) +
+                                              (wrapper->read_spm(start_addr + k * 4 + 3) << 24);
+                                txn.rdata[k] = da;
+                            }
+                        } else {
+                            for (int k = 0; k < AXI_WIDTH / 8; k += 4) {
+                                uint32_t da = spm_write_queue_data[k] + (spm_write_queue_data[k + 1] << 8) +
+                                        (spm_write_queue_data[k + 2] << 16) + (spm_write_queue_data[k + 3] << 24);
+                                txn.rdata[k / 4] = da;
+                            }
                         }
                         r_fifo.push(txn);   // this txn will be delayed by AXI_R_LATENCY cycles (r_fifo & r0_fifo)
                     }
@@ -581,7 +598,7 @@ AXIResponder::eval_timing() {
 
 
     // handle read response from gem5 memory
-    if (read_resp_ready) {
+    if (read_resp_ready) {  // todo: verify: can we accept read results in all cycles?
         if (wrapper->dma_enable) {
 
             if (dma_addr_fifo.empty()) {
@@ -590,6 +607,13 @@ AXIResponder::eval_timing() {
                     for (auto addr_order_it = waiting_for_dma_txn_addr_order.begin(); addr_order_it != waiting_for_dma_txn_addr_order.end(); addr_order_it++) {
                         for (auto txn_it = waiting_for_dma_txn[*addr_order_it].begin(); txn_it != waiting_for_dma_txn[*addr_order_it].end(); txn_it++) {
                             txn_it->rvalid = 1;
+                            for (int i = 0; i < AXI_WIDTH / 32; i++) {
+                                uint32_t da = wrapper->read_spm(*addr_order_it + i * 4) +
+                                              (wrapper->read_spm(*addr_order_it + i * 4 + 1) << 8) +
+                                              (wrapper->read_spm(*addr_order_it + i * 4 + 2) << 16) +
+                                              (wrapper->read_spm(*addr_order_it + i * 4 + 3) << 24);
+                                txn_it->rdata[i] = da;
+                            }
                         }
                     }
                 }
@@ -602,7 +626,7 @@ AXIResponder::eval_timing() {
                 if (waiting_for_dma_txn[addr_front].front().rvalid) {
                     // push the front one
                     printf("(%lu) read data returned by gem5 dma (or already in spm), addr 0x%08lx\n", wrapper->tickcount, addr_front);
-                    r_fifo.push(waiting_for_dma_txn[addr_front].front());       // todo: add some AXI_R_DELAY txns. currently AXI_R_DELAY = 0
+                    r_fifo.push(waiting_for_dma_txn[addr_front].front());       // todo: add some AXI_R_DELAY txns. currently we are setting AXI_R_DELAY = 0 so it is also correct
                     // remove the front
                     waiting_for_dma_txn[addr_front].pop_front();
                     // check if empty to remove entry from map
@@ -656,13 +680,24 @@ AXIResponder::eval_timing() {
             abort();
         }
 
-        for (int i = 0; i < AXI_WIDTH / 8; i++) {
-            if (!((wtxn.wstrb >> i) & 1))
-                continue;
+        if(wrapper->dma_enable) {
+            // intermediate variables and outputs should be written to spm (actually, all writes belong to this type)
+            spm_wr_txn spm_txn;
+            spm_txn.addr = awtxn.awaddr;
+            spm_txn.mask = wtxn.wstrb;
+            spm_txn.countdown = wrapper->spm_latency;
+            for (int i = 0; i < AXI_WIDTH / 8; i++)
+                spm_txn.data[i] = (wtxn.wdata[i / 4] >> ((i % 4) * 8)) & 0xFF;
+            spm_write_queue.push_back(spm_txn);
+        } else {
+            for (int i = 0; i < AXI_WIDTH / 8; i++) {
+                if (!((wtxn.wstrb >> i) & 1))
+                    continue;
 
-            write(awtxn.awaddr + i,
-                 (wtxn.wdata[i / 4] >> ((i % 4) * 8)) & 0xFF,
-                 false);
+                write(awtxn.awaddr + i,
+                      (wtxn.wdata[i / 4] >> ((i % 4) * 8)) & 0xFF,
+                      true);
+            }
         }
 
 
@@ -686,6 +721,24 @@ AXIResponder::eval_timing() {
         }
 
         w_fifo.pop();
+    }
+
+    // process spm write queue countdown
+    // todo: test correctness
+    if (wrapper->dma_enable) {
+        while (spm_write_queue.front().countdown == 0) {
+            // write to spm
+            spm_wr_txn& spm_txn = spm_write_queue.front();
+            for (int i = 0; i < AXI_WIDTH / 8; i++) {
+                if (!((spm_txn.mask >> i) & 1))
+                    continue;
+                wrapper->write_spm(spm_txn.addr + i, spm_txn.data[i]);
+            }
+
+            spm_write_queue.pop_front();
+        }
+        for (auto it = spm_write_queue.begin(); it != spm_write_queue.end(); it++)
+            it->countdown--;
     }
 
     /* read response */
@@ -827,6 +880,7 @@ AXIResponder::inflight_dma_resp(uint64_t addr, const uint8_t* data, uint32_t len
         if (wrapper->spm.find(dma_transfer_addr) == wrapper->spm.end() || *addr_it - dma_transfer_addr >= wrapper->spm[dma_transfer_addr].size()) {
             // the first condition says the entire DMA line has not arrived
             // the second says part of this DMA line has arrived, but data for this txn hasn't
+            // theoretically we should also check spm write queue for data, but
             printf("data for 0x%08lx has not arrived in spm, so stop updating spm, and go on to do DMA.\n", *addr_it);
             break;
         }

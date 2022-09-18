@@ -548,7 +548,7 @@ uint8_t
 rtlNVDLA::readAXI(uint32_t addr, bool sram, bool timing) {
     // Update stats
     stats.nvdla_reads++;
-    // calclulate the addr
+    // calculate the addr
     uint32_t real_addr = getRealAddr(addr,sram);
     // Create packet
     RequestPtr req = std::make_shared<Request>(real_addr, 1,
@@ -653,7 +653,6 @@ rtlNVDLA::writeAXI(uint32_t addr, uint8_t data, bool sram, bool timing) {
     } else {
         dramPort.sendPacket(packet, timing);
     }
-
 }
 
 void
