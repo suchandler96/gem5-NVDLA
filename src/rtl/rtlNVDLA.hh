@@ -36,6 +36,7 @@
 #include <utility>
 
 #include "dev/dma_device.hh"
+#include "dev/dma_nvdla.hh"
 
 #include "cpu/base.hh"
 #include "cpu/translation.hh"
@@ -243,6 +244,7 @@ public:
     int quiesc_timer;
     int waiting;
     int waiting_for_gem5_mem;   // an indicator only used for AXI_DUMPMEM
+    int flushing_spm;           // we need to flush output data in spm to main memory after csb->done()
     uint32_t cyclesNVDLA;
 
     /** constructor
@@ -273,7 +275,8 @@ public:
 
     int dma_enable;
     DmaPort dmaPort;
-    DmaReadFifo* dma_engine;
+    DmaReadFifo* dma_rd_engine;
+    DmaNvdla* dma_wr_engine;
     uint32_t dma_try_get_length;
     uint64_t last_dma_nvdla_addr;
     uint32_t last_dma_actual_size;

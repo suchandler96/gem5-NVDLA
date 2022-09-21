@@ -360,6 +360,28 @@ void Wrapper_nvdla::write_spm(uint64_t addr, uint8_t data) {
     spm[addr_base][offset] = data;
 }
 
+void Wrapper_nvdla::flush_spm() {
+    // first write all items in spm write queue into spm
+    while (!spm_write_queue.empty()) {
+        auto &txn = spm_write_queue.front();
+        for (int i = 0; i < AXI_WIDTH / 8; i++) {
+            if (!((txn.mask >> i) & 1))
+                continue;
+            write_spm(txn.addr + i, txn.data[i]);
+            spm_write_queue.pop_front();
+        }
+    }
+
+    auto it = spm.begin();
+    while (it != spm.end()) {
+        if ((it->first & 0xF0000000) == 0x90000000) {   // this is a read-and-write variable
+            output.dma_write_buffer.push(std::make_pair(it->first, std::move(it->second)));
+            spm.erase(it++);
+        } else
+            it++;
+    }
+}
+
 void Wrapper_nvdla::addDMAReadReq(uint64_t read_addr, uint32_t read_bytes) {
     output.dma_read_buffer.push(std::make_pair(read_addr, read_bytes));
 }

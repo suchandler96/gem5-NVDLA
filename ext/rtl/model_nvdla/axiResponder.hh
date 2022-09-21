@@ -99,18 +99,12 @@ private:
     int read_resp_ready;
 
 
-    std::queue<uint64_t> dma_addr_fifo;
-    std::map<uint64_t, uint32_t> dma_addr_record;
+    std::map<uint64_t, uint32_t> inflight_dma_addr_size;
     std::list<uint64_t> waiting_for_dma_txn_addr_order;
     std::map<uint64_t, std::list<axi_r_txn>> waiting_for_dma_txn;
+    bool spm_is_updated;
 
-    struct spm_wr_txn{
-        uint64_t addr;
-        uint64_t mask;
-        uint32_t countdown;
-        uint8_t data[AXI_WIDTH / 8];
-    };
-    std::list<spm_wr_txn> spm_write_queue;
+
 
 public:
     AXIResponder(struct connections _dla, Wrapper_nvdla *_wrapper,
@@ -139,7 +133,8 @@ public:
     void write(uint32_t addr, uint8_t data, bool timing);
     void write_ram(uint32_t addr, uint8_t data);
 
-
+    bool check_txn_data_in_spm_and_wr_queue(uint32_t addr);
+    bool get_txn_data_from_spm_and_wr_queue(uint32_t addr, uint32_t* to_be_filled_data);
 
     void insertPacket(uint8_t* data, axi_r_txn* txn);
 

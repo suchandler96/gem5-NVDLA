@@ -73,6 +73,7 @@ struct outputNVDLA {
     bool                             write_valid;
     std::queue<write_req_entry_t>    write_buffer;
     std::queue<std::pair<uint64_t, uint32_t>> dma_read_buffer;
+    std::queue<std::pair<uint64_t, std::vector<uint8_t>>> dma_write_buffer;
 };
 
 

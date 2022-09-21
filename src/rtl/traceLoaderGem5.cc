@@ -213,7 +213,6 @@ TraceLoaderGem5::axievent(int* waiting_for_gem5_mem) {
             uint32_t bytes_to_write = AXI_WIDTH / 8;
             bool aligned = true;
             if (op.addr != txn_start_addr) {
-                printf("this dump_mem is not aligned to AXI_WIDTH / 8, op.addr = 0x%08x\n", op.addr);
                 bytes_to_write = AXI_WIDTH / 8 - (op.addr - txn_start_addr);
                 if(op.len < bytes_to_write)
                     bytes_to_write = op.len;
@@ -268,8 +267,7 @@ TraceLoaderGem5::axievent(int* waiting_for_gem5_mem) {
                         if (bytes_got == 0)
                             break;
                         if (check_byte != *buf && matched) {
-                            printf("Memory dump does not match golden answer at byte %d:\
-                                   exp 0x%02x, got 0x%02x, and maybe others too.\n", byte_cnt, *buf, check_byte);
+                            printf("Memory dump does not match golden answer at byte %d:exp 0x%02x, got 0x%02x, and maybe others too.\n", byte_cnt, *buf, check_byte);
                             matched = 0;
                             _test_passed = 0;
                         }

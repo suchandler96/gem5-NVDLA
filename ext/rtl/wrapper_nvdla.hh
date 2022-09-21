@@ -156,10 +156,19 @@ class Wrapper_nvdla {
         const uint32_t spm_line_num;
         std::map<uint64_t, std::vector<uint8_t> > spm;
 
+        struct spm_wr_txn{
+            uint64_t addr;
+            uint64_t mask;
+            uint32_t countdown;
+            uint8_t data[512 / 8];
+        };
+        std::list<spm_wr_txn> spm_write_queue;
+
         void addDMAReadReq(uint64_t read_addr, uint32_t read_bytes);
 
         uint8_t read_spm(uint64_t addr);
         void write_spm(uint64_t addr, uint8_t data);
+        void flush_spm();
 };
 
 #endif 

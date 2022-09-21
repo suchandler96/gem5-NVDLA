@@ -49,6 +49,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     baseAddrDRAM(params.base_addr_dram),
     baseAddrSRAM(params.base_addr_sram),
     waiting_for_gem5_mem(0),
+    flushing_spm(0),
     spm_latency(params.spm_latency),
     spm_line_size(params.spm_line_size),
     spm_line_num(params.spm_line_num),
@@ -66,20 +67,26 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
               << " Base Addr DRAM: " << baseAddrDRAM
               << " Base Addr SRAM: " << baseAddrSRAM << std::endl;
     // Clear input
-    memset(&input,0,sizeof(inputNVDLA));
+    memset(&input, 0, sizeof(inputNVDLA));
 
-    if (dma_enable)
-        dma_engine = new DmaReadFifo(dmaPort, spm_line_size * spm_line_num,
+    if (dma_enable) {
+        dma_rd_engine = new DmaReadFifo(dmaPort, spm_line_size * spm_line_num,
                                     spm_line_size, spm_line_num, Request::UNCACHEABLE);
-    else
-        dma_engine = nullptr;
+        dma_wr_engine = new DmaNvdla(dmaPort, true, spm_line_size * spm_line_num,
+                                     spm_line_size, spm_line_num, Request::UNCACHEABLE);
+    } else {
+        dma_rd_engine = nullptr;
+        dma_wr_engine = nullptr;
+    }
 }
 
 
 rtlNVDLA::~rtlNVDLA() {
     delete wr;
-    if (dma_engine != nullptr)
-        delete dma_engine;
+    if (dma_rd_engine != nullptr)
+        delete dma_rd_engine;
+    if (dma_wr_engine != nullptr)
+        delete dma_wr_engine;
 }
 
 Port &
@@ -195,7 +202,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
     }
 
 
-    //! use dma_engine to process reading requests
+    //! use dma_rd_engine to process reading requests
     // memory requests already in spm is dealt with in wrapper_nvdla
     // only one DMA request can be tackled at once
     if (!out.dma_read_buffer.empty()) {
@@ -203,7 +210,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
 
         uint32_t real_addr = getRealAddr(aux.first, false);      // always suppose dram DMA fetch
         // if DMA request not sent, have to stop here
-        if (!dma_engine->atEndOfBlock()) {
+        if (!dma_rd_engine->atEndOfBlock()) {
             // printf("DMA engine busy, can't deal with req: addr 0x%08lx, len %d, try again later!\n", aux.first, aux.second);
         } else if(last_dma_got_size < last_dma_actual_size) {
             // printf("DMA get too slow! Waiting for previous Get (addr 0x%08lx) to read the dma buffer.\n", last_dma_nvdla_addr);
@@ -213,10 +220,22 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
             last_dma_actual_size = aux.second;
             last_dma_got_size = 0;
 
-            dma_engine->startFill(real_addr, aux.second);
+            dma_rd_engine->startFill(real_addr, aux.second);
             printf("DMA read req is issued: addr %08x, len %d\n", aux.first, aux.second);
             // after successfully calling DMA, pop aux
             out.dma_read_buffer.pop();
+        }
+    }
+
+
+    //! use dma_wr_engine to process writing requests
+    if(!out.dma_write_buffer.empty()) {
+        auto& aux = out.dma_write_buffer.front();
+        if (dma_wr_engine->atEndOfBlock()) {                    // previous DMA write has been sent
+            uint32_t real_addr = getRealAddr(aux.first, false);     // always suppose dram DMA write
+            dma_wr_engine->startFill(real_addr, aux.second.size(), aux.second.data());
+            printf("DMA write req is issued: addr %08x, len %d\n", aux.first, aux.second.size());
+            out.dma_write_buffer.pop();
         }
     }
 }
@@ -244,7 +263,7 @@ rtlNVDLA::runIterationNVDLA() {
         waiting = 0;
     }
 
-    if (!waiting_for_gem5_mem) {
+    if (!waiting_for_gem5_mem) {    // todo: can add dma_enable and spm_write_queue judging here
         if (timingMode) {
             wr->axi_dbb->eval_timing();
             wr->axi_cvsram->eval_timing();
@@ -256,9 +275,21 @@ rtlNVDLA::runIterationNVDLA() {
 
     outputNVDLA& output = wr->tick(input);
 
-    if(dma_enable)
+    if (dma_enable) {
         try_get_dma_read_data(dma_try_get_length);
+        if (wr->csb->done()) {
+            // write back dirty data in spm to main memory
+            wr->flush_spm();    // if it is called for a second time, no more items will be flushed
+            flushing_spm = 1;
+            if(output.dma_write_buffer.empty()) {   // all items have been flushed to dma write engine
+                flushing_spm = 0;
+                printf("spm flush complete!\n");
+            }
+        }
+    }
     processOutput(output);
+
+    // todo: dump dirty data in spm to main mem in dma_enable mode (and dma_write engine), make sure spm write queue is clear before dumping
 }
 
 void
@@ -267,7 +298,7 @@ rtlNVDLA::tick() {
     // if we are still running trace
     // runIteration
     // schedule new iteration
-    if (!wr->csb->done() || (quiesc_timer-- > 0) || waiting_for_gem5_mem) {
+    if (!wr->csb->done() || (quiesc_timer-- > 0) || waiting_for_gem5_mem || flushing_spm) {
         // Update stats
         stats.nvdla_avgReqCVSRAM.sample(wr->axi_cvsram->getRequestsOnFlight());
         stats.nvdla_avgReqDBBIF.sample(wr->axi_dbb->getRequestsOnFlight());
@@ -658,7 +689,7 @@ rtlNVDLA::writeAXI(uint32_t addr, uint8_t data, bool sram, bool timing) {
 void
 rtlNVDLA::try_get_dma_read_data(uint32_t size) {
     uint8_t dma_temp_buffer[size];
-    bool get_success = dma_engine->tryGet(dma_temp_buffer, size);
+    bool get_success = dma_rd_engine->tryGet(dma_temp_buffer, size);
     // int get_result = get_success;
     // printf("Get result:%d\n\n", get_result);
     if(get_success) {
