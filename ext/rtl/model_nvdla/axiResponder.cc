@@ -627,14 +627,11 @@ AXIResponder::eval_timing() {
                 spm_txn.data[i] = (wtxn.wdata[i / 4] >> ((i % 4) * 8)) & 0xFF;
             wrapper->spm_write_queue.push_back(spm_txn);
         } else {
-            for (int i = 0; i < AXI_WIDTH / 8; i++) {
-                if (!((wtxn.wstrb >> i) & 1))
-                    continue;
+            uint8_t tmp_buf[AXI_WIDTH / 8];
+            for (int ii = 0; ii < AXI_WIDTH / 8; ii++)
+                tmp_buf[ii] = ((wtxn.wdata[ii / 4] >> ((ii % 4) * 8)) & 0xFF);
 
-                write(awtxn.awaddr + i,
-                      (wtxn.wdata[i / 4] >> ((i % 4) * 8)) & 0xFF,
-                      true);
-            }
+            wrapper->addLongWriteReq(sram, true, awtxn.awaddr, AXI_WIDTH / 8, tmp_buf, wtxn.wstrb);
         }
 
 

@@ -132,6 +132,8 @@ class Wrapper_nvdla {
                         uint32_t read_addr, uint32_t read_bytes);
         void addWriteReq(bool write_sram, bool write_timing,
                          uint32_t write_addr, uint8_t write_data);
+        void addLongWriteReq(bool write_sram, bool write_timing,
+                         uint32_t write_addr, uint32_t length, uint8_t* write_data, uint64_t mask);
         void clearOutput();
 
         VNV_nvdla *dla;// = new VNV_nvdla;

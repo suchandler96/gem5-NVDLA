@@ -60,6 +60,16 @@ struct write_req_entry_t {
     bool        write_sram;
     bool        write_timing;
 };
+
+struct long_write_req_entry_t {
+    uint8_t     write_data[512 / 8];
+    uint32_t    write_addr;
+    uint32_t    length;
+    uint64_t    write_mask;
+    bool        write_sram;
+    bool        write_timing;
+};
+
 struct read_req_entry_t {
     uint32_t    read_addr;
     uint32_t    read_bytes;
@@ -72,6 +82,7 @@ struct outputNVDLA {
     std::queue<read_req_entry_t>     read_buffer;
     bool                             write_valid;
     std::queue<write_req_entry_t>    write_buffer;
+    std::queue<long_write_req_entry_t>    long_write_buffer;
     std::queue<std::pair<uint64_t, uint32_t>> dma_read_buffer;
     std::queue<std::pair<uint64_t, std::vector<uint8_t>>> dma_write_buffer;
 };
