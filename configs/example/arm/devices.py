@@ -164,15 +164,17 @@ class CpuCluster(SubSystem):
 
             cpu.num_accels = options.numNVDLA
 
+            sft_pft_ctrl_str = "prefetch_enable=1" if options.sft_pft_enable else "prefetch_enable=0"
+
             # in the current phase, we only use one NVDLA accelerator, and spm cannot be used with caches
             if options.dma_enable:
                 assert not options.add_accel_private_cache and not options.add_accel_shared_cache
-                for i in range(4):
-                    exec("cpu.accel_%d = rtlNVDLA(dma_enable=1, dma_try_get_fraction=1, spm_latency=options.spm_lat,\
-                        spm_line_size=1024)" % i)
+                dma_ctrl_str = "dma_enable=1, dma_try_get_fraction=1, spm_latency=options.spm_lat, spm_line_size=1024"
             else:
-                for i in range(4):
-                    exec("cpu.accel_%d = rtlNVDLA(dma_enable=0)" % i)
+                dma_ctrl_str = "dma_enable=0"
+
+            for i in range(4):
+                exec("cpu.accel_%d = rtlNVDLA(%s, %s)" % (i, dma_ctrl_str, sft_pft_ctrl_str))
 
             for i in range(4):
                 exec("cpu.accel_port_%d = cpu.accel_%d.cpu_side" % (i, i))

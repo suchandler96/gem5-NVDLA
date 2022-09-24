@@ -268,6 +268,9 @@ def addOptions(parser):
     # options.accel_sh_cache_clus
     parser.add_argument("--accel-sh-cache-clus", type=str, default='mostly_excl', help="specify shared cache size cusivity for accelerators")
 
+    # options.sft_pft_enable
+    parser.add_argument("--sft-pft-enable", action="store_true", default=False, help="issue software prefetching when inflight request queue is underrun")
+
     parser.add_argument("--prefetcher", type=str, default=None, help="Hardware prefetcher class name prefix")
 
     parser.add_argument("-P", "--param", action="append", default=[],

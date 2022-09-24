@@ -50,6 +50,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     baseAddrSRAM(params.base_addr_sram),
     waiting_for_gem5_mem(0),
     flushing_spm(0),
+    prefetch_enable(params.prefetch_enable),
     spm_latency(params.spm_latency),
     spm_line_size(params.spm_line_size),
     spm_line_num(params.spm_line_num),
@@ -126,7 +127,8 @@ rtlNVDLA::handleRequest(PacketPtr pkt)
                         pkt->getSize(),
                         pkt->req->getVaddr());
 
-    bytesToRead = pkt->getSize();
+    bytesToRead = pkt->getSize();   // it works as a counter
+    trace->trace_and_rd_log_size = bytesToRead;
 
     ptrTrace = (char *) malloc(bytesToRead);
 
@@ -138,7 +140,7 @@ rtlNVDLA::handleRequest(PacketPtr pkt)
 void
 rtlNVDLA::initNVDLA() {
     // Wrapper
-    wr = new Wrapper_nvdla(traceEnable, "trace.vcd",max_req_inflight, dma_enable, spm_latency, spm_line_size, spm_line_num);
+    wr = new Wrapper_nvdla(traceEnable, "trace.vcd", max_req_inflight, dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
 }
@@ -156,6 +158,8 @@ void
 rtlNVDLA::loadTraceNVDLA(char *ptr) {
     // load the trace into the queues
     trace->load(ptr);
+    if(prefetch_enable)
+        trace->load_read_var_log(ptr);
 
     startBaseTrace = trace->getBaseAddr();
 
@@ -212,13 +216,13 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
         // if DMA request not sent, have to stop here
         if (!dma_rd_engine->atEndOfBlock()) {
             // printf("DMA engine busy, can't deal with req: addr 0x%08lx, len %d, try again later!\n", aux.first, aux.second);
-        } else if(last_dma_got_size < last_dma_actual_size) {
+        // } else if(last_dma_got_size < last_dma_actual_size) {
             // printf("DMA get too slow! Waiting for previous Get (addr 0x%08lx) to read the dma buffer.\n", last_dma_nvdla_addr);
             // printf("last_dma_got_size = %d, last_dma_actual_size = %d\n", last_dma_got_size, last_dma_actual_size);
         } else {
             last_dma_nvdla_addr = aux.first;
             last_dma_actual_size = aux.second;
-            last_dma_got_size = 0;
+            // last_dma_got_size = 0;
 
             dma_rd_engine->startFill(real_addr, aux.second);
             printf("DMA read req is issued: addr %08x, len %d\n", aux.first, aux.second);
@@ -263,13 +267,13 @@ rtlNVDLA::runIterationNVDLA() {
         waiting = 0;
     }
 
-    if (!waiting_for_gem5_mem) {    // todo: can add dma_enable and spm_write_queue judging here
+    if (!waiting_for_gem5_mem) {
         if (timingMode) {
             wr->axi_dbb->eval_timing();
-            wr->axi_cvsram->eval_timing();
+            // wr->axi_cvsram->eval_timing();
         } else {
             wr->axi_dbb->eval_ram();
-            wr->axi_cvsram->eval_ram();
+            // wr->axi_cvsram->eval_ram();
         }
     }
 
@@ -281,15 +285,13 @@ rtlNVDLA::runIterationNVDLA() {
             // write back dirty data in spm to main memory
             wr->flush_spm();    // if it is called for a second time, no more items will be flushed
             flushing_spm = 1;
-            if(output.dma_write_buffer.empty()) {   // all items have been flushed to dma write engine
+            if(flushing_spm && output.dma_write_buffer.empty()) {   // all items have been flushed to dma write engine
                 flushing_spm = 0;
                 printf("spm flush complete!\n");
             }
         }
     }
     processOutput(output);
-
-    // todo: dump dirty data in spm to main mem in dma_enable mode (and dma_write engine), make sure spm write queue is clear before dumping
 }
 
 void
@@ -300,7 +302,7 @@ rtlNVDLA::tick() {
     // schedule new iteration
     if (!wr->csb->done() || (quiesc_timer-- > 0) || waiting_for_gem5_mem || flushing_spm) {
         // Update stats
-        stats.nvdla_avgReqCVSRAM.sample(wr->axi_cvsram->getRequestsOnFlight());
+        // stats.nvdla_avgReqCVSRAM.sample(wr->axi_cvsram->getRequestsOnFlight());
         stats.nvdla_avgReqDBBIF.sample(wr->axi_dbb->getRequestsOnFlight());
         stats.nvdla_cycles++;
         cyclesNVDLA++;
@@ -693,16 +695,16 @@ rtlNVDLA::try_get_dma_read_data(uint32_t size) {
     // int get_result = get_success;
     // printf("Get result:%d\n\n", get_result);
     if(get_success) {
-        last_dma_got_size += size;
+        // last_dma_got_size += size;
         // todo: remember whether this DMA request comes from CVSRAM or DBBIF
-        if ((last_dma_nvdla_addr & 0xF0000000) >= 0x80000000)   // check traceLoaderGem5.cc to see why offset can be greater than 0x8
-            wr->axi_dbb->inflight_dma_resp(last_dma_nvdla_addr, dma_temp_buffer, size);
-        else if ((last_dma_nvdla_addr & 0xF0000000) == 0x50000000)
-            wr->axi_cvsram->inflight_dma_resp(last_dma_nvdla_addr, dma_temp_buffer, size);
-        else {
-            printf("Unexpected address offset, aborting...\n");
-            abort();
-        }
+        // if ((last_dma_nvdla_addr & 0xF0000000) >= 0x80000000)   // check traceLoaderGem5.cc to see why offset can be greater than 0x8
+            wr->axi_dbb->inflight_dma_resp(dma_temp_buffer, size);
+        // else if ((last_dma_nvdla_addr & 0xF0000000) == 0x50000000)
+            // wr->axi_cvsram->inflight_dma_resp(dma_temp_buffer, size);
+        // else {
+            // printf("Unexpected address offset, aborting...\n");
+            // abort();
+        // }
     }
 }
 

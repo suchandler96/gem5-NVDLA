@@ -24,7 +24,7 @@ TraceLoaderGem5::TraceLoaderGem5(CSBMaster *_csb,
     }
 
 void
-TraceLoaderGem5::read_local(int &last, char *buffer_trace,
+TraceLoaderGem5::read_local(int &last, const char *buffer_trace,
                             void *buffer, unsigned int nbytes) {
     char *buffer_char = (char*) buffer;
 
@@ -36,18 +36,15 @@ TraceLoaderGem5::read_local(int &last, char *buffer_trace,
 }
 
 void
-TraceLoaderGem5::load(char *trace) {
-
-    int last=0;
-
-
+TraceLoaderGem5::load(const char *trace) {
+    int last = 0;
     unsigned char cmd;
 
 // original
 //#define VERILY_READ(p, n) do { read_local(last, (trace), (p), (n));
 //} while (0)
 #define VERILY_READ(p, n) {\
-  read_local(last, (trace), (p), (n));\
+    read_local(last, (trace), (p), (n));\
 }
     do {
         VERILY_READ(&cmd, 1);
@@ -148,6 +145,28 @@ TraceLoaderGem5::load(char *trace) {
         }
     } while (cmd != 0xFF);
 
+    trace_size = last;      // update reg trace size
+}
+
+void
+TraceLoaderGem5::load_read_var_log(const char* trace) {
+    // assume we start from the end of reg txn trace
+    printf("trace size = %d bytes, trace&log_size = %d bytes\n", trace_size, trace_and_rd_log_size);
+    if (trace_size == trace_and_rd_log_size) {
+        printf("specified to prefetch, but no rd_log file is provided.\n");
+        abort();
+    }
+
+    int rd_log_idx = trace_size;
+    while (rd_log_idx < trace_and_rd_log_size) {
+        uint32_t addr;
+        uint32_t size;
+        read_local(rd_log_idx, trace, &addr, 4);
+        read_local(rd_log_idx, trace, &size, 4);
+        printf("model var addr = 0x%08x, size = 0x%08x\n", addr, size);
+        // assume we only use dram port
+        axi_dbb->add_rd_var_log_entry(addr, size);
+    }
 }
 
 void
@@ -159,10 +178,10 @@ TraceLoaderGem5::axievent(int* waiting_for_gem5_mem) {
 
     axi_op &op = opq.front();
 
-    AXIResponder *axi;
+    AXIResponder *axi;                              // todo: because nvdla compiler has addr reuse, 0x9: all data
     if ((op.addr & 0xF0000000) == 0x50000000)       // in nvdla.cpp, offset can only be 0x5 or 0x8.
-        axi = axi_cvsram;                           // but here we use 0x8 to denote read-only variables
-    else if ((op.addr & 0xF0000000) >= 0x80000000)  // and 0x9 to denote read-and-write variables
+        axi = axi_cvsram;                           // but here use 0x8 to denote read-only variables, 0x9: write-only
+    else if ((op.addr & 0xF0000000) >= 0x80000000)  // and 0xa to denote read-and-write variables
         axi = axi_dbb;                              // so that different caching policies can be adopted
     else {
         printf("AXI event to bad offset\n");
@@ -245,8 +264,7 @@ TraceLoaderGem5::axievent(int* waiting_for_gem5_mem) {
                 if (!fd) {
                     perror("Open file failed.\n");
                     abort();
-                } else
-                    printf("file %s has been re-opened successfully\n", op.fname);
+                }
 
                 write(fd, read_response_buffer + (old_op_addr - txn_start_addr), bytes_to_write);
                 close(fd);

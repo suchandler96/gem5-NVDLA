@@ -52,6 +52,8 @@ class rtlNVDLA(rtlObject):
 
     spm_line_num = Param.UInt64(64, "Capacity of SPM, counted in spm line numbers")
 
+    prefetch_enable = Param.UInt64(0, "Whether to issue software prefetch when inflight read queue is under-fed")
+
     id_nvdla = Param.UInt64(0, "id of the NVDLA")
 
     maxReq = Param.UInt64(4, "Max Request inflight for NVDLA")

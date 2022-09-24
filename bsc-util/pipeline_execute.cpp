@@ -1,14 +1,7 @@
 #include <fcntl.h>
-#include <stdio.h>
 #include <stdlib.h>
-
-#include <algorithm> // for std::copy
 #include <fstream>
 #include <iostream>
-#include <iterator>
-#include <map>
-#include <queue>
-#include <vector>
 #include <string>
 
 #include "gem5/m5ops.h"
@@ -30,19 +23,41 @@ double wall_time() {
 }
 
 
-size_t get_trace_from_file(const char* file_name, char* dst) {
-    std::ifstream stream;
-    stream.open(file_name, std::ios::in | std::ios::binary);
+size_t get_trace_from_file(const std::string& file_name_prefix, char* dst) {
+    // open trace file
+    std::string trace_file_name = file_name_prefix + "_trace.bin";
+    FILE* fp = fopen(trace_file_name.c_str(), "rb");
 
-    if (!stream) {
-        printf("Trace file %s open failed.\n", file_name);
+    if (!fp) {
+        printf("Trace file open failed.\n");
         exit(0);
     }
 
-    std::vector<char> trace((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
-    for(int i = 0, size = trace.size(); i < size; i++) dst[i] = trace[i];
+    int size = 0;
+    do {
+        int temp_char = fgetc(fp);
+        if(feof(fp))
+            break;
 
-    return trace.size();
+        dst[size++] = temp_char;
+    } while(1);
+    fclose(fp);
+
+    // open rd_only_var_log
+    std::string var_log_file_name = file_name_prefix + "_rd_only_var_log";
+    fp = fopen(var_log_file_name.c_str(), "rb");
+
+    if(fp) {    // some tests may not have this log file, that's ok
+        do {
+            int temp_char = fgetc(fp);
+            if(feof(fp))
+                break;
+
+            dst[size++] = temp_char;
+        } while(1);
+        fclose(fp);
+    }
+    return size;
 }
 
 
@@ -69,16 +84,10 @@ int main(int argc, char *argv[]) {
         region_nvdlas[i] = aligned_alloc(sizeof(int)*16,REGION_NVDLA * batch_num);
     }
 
-    // void *region_nvdla_1, *region_nvdla_2;
-    // region_nvdla_1 = aligned_alloc(sizeof(int)*16,REGION_NVDLA * 4);
-    // region_nvdla_2 = aligned_alloc(sizeof(int)*16,REGION_NVDLA * 4);
-    //
-    // void* region_nvdlas[2] = {region_nvdla_1, region_nvdla_2};
-
     uint32_t trace_sizes[worker_num * batch_num];
     for(int i = 0; i < worker_num * batch_num; i++) {
-        std::string file_name = trace_file_prefix + std::to_string(i / worker_num + 1) + '_' + std::to_string(i % worker_num + 1) + "_trace.bin";
-        trace_sizes[i] = get_trace_from_file(file_name.c_str(), (char*)(region_nvdlas[i % worker_num]) + (i / worker_num) * REGION_NVDLA);
+        std::string file_name_prefix = trace_file_prefix + std::to_string(i / worker_num + 1) + '_' + std::to_string(i % worker_num + 1);
+        trace_sizes[i] = get_trace_from_file(file_name_prefix, (char*)(region_nvdlas[i % worker_num]) + (i / worker_num) * REGION_NVDLA);
     }
 
     while(1) {
@@ -87,10 +96,6 @@ int main(int argc, char *argv[]) {
                task_map[(i + 1 - 1) * map_time_size + (wave_front[i] - 1)] == FINISHED &&
                task_map[(i + 1) * map_time_size + wave_front[i] - 1] == FINISHED) {
 
-                // std::string file_name = trace_file_prefix + std::to_string(wave_front[i] - i) + '_' + std::to_string((i + 1)) + "_trace.bin";
-                // file name: first number is batch id (starting from 1), second is accelerator id (starting from 1)
-
-                // size_t size = get_trace_from_file(file_name.c_str(), (char*)region_nvdlas[i]);
                 uint64_t trace_addr = (uint64_t)(region_nvdlas[i]) + (wave_front[i] - i - 1) * REGION_NVDLA;
 
                 // accel id and batch id start from 1

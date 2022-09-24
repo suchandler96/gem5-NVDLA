@@ -115,7 +115,7 @@ class Wrapper_nvdla {
 
     public:
         Wrapper_nvdla(bool traceOn, std::string name, const unsigned int maxReq,
-                      int _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num);
+                      int _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num, int pft_enable);
         ~Wrapper_nvdla();
 
         void tick();
@@ -169,6 +169,9 @@ class Wrapper_nvdla {
         uint8_t read_spm(uint64_t addr);
         void write_spm(uint64_t addr, uint8_t data);
         void flush_spm();
+
+        // software prefetching
+        int prefetch_enable;
 };
 
 #endif 

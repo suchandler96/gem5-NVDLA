@@ -20,54 +20,50 @@
 namespace gem5
 {
 
-//class CSBMaster;
-//class AXIResponder;
+class TraceLoaderGem5 {
+    enum axi_opc {
+        AXI_LOADMEM,
+        AXI_DUMPMEM
+    };
 
-class TraceLoaderGem5
-{
-        enum axi_opc
-        {
-                AXI_LOADMEM,
-                AXI_DUMPMEM
-        };
+    struct axi_op {
+        axi_opc opcode;
+        uint32_t addr;
+        uint32_t len;
+        const uint8_t *buf;
+        const char *fname;
+    };
+    std::queue<axi_op> opq;
 
-        struct axi_op
-        {
-                axi_opc opcode;
-                uint32_t addr;
-                uint32_t len;
-                const uint8_t *buf;
-                const char *fname;
-        };
-        std::queue<axi_op> opq;
-
-        CSBMaster *csb;
-        AXIResponder *axi_dbb, *axi_cvsram;
+    CSBMaster *csb;
+    AXIResponder *axi_dbb, *axi_cvsram;
 
     uint32_t base_addr;
+    uint32_t trace_size;    // this value will be valid after trace->load(), where we find 0xff as the end of trace
 
-        int _test_passed;
+    int _test_passed;
 
 public:
-        enum stop_type
-        {
-                TRACE_CONTINUE = 0,
-                TRACE_AXIEVENT,
-                TRACE_WFI
-        };
+    uint32_t trace_and_rd_log_size; // this value will be valid right after receiving CPU launch accel pkt
+    enum stop_type {
+        TRACE_CONTINUE = 0,
+        TRACE_AXIEVENT,
+        TRACE_WFI
+    };
 
-        TraceLoaderGem5(CSBMaster *_csb,
-                        AXIResponder *_axi_dbb,
-                        AXIResponder *_axi_cvsram);
+    TraceLoaderGem5(CSBMaster *_csb,
+                    AXIResponder *_axi_dbb,
+                    AXIResponder *_axi_cvsram);
 
-        void read_local(int &last, char *buffer_trace,
-                        void *buffer, unsigned int nbytes);
+    void read_local(int &last, const char *buffer_trace,
+                    void *buffer, unsigned int nbytes);
 
-        void load(char *fname) ;
+    void load(const char *fname) ;
+    void load_read_var_log(const char* fname);
 
-        void axievent(int* waiting_for_gem5_mem);
+    void axievent(int* waiting_for_gem5_mem);
 
-        int test_passed();
+    int test_passed();
 
     uint32_t getBaseAddr();
 };

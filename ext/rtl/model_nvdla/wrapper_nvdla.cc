@@ -53,7 +53,7 @@ double sc_time_stamp(){
 }
 
 Wrapper_nvdla::Wrapper_nvdla(bool traceOn, std::string name,const unsigned int maxReq,
-                             int _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num) :
+                             int _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num, int pft_enable) :
         tickcount(0),
         tfp(NULL),
         tfpname(name),
@@ -61,7 +61,8 @@ Wrapper_nvdla::Wrapper_nvdla(bool traceOn, std::string name,const unsigned int m
         dma_enable(_dma_enable),
         spm_latency(_spm_latency),
         spm_line_size(_spm_line_size),
-        spm_line_num(_spm_line_num) {
+        spm_line_num(_spm_line_num),
+        prefetch_enable(pft_enable) {
 
     int argcc = 1;
     char* buf[] = {(char*)"aaa",(char*)"bbb"};
@@ -298,6 +299,7 @@ void Wrapper_nvdla::addReadReq(bool read_sram, bool read_timing,
     rd.read_bytes     = read_bytes;
     output.read_buffer.push(rd);
 }
+
 void Wrapper_nvdla::addWriteReq(bool write_sram, bool write_timing,
                  uint32_t write_addr, uint8_t write_data) {
     output.write_valid = true;
@@ -318,7 +320,7 @@ void Wrapper_nvdla::clearOutput() {
     while (!output.write_buffer.empty()) {
         output.write_buffer.pop();
     }
-    // dma_read_buffer should be kept because dma_engine cannot be issued with multiple tasks at once
+    // dma rd and wr buffer should be kept because dma_engine cannot be issued with multiple tasks at once
     //memset(&output,0,sizeof(outputNVDLA));
     //output.write_buffer = new std::queue<write_req_entry_t>();
 }

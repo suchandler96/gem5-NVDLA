@@ -193,7 +193,7 @@ class rtlNVDLA : public rtlObject
 
     MemNVDLAPort dramPort;
 
-    int bytesToRead;
+    int bytesToRead;    // it works as a counter
     unsigned int bytesReaded;
 
     // True if this is currently blocked waiting for a response.
@@ -268,6 +268,8 @@ public:
      * Register the stats
      */
     void regStats() override;
+
+    int prefetch_enable;
 
     uint32_t spm_latency;
     uint32_t spm_line_size;

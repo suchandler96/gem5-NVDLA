@@ -62,6 +62,7 @@ private:
         bool burst;
         uint32_t rdata[AXI_WIDTH / 32];
         uint8_t rid;
+        uint8_t is_prefetch;
     };
     std::queue<axi_r_txn> r_fifo;
     std::queue<axi_r_txn> r0_fifo;
@@ -90,21 +91,22 @@ private:
     struct connections dla;
     const char *name;
     Wrapper_nvdla *wrapper;
+
+    // gem5 memory
     // map key:addr, data:txn
     std::map<uint32_t, std::list<axi_r_txn>> inflight_req;
     std::queue<uint32_t> inflight_req_order;
-    bool sram;
     unsigned int max_req_inflight;
 
-    int read_resp_ready;
+    // dma & spm
+    std::map<uint64_t, uint32_t> inflight_dma_addr_size;    // record the inflight dma request sizes
+    std::queue<uint32_t> inflight_dma_addr_queue;           // keep dma request order
 
+    // prefetch
+    uint32_t pft_threshold;
+    std::list<std::tuple<uint32_t, uint32_t, uint32_t>> read_var_log;  // each tuple is (addr, length, issued_len) of a read-only variable
 
-    std::map<uint64_t, uint32_t> inflight_dma_addr_size;
-    std::list<uint64_t> waiting_for_dma_txn_addr_order;
-    std::map<uint64_t, std::list<axi_r_txn>> waiting_for_dma_txn;
-    bool spm_is_updated;
-
-
+    bool sram;
 
 public:
     AXIResponder(struct connections _dla, Wrapper_nvdla *_wrapper,
@@ -126,8 +128,7 @@ public:
     uint32_t read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* data_buffer);
 
     // In this function we read from memory
-    const uint8_t* read_variable(uint32_t addr, bool timing,
-                                 unsigned int bytes);
+    const uint8_t* read_variable(uint32_t addr, bool timing, unsigned int bytes);
 
     // In this function we write to memory
     void write(uint32_t addr, uint8_t data, bool timing);
@@ -142,13 +143,16 @@ public:
     void eval_atomic();
     void eval_ram();
 
-    void emptyInflight();
-
     void inflight_resp(uint32_t addr, const uint8_t* data);
     void inflight_resp_atomic(uint32_t addr,
                               const uint8_t* data,
                               axi_r_txn *txn);
 
-    void inflight_dma_resp(uint64_t addr, const uint8_t* data, uint32_t len);
+    void inflight_dma_resp(const uint8_t* data, uint32_t len);
+
+    // prefetching-related
+    void add_rd_var_log_entry(uint32_t addr, uint32_t size);
+    void log_req_issue(uint32_t addr);
+    void generate_prefetch_request();
 };
 #endif
