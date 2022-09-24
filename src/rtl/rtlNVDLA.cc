@@ -180,25 +180,20 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
             out.read_buffer.pop();
         }
     }
-    /*
-    if (out.write_valid) {
-        while (!out.write_buffer.empty()) {
+
+    if(out.write_valid) {
+        while (!out.write_buffer.empty()) {     // this buffer outputs in 1-byte granularity
             write_req_entry_t aux = out.write_buffer.front();
-            // printf("write req: addr %08x, data %02x\n", aux.write_addr, aux.write_data);
-            // std::cout << std::hex << "write req: addr " <<\
-            // aux.write_addr << ", data " << aux.write_data << std::endl;
             writeAXI(aux.write_addr,
                      aux.write_data,
                      aux.write_sram,
                      aux.write_timing);
             out.write_buffer.pop();
         }
-    }
-    */
-    if(out.write_valid) {
-        while(!out.long_write_buffer.empty()) {
+
+        while(!out.long_write_buffer.empty()) { // this buffer outputs in 1-64 bytes granularity
             auto& aux = out.long_write_buffer.front();
-            writeAXILong(aux.write_addr, aux.write_data, aux.write_sram, aux.write_timing);
+            writeAXILong(aux.write_addr, aux.length, aux.write_data, aux.write_mask, aux.write_sram, aux.write_timing);
             out.long_write_buffer.pop();
         }
     }
@@ -665,23 +660,23 @@ rtlNVDLA::writeAXI(uint32_t addr, uint8_t data, bool sram, bool timing) {
 }
 
 void
-rtlNVDLA::writeAXILong(uint32_t addr, uint8_t* data, bool sram, bool timing) {
-    // Update stats
+rtlNVDLA::writeAXILong(uint32_t addr, uint32_t length, uint8_t* data, uint64_t mask, bool sram, bool timing) {
     stats.nvdla_writes++;
 
     uint32_t real_addr = getRealAddr(addr,sram);
-    //Request(Addr paddr, unsigned size, Flags flags, MasterID mid)
-    // addr is the physical addr
-    // size is one byte
-    // flags is physical (vaddr is also the physical one)
-    RequestPtr req = std::make_shared<Request>(real_addr, 512/8,
-                                               0, 0);
+    RequestPtr req = std::make_shared<Request>(real_addr, length, 0, 0);
+    std::vector<bool> byte_enable_vec(length);
+
+    for (int i = 0; i < length; i++)
+        byte_enable_vec[i] = ((mask >> i) & 1);
+
+    req->setByteEnable(byte_enable_vec);
+
     PacketPtr packet = nullptr;
-    // we create the real packet, write request
     packet = Packet::createWrite(req);
     // always in Little Endian
-    PacketDataPtr dataAux = new uint8_t[512/8];
-    for(int i = 0; i < 512/8; i++)
+    PacketDataPtr dataAux = new uint8_t[length];
+    for(int i = 0; i < length; i++)
         dataAux[i] = data[i];
 
     packet->dataDynamic(dataAux);

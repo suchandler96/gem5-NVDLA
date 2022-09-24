@@ -62,8 +62,10 @@ struct write_req_entry_t {
 };
 
 struct long_write_req_entry_t {
-    uint8_t     write_data[512/8];
+    uint8_t     write_data[512 / 8];
     uint32_t    write_addr;
+    uint32_t    length;
+    uint64_t    write_mask;
     bool        write_sram;
     bool        write_timing;
 };
