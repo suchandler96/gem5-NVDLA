@@ -130,6 +130,7 @@ public:
 
     // In this function we write to memory
     void write(uint32_t addr, uint8_t data, bool timing);
+    void write_long(uint32_t addr, uint8_t* data, bool timing);
     void write_ram(uint32_t addr, uint8_t data);
 
 

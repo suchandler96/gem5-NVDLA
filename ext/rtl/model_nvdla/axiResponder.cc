@@ -78,6 +78,11 @@ AXIResponder::write(uint32_t addr, uint8_t data, bool timing) {
 }
 
 void
+AXIResponder::write_long(uint32_t addr, uint8_t* data, bool timing) {
+    wrapper->addLongWriteReq(sram, timing, addr, data);
+}
+
+void
 AXIResponder::eval_ram() {
     /* write request */
     if (*dla.aw_awvalid && *dla.aw_awready) {
@@ -655,15 +660,20 @@ AXIResponder::eval_timing() {
                    wrapper->tickcount, name);
             abort();
         }
-
+        /*
         for (int i = 0; i < AXI_WIDTH / 8; i++) {
-            if (!((wtxn.wstrb >> i) & 1))
-                continue;
+            //if (!((wtxn.wstrb >> i) & 1))
+            //    continue;
 
             write(awtxn.awaddr + i,
                  (wtxn.wdata[i / 4] >> ((i % 4) * 8)) & 0xFF,
-                 false);
+                 true);
+        }*/
+        uint8_t tmp_buf[512/8];
+        for(int ii = 0; ii < 512/8; ii++) {
+            tmp_buf[ii] = (wtxn.wdata[ii / 4] >> ((ii % 4) * 8)) & 0xFF;
         }
+        write_long(awtxn.awaddr, tmp_buf, true);
 
 
         if (wtxn.wlast) {

@@ -180,6 +180,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
             out.read_buffer.pop();
         }
     }
+    /*
     if (out.write_valid) {
         while (!out.write_buffer.empty()) {
             write_req_entry_t aux = out.write_buffer.front();
@@ -193,7 +194,14 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
             out.write_buffer.pop();
         }
     }
-
+    */
+    if(out.write_valid) {
+        while(!out.long_write_buffer.empty()) {
+            auto& aux = out.long_write_buffer.front();
+            writeAXILong(aux.write_addr, aux.write_data, aux.write_sram, aux.write_timing);
+            out.long_write_buffer.pop();
+        }
+    }
 
     //! use dma_engine to process reading requests
     // memory requests already in spm is dealt with in wrapper_nvdla
@@ -654,6 +662,35 @@ rtlNVDLA::writeAXI(uint32_t addr, uint8_t data, bool sram, bool timing) {
         dramPort.sendPacket(packet, timing);
     }
 
+}
+
+void
+rtlNVDLA::writeAXILong(uint32_t addr, uint8_t* data, bool sram, bool timing) {
+    // Update stats
+    stats.nvdla_writes++;
+
+    uint32_t real_addr = getRealAddr(addr,sram);
+    //Request(Addr paddr, unsigned size, Flags flags, MasterID mid)
+    // addr is the physical addr
+    // size is one byte
+    // flags is physical (vaddr is also the physical one)
+    RequestPtr req = std::make_shared<Request>(real_addr, 512/8,
+                                               0, 0);
+    PacketPtr packet = nullptr;
+    // we create the real packet, write request
+    packet = Packet::createWrite(req);
+    // always in Little Endian
+    PacketDataPtr dataAux = new uint8_t[512/8];
+    for(int i = 0; i < 512/8; i++)
+        dataAux[i] = data[i];
+
+    packet->dataDynamic(dataAux);
+    // send the packet in timing?
+    if (sram) {
+        sramPort.sendPacket(packet, timing);
+    } else {
+        dramPort.sendPacket(packet, timing);
+    }
 }
 
 void

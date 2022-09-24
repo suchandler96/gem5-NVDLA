@@ -309,6 +309,19 @@ void Wrapper_nvdla::addWriteReq(bool write_sram, bool write_timing,
     output.write_buffer.push(wr);
 }
 
+void Wrapper_nvdla::addLongWriteReq(bool write_sram, bool write_timing,
+                     uint32_t write_addr, uint8_t* write_data) {
+    output.write_valid = true;
+    long_write_req_entry_t wr;
+    wr.write_sram = write_sram;
+    wr.write_timing = write_timing;
+    wr.write_addr = write_addr;
+    for(int i = 0; i < 512/8; i++) {
+        wr.write_data[i] = write_data[i];
+    }
+    output.long_write_buffer.push(std::move(wr));
+}
+
 void Wrapper_nvdla::clearOutput() {
     output.read_valid  = false;
     output.write_valid = false;
