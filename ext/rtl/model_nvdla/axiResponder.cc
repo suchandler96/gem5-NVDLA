@@ -493,7 +493,7 @@ AXIResponder::eval_timing() {
             *dla.ar_arlen,
             *dla.ar_arid);
 
-        issued_req_this_cycle = true;
+
 
         if (wrapper->dma_enable) {
             // check whether the requested address ranges are already in spm_write_queue or spm
@@ -526,13 +526,15 @@ AXIResponder::eval_timing() {
                         inflight_dma_addr_size[spm_line_addr] = wrapper->spm_line_size;
                         inflight_dma_addr_queue.push(spm_line_addr);
                         wrapper->addDMAReadReq(spm_line_addr, wrapper->spm_line_size);
+                        issued_req_this_cycle = true;
                     }
                     txn.rvalid = 0;
                 }
-                inflight_req_order.push(start_addr);
+                inflight_req_order.push_back(start_addr);
                 inflight_req[start_addr].push_back(txn);
             }
         } else {
+            issued_req_this_cycle = true;
             do {
                 axi_r_txn txn;
 
@@ -548,7 +550,7 @@ AXIResponder::eval_timing() {
                 // put txn to the map
                 inflight_req[addr].push_back(txn);
                 // put in req the txn
-                inflight_req_order.push(addr);
+                inflight_req_order.push_back(addr);
 
                 read_variable(addr, true, AXI_WIDTH / 8);
 
@@ -571,37 +573,43 @@ AXIResponder::eval_timing() {
 #endif
 
     //! generate prefetch request
-    if(wrapper->prefetch_enable && inflight_req_order.size() < pft_threshold && !issued_req_this_cycle) {
+    if (wrapper->prefetch_enable && inflight_req_order.size() < pft_threshold && !issued_req_this_cycle) {
         generate_prefetch_request();
     }
 
     //! handle read return
+    auto it_addr = inflight_req_order.begin();
     if (!inflight_req_order.empty()) {
-        unsigned int addr_front = inflight_req_order.front();
+        // find the first non-prefetch inflight_req addr
+        // assume all inflight_req for prefetches will be removed in inflight_resp and inflight_resp_dma
+        while (inflight_req[*it_addr].front().is_prefetch && it_addr != inflight_req_order.end()) {
+            it_addr++;
+        }
+    }
+    if (it_addr != inflight_req_order.end()) {  // that's a non-prefetch txn. we'll check valid or not inside the branch
+        uint32_t addr_front = *it_addr;
 
-        axi_r_txn& txn = inflight_req[addr_front].front();
+        axi_r_txn &txn = inflight_req[addr_front].front();
         // data just arrived in spm via DMA will not update its corresponding txn.rvalid
         if (wrapper->dma_enable && txn.rvalid == 0) {
             bool got = get_txn_data_from_spm_and_wr_queue(addr_front, txn.rdata);
-            if(got)
+            if (got)
                 txn.rvalid = 1;
         }
         if (txn.rvalid) {  // ensures the order of response
+            printf("(%lu) read data returned by gem5 (or already in spm), addr 0x%08x\n", wrapper->tickcount, addr_front);
+
             // push the front one
-            if (txn.is_prefetch) {
-                printf("(%lu) read data returned by gem5 (or already in spm) PREFETCH, addr 0x%08x\n", wrapper->tickcount, addr_front);
-            } else {
-                printf("(%lu) read data returned by gem5 (or already in spm), addr 0x%08x\n", wrapper->tickcount, addr_front);
-                r_fifo.push(inflight_req[addr_front].front());
-                // todo: add some AXI_R_DELAY txns. currently we are setting AXI_R_DELAY = 0 so it is also correct
-            }
+            r_fifo.push(inflight_req[addr_front].front());
+            // todo: add some AXI_R_DELAY txns. currently we are setting AXI_R_DELAY = 0 so it is also correct
+
             // remove the front
             inflight_req[addr_front].pop_front();
             // check if empty to remove entry from map
             if (inflight_req[addr_front].empty())
                 inflight_req.erase(addr_front);
             // delete in the queue order
-            inflight_req_order.pop();
+            inflight_req_order.erase(it_addr);
         }
     }
 
@@ -736,25 +744,48 @@ AXIResponder::inflight_resp(uint32_t addr, const uint8_t* data) {
     uint32_t * ptr = (uint32_t*) data;
     std::list<axi_r_txn>::iterator it = inflight_req[addr].begin();
     // Get the correct ptr
+    int count_pos = 0;
     while (it != inflight_req[addr].end() and it->rvalid) {
        it++;
+       count_pos++;
     }
     assert(it != inflight_req[addr].end());
     for (int i = 0; i < AXI_WIDTH / 32; i++) {
         it->rdata[i] = ptr[i];
-        /*printf("Expecting: %0x Got %0x%0x%0x%0x", 
-                ptr[i],
-                read_ram(addr+i+3),
-                read_ram(addr+i+2),
-                read_ram(addr+i+1),
-                read_ram(addr+i+0));*/
     }
     it->rvalid = 1;
-    printf("(%lu) read data returned by gem5, addr 0x%08x\n", wrapper->tickcount, addr);
+    if (it->is_prefetch) {
+        printf("(%lu) read data returned by gem5 PREFETCH, addr 0x%08x\n", wrapper->tickcount, addr);
+        //! delete this txn in inflight_req_order and inflight_req
+        // first delete in inflight_req_order
+        bool deleted = false;
+        for (auto addr_it = inflight_req_order.begin(); addr_it != inflight_req_order.end(); addr_it++) {
+            if ((*addr_it) == addr) {
+                if (count_pos == 0) {
+                    // that's the exact addr_it that should be deleted
+                    inflight_req_order.erase(addr_it);
+                    deleted = true;
+                    break;
+                } else {
+                    count_pos--;
+                }
+            }
+        }
+        assert(deleted);
+
+        // then delete in inflight_req
+        inflight_req[addr].erase(it);
+        if (inflight_req[addr].empty()) {
+            inflight_req.erase(addr);
+        }
+
+    } else {
+        printf("(%lu) read data returned by gem5, addr 0x%08x\n", wrapper->tickcount, addr);
+    }
     #ifdef PRINT_DEBUG
-        printf("Remaining %d\n", inflight_req_order.size());
-        printf("(%lu) %s: Inflight Resp Timing Finished: addr %08lx \n",
-                wrapper->tickcount, name, addr);
+    printf("Remaining %d\n", inflight_req_order.size());
+    printf("(%lu) %s: Inflight Resp Timing Finished: addr %08lx \n",
+            wrapper->tickcount, name, addr);
     #endif
 }
 
@@ -836,7 +867,7 @@ AXIResponder::read_for_traceLoaderGem5(uint32_t start_addr, uint32_t length) {
         // put txn to the map
         inflight_req[txn_addr].push_back(txn);
         // put in req the txn
-        inflight_req_order.push(txn_addr);
+        inflight_req_order.push_back(txn_addr);
     }
 }
 
@@ -861,7 +892,7 @@ AXIResponder::read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* da
         if (inflight_req[addr_front].empty())
             inflight_req.erase(addr_front);
 
-        inflight_req_order.pop();
+        inflight_req_order.pop_front();
 
         // get the value
         for (uint32_t byte_id = 0; byte_id < AXI_WIDTH / 8; byte_id++)
@@ -946,7 +977,7 @@ AXIResponder::log_req_issue(uint32_t addr) {
                 abort();
             } else if (addr == log_entry_addr + log_entry_issued_len) {
                 // that's the normal case
-                log_entry_issued_len += 0x40;
+                log_entry_issued_len += (AXI_WIDTH / 8);
 
                 if (log_entry_issued_len == log_entry_length)
                     read_var_log.erase(it);
@@ -961,6 +992,8 @@ AXIResponder::log_req_issue(uint32_t addr) {
 
 void
 AXIResponder::generate_prefetch_request() {
+    if (read_var_log.empty())
+        return;
     // assume the front of the list is a legal entry to prefetch
     uint32_t& log_entry_addr = std::get<0>(read_var_log.front());
     uint32_t& log_entry_length = std::get<1>(read_var_log.front());
@@ -976,10 +1009,10 @@ AXIResponder::generate_prefetch_request() {
     txn.is_prefetch = 1;
     // if to_issue_addr is covered by a previous dma, it's useless to issue such prefetch request
 
-    printf("(%lu)prefetch request addr %08x issued.\n", wrapper->tickcount, to_issue_addr);
+    printf("(%lu) PREFETCH request addr %08x issued.\n", wrapper->tickcount, to_issue_addr);
 
     if (wrapper->dma_enable) {
-        assert(!check_txn_data_in_spm_and_wr_queue(to_issue_addr));
+        assert(!check_txn_data_in_spm_and_wr_queue(to_issue_addr)); // weights are unique, shouldn't have been prefetched
         // first check whether this addr has been covered by an inflight DMA request or not
         uint64_t spm_line_addr = to_issue_addr & ~((uint64_t)(wrapper->spm_line_size - 1));
         if (inflight_dma_addr_size.find(spm_line_addr) == inflight_dma_addr_size.end()) {
@@ -988,17 +1021,18 @@ AXIResponder::generate_prefetch_request() {
             inflight_dma_addr_queue.push(spm_line_addr);
             wrapper->addDMAReadReq(spm_line_addr, wrapper->spm_line_size);
 
-            inflight_req[to_issue_addr].push_back(txn);
-            inflight_req_order.push(to_issue_addr);
+            log_entry_issued_len += wrapper->spm_line_size;
+            // here we don't add dma prefetch to inflight_req and inflight_order
+            // because as long as spm can get the prefetched data, we don't bother axi responder to check it
 
-        }   // or we don't need a new dma request. just wait for a previous one
+        }   // else we don't need a new dma request. it is covered by a previous one
     } else {
         inflight_req[to_issue_addr].push_back(txn);
-        inflight_req_order.push(to_issue_addr);
+        inflight_req_order.push_back(to_issue_addr);
         read_variable(to_issue_addr, true, AXI_WIDTH / 8);
+        log_entry_issued_len += AXI_WIDTH / 8;  // here the gap of issuing should be cache line size
     }
 
-    log_entry_issued_len += AXI_WIDTH / 8;
-    if (log_entry_issued_len == log_entry_length)       // this prefetch is the end of the variable
+    if (log_entry_issued_len >= log_entry_length)       // this prefetch is the end of the variable
         read_var_log.pop_front();
 }

@@ -157,6 +157,7 @@ class Wrapper_nvdla {
         const uint32_t spm_line_size;
         const uint32_t spm_line_num;
         std::map<uint64_t, std::vector<uint8_t> > spm;
+        // todo: need a spm write waiting list to temporarily store dirty data if write mask != 0xffffffffffffffff so that we can load clean from mem
 
         struct spm_wr_txn{
             uint64_t addr;

@@ -95,7 +95,7 @@ private:
     // gem5 memory
     // map key:addr, data:txn
     std::map<uint32_t, std::list<axi_r_txn>> inflight_req;
-    std::queue<uint32_t> inflight_req_order;
+    std::list<uint32_t> inflight_req_order;
     unsigned int max_req_inflight;
 
     // dma & spm
