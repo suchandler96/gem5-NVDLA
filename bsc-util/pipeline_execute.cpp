@@ -57,6 +57,18 @@ size_t get_trace_from_file(const std::string& file_name_prefix, char* dst) {
         } while(1);
         fclose(fp);
     }
+
+    // write the following 8 bytes (2 x uint32_t with 0xffffffff) to mark the end of rd_only_var_log
+    dst[size++] = 0xff;
+    dst[size++] = 0xff;
+    dst[size++] = 0xff;
+    dst[size++] = 0xff;
+
+    dst[size++] = 0xff;
+    dst[size++] = 0xff;
+    dst[size++] = 0xff;
+    dst[size++] = 0xff;
+
     return size;
 }
 

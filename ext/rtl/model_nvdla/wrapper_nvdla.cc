@@ -52,8 +52,9 @@ double sc_time_stamp(){
   return double_t(0);
 }
 
-Wrapper_nvdla::Wrapper_nvdla(bool traceOn, std::string name,const unsigned int maxReq,
+Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name,const unsigned int maxReq,
                              int _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num, int pft_enable) :
+        id_nvdla(id_nvdla),
         tickcount(0),
         tfp(NULL),
         tfpname(name),

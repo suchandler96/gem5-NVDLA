@@ -48,7 +48,8 @@ public:
     enum stop_type {
         TRACE_CONTINUE = 0,
         TRACE_AXIEVENT,
-        TRACE_WFI
+        TRACE_WFI,
+        TRACE_RESET
     };
 
     TraceLoaderGem5(CSBMaster *_csb,

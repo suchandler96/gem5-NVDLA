@@ -40,6 +40,7 @@ AXIResponder::AXIResponder(struct connections _dla,
     // for non-spm configuration, this fixed latency is modeled by gem5 memory system
 
     pft_threshold = 16;
+    dma_pft_threshold = 32;
 
     // add some latency...
     for (int i = 0; i < AXI_R_LATENCY; i++) {
@@ -442,8 +443,9 @@ void
 AXIResponder::eval_timing() {
     /* write request */
     if (*dla.aw_awvalid && *dla.aw_awready) {
-            printf("(%lu) %s: write request from dla, addr %08lx id %d\n",
+            printf("(%lu) nvdla#%d %s: write request from dla, addr %08lx id %d\n",
                 wrapper->tickcount,
+                wrapper->id_nvdla,
                 name,
                 *dla.aw_awaddr,
                 *dla.aw_awid);
@@ -462,8 +464,9 @@ AXIResponder::eval_timing() {
     /* write data */
     if (*dla.w_wvalid) {
         #ifdef PRINT_DEBUG
-            printf("(%lu) %s: write data from dla (%08x %08x...)\n",
+            printf("(%lu) nvdla#%d %s: write data from dla (%08x %08x...)\n",
                     wrapper->tickcount,
+                    wrapper->id_nvdla,
                     name,
                     dla.w_wdata[0],
                     dla.w_wdata[1]);
@@ -486,8 +489,9 @@ AXIResponder::eval_timing() {
         uint8_t i = 0;
         
 
-        printf("(%lu) %s: read request from dla, addr %08lx burst %d id %d\n",
+        printf("(%lu) nvdla#%d %s: read request from dla, addr %08lx burst %d id %d\n",
             wrapper->tickcount,
+            wrapper->id_nvdla,
             name,
             *dla.ar_araddr,
             *dla.ar_arlen,
@@ -566,14 +570,16 @@ AXIResponder::eval_timing() {
 
 #ifdef PRINT_DEBUG
     if (inflight_req_order.size() > 0) {
-        printf("(%lu) %s: Remaining %d\n",
-                wrapper->tickcount, name,
+        printf("(%lu) nvdla#%d %s: Remaining %d\n",
+                wrapper->tickcount, wrapper->id_nvdla, name,
                 inflight_req_order.size());
     }
 #endif
 
     //! generate prefetch request
-    if (wrapper->prefetch_enable && inflight_req_order.size() < pft_threshold && !issued_req_this_cycle) {
+    // todo: handle pft_threshold in spm settings properly
+    if (wrapper->prefetch_enable && inflight_req_order.size() < pft_threshold &&
+        inflight_dma_addr_queue.size() < dma_pft_threshold && !issued_req_this_cycle) {
         generate_prefetch_request();
     }
 
@@ -597,7 +603,8 @@ AXIResponder::eval_timing() {
                 txn.rvalid = 1;
         }
         if (txn.rvalid) {  // ensures the order of response
-            printf("(%lu) read data returned by gem5 (or already in spm), addr 0x%08x\n", wrapper->tickcount, addr_front);
+            printf("(%lu) nvdla#%d read data returned by gem5 (or already in spm), addr 0x%08x\n",
+                   wrapper->tickcount, wrapper->id_nvdla, addr_front);
 
             // push the front one
             r_fifo.push(inflight_req[addr_front].front());
@@ -620,8 +627,8 @@ AXIResponder::eval_timing() {
         axi_w_txn &wtxn = w_fifo.front();
 
         if (wtxn.wlast != (awtxn.awlen == 0)) {
-            printf("(%lu) %s: wlast / awlen mismatch\n",
-                   wrapper->tickcount, name);
+            printf("(%lu) nvdla#%d %s: wlast / awlen mismatch\n",
+                   wrapper->tickcount, wrapper->id_nvdla, name);
             abort();
         }
 
@@ -645,7 +652,7 @@ AXIResponder::eval_timing() {
 
         if (wtxn.wlast) {
             #ifdef PRINT_DEBUG
-                printf("(%lu) %s: write, last tick\n", wrapper->tickcount, name);
+                printf("(%lu) nvdla#%d %s: write, last tick\n", wrapper->tickcount, wrapper->id_nvdla, name);
             #endif
             aw_fifo.pop();
 
@@ -654,8 +661,8 @@ AXIResponder::eval_timing() {
             b_fifo.push(btxn);
         } else {
             #ifdef PRINT_DEBUG
-                printf("(%lu) %s: write, ticks remaining\n",
-                   wrapper->tickcount, name);
+                printf("(%lu) nvdla#%d %s: write, ticks remaining\n",
+                   wrapper->tickcount, wrapper->id_nvdla, name);
             #endif
 
             awtxn.awlen--;
@@ -715,8 +722,8 @@ AXIResponder::eval_timing() {
         }
         #ifdef PRINT_DEBUG
             if (txn.rvalid) {
-                printf("(%lu) %s: read push: id %d, da %08x %08x %08x %08x\n",
-                    wrapper->tickcount, name, txn.rid, txn.rdata[0],
+                printf("(%lu) nvdla#%d %s: read push: id %d, da %08x %08x %08x %08x\n",
+                    wrapper->tickcount, wrapper->id_nvdla, name, txn.rid, txn.rdata[0],
                     txn.rdata[1], txn.rdata[2], txn.rdata[3]);
             }
         #endif
@@ -738,8 +745,8 @@ AXIResponder::eval_timing() {
 void
 AXIResponder::inflight_resp(uint32_t addr, const uint8_t* data) {
     #ifdef PRINT_DEBUG
-        printf("(%lu) %s: Inflight Resp Timing: addr %08x \n",
-                wrapper->tickcount, name, addr);
+        printf("(%lu) nvdla#%d %s: Inflight Resp Timing: addr %08x \n",
+                wrapper->tickcount, wrapper->id_nvdla, name, addr);
     #endif
     uint32_t * ptr = (uint32_t*) data;
     std::list<axi_r_txn>::iterator it = inflight_req[addr].begin();
@@ -755,7 +762,7 @@ AXIResponder::inflight_resp(uint32_t addr, const uint8_t* data) {
     }
     it->rvalid = 1;
     if (it->is_prefetch) {
-        printf("(%lu) read data returned by gem5 PREFETCH, addr 0x%08x\n", wrapper->tickcount, addr);
+        printf("(%lu) nvdla#%d read data returned by gem5 PREFETCH, addr 0x%08x\n", wrapper->tickcount, wrapper->id_nvdla, addr);
         //! delete this txn in inflight_req_order and inflight_req
         // first delete in inflight_req_order
         bool deleted = false;
@@ -780,12 +787,12 @@ AXIResponder::inflight_resp(uint32_t addr, const uint8_t* data) {
         }
 
     } else {
-        printf("(%lu) read data returned by gem5, addr 0x%08x\n", wrapper->tickcount, addr);
+        printf("(%lu) nvdla#%d read data returned by gem5, addr 0x%08x\n", wrapper->tickcount, wrapper->id_nvdla, addr);
     }
     #ifdef PRINT_DEBUG
     printf("Remaining %d\n", inflight_req_order.size());
-    printf("(%lu) %s: Inflight Resp Timing Finished: addr %08lx \n",
-            wrapper->tickcount, name, addr);
+    printf("(%lu) nvdla#%d %s: Inflight Resp Timing Finished: addr %08lx \n",
+            wrapper->tickcount, wrapper->id_nvdla, name, addr);
     #endif
 }
 
@@ -806,7 +813,8 @@ void
 AXIResponder::inflight_dma_resp(const uint8_t* data, uint32_t len) {
     //! we HAVE TO assume dma is in-order. If it is out-of-order due to bus arbitration, even DMAFifo can't handle it
     uint32_t addr = inflight_dma_addr_queue.front();
-    printf("(%lu) AXIResponder handling DMA return data @0x%08x with length %d.\n", wrapper->tickcount, addr, len);
+    printf("(%lu) nvdla#%d AXIResponder handling DMA return data @0x%08x with length %d.\n",
+           wrapper->tickcount, wrapper->id_nvdla, addr, len);
 
     uint32_t old_size_remaining = inflight_dma_addr_size[addr];
     uint32_t size_remaining = old_size_remaining - len;
@@ -880,14 +888,15 @@ AXIResponder::read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* da
 
     if (addr_front != start_addr) {
         // this should not happen
-        printf("(%lu) addr_front(0x%08x) does not match start_addr (0x%08x)", wrapper->tickcount, addr_front, start_addr);
+        printf("(%lu) nvdla#%d addr_front(0x%08x) does not match start_addr (0x%08x)",
+               wrapper->tickcount, wrapper->id_nvdla, addr_front, start_addr);
         abort();
     }
 
     assert(!inflight_req[addr_front].empty());
     axi_r_txn txn = inflight_req[addr_front].front();
     if (txn.rvalid) {
-        printf("(%lu) memory request at 0x%08x has arrived.\n", wrapper->tickcount, start_addr);
+        printf("(%lu) nvdla#%d memory request at 0x%08x has arrived.\n", wrapper->tickcount, wrapper->id_nvdla, start_addr);
         inflight_req[addr_front].pop_front();
         if (inflight_req[addr_front].empty())
             inflight_req.erase(addr_front);
@@ -900,7 +909,7 @@ AXIResponder::read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* da
 
         return 1;
     } else {
-        printf("(%lu) still waiting for memory request at 0x%08x\n", wrapper->tickcount, start_addr);
+        printf("(%lu) nvdla#%d still waiting for memory request at 0x%08x\n", wrapper->tickcount, wrapper->id_nvdla, start_addr);
         return 0;
     }
 }
@@ -973,7 +982,7 @@ AXIResponder::log_req_issue(uint32_t addr) {
         if (log_entry_addr <= addr && addr < log_entry_addr + log_entry_length) {
             uint32_t& log_entry_issued_len = std::get<2>(*it);
             if (addr > log_entry_addr + log_entry_issued_len) {
-                printf("addr issued is beyond the log.\n");
+                printf("nvdla#%d addr issued is beyond the log.\n", wrapper->id_nvdla);
                 abort();
             } else if (addr == log_entry_addr + log_entry_issued_len) {
                 // that's the normal case
@@ -1009,7 +1018,7 @@ AXIResponder::generate_prefetch_request() {
     txn.is_prefetch = 1;
     // if to_issue_addr is covered by a previous dma, it's useless to issue such prefetch request
 
-    printf("(%lu) PREFETCH request addr %08x issued.\n", wrapper->tickcount, to_issue_addr);
+    printf("(%lu) nvdla#%d PREFETCH request addr %08x issued.\n", wrapper->tickcount, wrapper->id_nvdla, to_issue_addr);
 
     if (wrapper->dma_enable) {
         assert(!check_txn_data_in_spm_and_wr_queue(to_issue_addr)); // weights are unique, shouldn't have been prefetched

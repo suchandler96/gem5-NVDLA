@@ -114,7 +114,7 @@ class AXIResponder;
 class Wrapper_nvdla {
 
     public:
-        Wrapper_nvdla(bool traceOn, std::string name, const unsigned int maxReq,
+        Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name, const unsigned int maxReq,
                       int _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num, int pft_enable);
         ~Wrapper_nvdla();
 
@@ -141,6 +141,8 @@ class Wrapper_nvdla {
         VerilatedVcdC* tfp;
         std::string tfpname;
         bool traceOn;
+
+        int id_nvdla;
 
         // CSB Wrapper
         CSBMaster *csb;

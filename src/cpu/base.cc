@@ -461,7 +461,7 @@ BaseCPU::getAccelPort(int n)
         return nvdla_port_0;
     } else if (n==1) {
         return nvdla_port_1;
-    } else if (n==1) {
+    } else if (n==2) {
         return nvdla_port_2;
     } else {
         return nvdla_port_3;

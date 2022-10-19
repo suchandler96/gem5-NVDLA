@@ -50,10 +50,11 @@ TraceLoaderGem5::load(const char *trace) {
         VERILY_READ(&cmd, 1);
 
         switch (cmd) {
-        case 1:
+        case 1: {
             printf("CMD: wait\n");
             csb->ext_event(TRACE_WFI);
             break;
+        }
         case 2: {
             uint32_t addr;
             uint32_t data;
@@ -136,9 +137,15 @@ TraceLoaderGem5::load(const char *trace) {
             csb->wait_until(addr, uint32_t(0xffffffff), data);
             break;
         }
-        case 0xFF:
+        case 7: {
+            printf("CMD: reset\n");
+            csb->ext_event(TRACE_RESET);
+            break;
+        }
+        case 0xFF: {
             printf("CMD: done\n");
             break;
+        }
         default:
             printf("unknown command %c\n", cmd);
             abort();
@@ -152,10 +159,6 @@ void
 TraceLoaderGem5::load_read_var_log(const char* trace) {
     // assume we start from the end of reg txn trace
     printf("trace size = %d bytes, trace&log_size = %d bytes\n", trace_size, trace_and_rd_log_size);
-    if (trace_size == trace_and_rd_log_size) {
-        printf("specified to prefetch, but no rd_log file is provided.\n");
-        abort();
-    }
 
     int rd_log_idx = trace_size;
     while (rd_log_idx < trace_and_rd_log_size) {
@@ -163,6 +166,10 @@ TraceLoaderGem5::load_read_var_log(const char* trace) {
         uint32_t size;
         read_local(rd_log_idx, trace, &addr, 4);
         read_local(rd_log_idx, trace, &size, 4);
+        if (addr == 0xffffffff && size == 0xffffffff) { // that's the end of rd_var_log
+            printf("reached the end of rd_var_log.\n");
+            break;
+        }
         printf("model var addr = 0x%08x, size = 0x%08x\n", addr, size);
         // assume we only use dram port
         axi_dbb->add_rd_var_log_entry(addr, size);

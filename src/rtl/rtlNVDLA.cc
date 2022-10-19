@@ -140,7 +140,7 @@ rtlNVDLA::handleRequest(PacketPtr pkt)
 void
 rtlNVDLA::initNVDLA() {
     // Wrapper
-    wr = new Wrapper_nvdla(traceEnable, "trace.vcd", max_req_inflight, dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable);
+    wr = new Wrapper_nvdla(id_nvdla, traceEnable, "trace.vcd", max_req_inflight, dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
 }
@@ -158,8 +158,8 @@ void
 rtlNVDLA::loadTraceNVDLA(char *ptr) {
     // load the trace into the queues
     trace->load(ptr);
-    if(prefetch_enable)
-        trace->load_read_var_log(ptr);
+    trace->load_read_var_log(ptr);  // call load_read_var_log no matter prefetch enabled or not.
+    // If not, we will directly see 8 bytes of 0xff indicating the end of rd_var_log.
 
     startBaseTrace = trace->getBaseAddr();
 
@@ -172,7 +172,7 @@ rtlNVDLA::loadTraceNVDLA(char *ptr) {
     quiesc_timer = 200;
     waiting = 0;
 
-    schedule(tickEvent,nextCycle());
+    schedule(tickEvent, nextCycle());
 }
 
 void
@@ -228,7 +228,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
             // last_dma_got_size = 0;
 
             dma_rd_engine->startFill(real_addr, aux.second);
-            printf("DMA read req is issued: addr %08x, len %d\n", aux.first, aux.second);
+            printf("nvdla#%d DMA read req is issued: addr %08x, len %d\n", id_nvdla, aux.first, aux.second);
             // after successfully calling DMA, pop aux
             out.dma_read_buffer.pop();
         }
@@ -241,7 +241,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
         if (dma_wr_engine->atEndOfBlock()) {                    // previous DMA write has been sent
             uint32_t real_addr = getRealAddr(aux.first, false);     // always suppose dram DMA write
             dma_wr_engine->startFill(real_addr, aux.second.size(), aux.second.data());
-            printf("DMA write req is issued: addr %08x, len %d\n", aux.first, aux.second.size());
+            printf("nvdla#%d DMA write req is issued: addr %08x, len %d\n", id_nvdla, aux.first, aux.second.size());
             out.dma_write_buffer.pop();
         }
     }
@@ -258,15 +258,18 @@ rtlNVDLA::runIterationNVDLA() {
     else
         extevent = 0;
 
-    if (extevent == TraceLoaderGem5::TRACE_AXIEVENT || waiting_for_gem5_mem)
+    if (extevent == TraceLoaderGem5::TRACE_AXIEVENT || waiting_for_gem5_mem) {
         trace->axievent(&waiting_for_gem5_mem);
-    else if (extevent == TraceLoaderGem5::TRACE_WFI) {
+    } else if (extevent == TraceLoaderGem5::TRACE_WFI) {
         waiting = 1;
         printf("(%lu) waiting for interrupt...\n", wr->tickcount);
+    } else if (extevent == TraceLoaderGem5::TRACE_RESET) {
+        wr->init();
+        printf("nvdla#%d reset\n", id_nvdla);
     }
 
     if (waiting && wr->dla->dla_intr) {
-        printf("(%lu) interrupt!\n", wr->tickcount);
+        printf("(%lu) nvdla#%d interrupt!\n", wr->tickcount, id_nvdla);
         waiting = 0;
     }
 
@@ -290,7 +293,7 @@ rtlNVDLA::runIterationNVDLA() {
             flushing_spm = 1;
             if(flushing_spm && output.dma_write_buffer.empty()) {   // all items have been flushed to dma write engine
                 flushing_spm = 0;
-                printf("spm flush complete!\n");
+                printf("nvdla#%d spm flush complete!\n", id_nvdla);
             }
         }
     }

@@ -104,6 +104,7 @@ private:
 
     // prefetch
     uint32_t pft_threshold;
+    uint32_t dma_pft_threshold;
     std::list<std::tuple<uint32_t, uint32_t, uint32_t>> read_var_log;  // each tuple is (addr, length, issued_len) of a read-only variable
 
     bool sram;
