@@ -27,10 +27,8 @@ public:
         if(print_rd_flag && print_wr_flag) {
             if(is_write) printf("w %lx\n", address);
             else printf("r %lx\n", address);
-        } else if(print_wr_flag && is_write) {
+        } else if((print_wr_flag && is_write) || (print_rd_flag && !is_write)) {
             printf("%lx\n", address);
-        } else if(print_rd_flag && !is_write) {
-            printf("%lx", address);
         }
     }
 

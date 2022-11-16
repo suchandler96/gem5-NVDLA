@@ -55,18 +55,13 @@
 namespace gem5
 {
 
-DmaNvdla::DmaNvdla(ClockedObject* owner,
-                   bool proactive_get,
-                   DmaPort &_port, bool _is_write, size_t size,
-                   unsigned max_req_size,
-                   unsigned max_pending,
-                   Request::Flags flags,
-                   EventFunctionWrapper event)
+DmaNvdla::DmaNvdla(DmaPort &_port, bool _is_write, size_t size,
+                         unsigned max_req_size,
+                         unsigned max_pending,
+                         Request::Flags flags)
     : maxReqSize(max_req_size), fifoSize(size),
       reqFlags(flags), port(_port), cacheLineSize(port.sys->cacheLineSize()),
-      buffer(size), is_write(_is_write),
-      proactive_get(proactive_get),
-      accessDMADataEvent(event)
+      buffer(size), is_write(_is_write)
 {
     freeRequests.resize(max_pending);
     for (auto &e : freeRequests)
@@ -209,7 +204,7 @@ DmaNvdla::resumeFillTiming()
         freeRequests.pop_front();
         assert(event);
 
-        event->reset(req_size, nextAddr);
+        event->reset(req_size);
 
         if (is_write)
             buffer.read(event->data(), req_size);
@@ -243,19 +238,8 @@ DmaNvdla::handlePending()
         DmaDoneEventUPtr event(std::move(pendingRequests.front()));
         pendingRequests.pop_front();
 
-        if (!event->canceled() && !is_write) {
-            if(proactive_get) {
-                buffer.write(event->data(), event->requestSize());
-            } else {
-                // so currently allow DMA read data to be acquired only upon finish
-                // todo: try to use std::move to improve performance
-                size_t dma_size = event->requestSize();
-                std::vector<uint8_t> temp(dma_size);
-                for (int i = 0; i < dma_size; i++) temp[i] = event->_data[i];
-                owner_fetch_buffer.emplace_back(event->_addr, std::move(temp));
-                owner->schedule(event, curTick());
-            }
-        }
+        if (!event->canceled() && !is_write)
+            buffer.write(event->data(), event->requestSize());
 
         // Move the event to the list of free requests
         freeRequests.emplace_back(std::move(event));
@@ -274,7 +258,7 @@ DmaNvdla::drain()
 
 
 DmaNvdla::DmaDoneEvent::DmaDoneEvent(DmaNvdla *_parent, size_t max_size)
-    : parent(_parent), _data(max_size, 0), _addr(0)
+    : parent(_parent), _data(max_size, 0)
 {
 }
 
@@ -292,13 +276,12 @@ DmaNvdla::DmaDoneEvent::cancel()
 }
 
 void
-DmaNvdla::DmaDoneEvent::reset(size_t size, Addr addr)
+DmaNvdla::DmaDoneEvent::reset(size_t size)
 {
     assert(size <= _data.size());
     _done = false;
     _canceled = false;
     _requestSize = size;
-    _addr = addr;
 }
 
 void

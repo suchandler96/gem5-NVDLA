@@ -99,6 +99,7 @@ private:
     unsigned int max_req_inflight;
 
     // dma & spm
+    // function together with inflight_req & inflight_req_order
     std::map<uint64_t, uint32_t> inflight_dma_addr_size;    // record the inflight dma request sizes
     std::queue<uint32_t> inflight_dma_addr_queue;           // keep dma request order
 
@@ -144,12 +145,15 @@ public:
     void eval_atomic();
     void eval_ram();
 
-    void inflight_resp(uint32_t addr, const uint8_t* data);
-    void inflight_resp_atomic(uint32_t addr,
-                              const uint8_t* data,
-                              axi_r_txn *txn);
+    // called by axiResponder.eval_timing()
+    bool process_read_req();
+    bool process_read_resp();
 
+    // callback methods, called by gem5 ports in rtlNVDLA when data is returned
+    void inflight_resp(uint32_t addr, const uint8_t* data);
     void inflight_dma_resp(const uint8_t* data, uint32_t len);
+
+    void inflight_resp_atomic(uint32_t addr, const uint8_t* data, axi_r_txn *txn);
 
     // prefetching-related
     void add_rd_var_log_entry(uint32_t addr, uint32_t size);

@@ -299,7 +299,7 @@ rtlNVDLA::runIterationNVDLA() {
     }
     processOutput(output);
 }
-
+// todo: add flush spm functionality
 void
 rtlNVDLA::tick() {
     DPRINTF(rtlNVDLADebug, "Tick NVDLA \n");
