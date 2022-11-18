@@ -57,6 +57,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     dma_enable(params.dma_enable),
     dmaPort(this, params.system),
     dma_try_get_length(spm_line_size / params.dma_try_get_fraction),
+    need_inform_flush(params.need_inform_flush),
     last_dma_actual_size(0),
     last_dma_got_size(0)
 {
@@ -73,7 +74,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     if (dma_enable) {
         dma_rd_engine = new DmaReadFifo(dmaPort, spm_line_size * spm_line_num,
                                     spm_line_size, spm_line_num, Request::UNCACHEABLE);
-        dma_wr_engine = new DmaNvdla(dmaPort, true, spm_line_size * spm_line_num,
+        dma_wr_engine = new DmaNvdla(nullptr, true, dmaPort, true, spm_line_size * spm_line_num,
                                      spm_line_size, spm_line_num, Request::UNCACHEABLE);
     } else {
         dma_rd_engine = nullptr;
@@ -104,8 +105,8 @@ rtlNVDLA::getPort(const std::string &if_name, PortID idx)
     } else if (if_name == "dma_port") {
         return dmaPort;
     } else {
-        panic_if(true, "Asking to rtlNVDLA for a port different\
-                        than cpu or mem");
+        panic_if(true, "Asking to rtlNVDLA for a port other "
+                       "than cpu or mem");
         return ClockedObject::getPort(if_name, idx);
     }
 }
@@ -298,8 +299,16 @@ rtlNVDLA::runIterationNVDLA() {
         }
     }
     processOutput(output);
+    if (((wr->csb->done() && !waiting_for_gem5_mem) || extevent == TraceLoaderGem5::TRACE_RESET)
+        && need_inform_flush) {
+        // printf("rtlNVDLA: begin to send flush instruction.\n");
+        // send a pkt to inform the connected gem5 SPM to flush
+        RequestPtr req = std::make_shared<Request>(baseAddrDRAM, 1, 0, 0);
+        PacketPtr new_pkt = new Packet(req, MemCmd::CleanEvict, 64);
+        dramPort.sendPacket(new_pkt, true); // timing = true
+    }
 }
-// todo: add flush spm functionality
+
 void
 rtlNVDLA::tick() {
     DPRINTF(rtlNVDLADebug, "Tick NVDLA \n");

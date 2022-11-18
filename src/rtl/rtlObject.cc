@@ -88,7 +88,6 @@ rtlObject::CPUSidePort::recvFunctional(PacketPtr pkt)
 bool
 rtlObject::CPUSidePort::recvTimingReq(PacketPtr pkt)
 {
-    DPRINTF(rtlObject, "Entering rtlObject::CPUSidePort::recvTimingReq\n");
     // Just forward to the memobj.
     if (pkt->req->hasPaddr()) {
         DPRINTF(rtlObject, "Got request for size: %d,  addr: %#x %#x\n",
@@ -103,11 +102,9 @@ rtlObject::CPUSidePort::recvTimingReq(PacketPtr pkt)
     // handleRequest() function to be implemented in
     // the rtlObject derived class
     if (!owner->handleRequest(pkt)) {
-        DPRINTF(rtlObject, "Leaving rtlObject::CPUSidePort::recvTimingReq (1)\n");
         needRetry = true;
         return false;
     } else {
-        DPRINTF(rtlObject, "Leaving rtlObject::CPUSidePort::recvTimingReq (1)\n");
         return true;
     }
     return true;

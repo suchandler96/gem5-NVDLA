@@ -285,6 +285,8 @@ public:
     uint32_t last_dma_actual_size;
     uint32_t last_dma_got_size;
 
+    int need_inform_flush;
+
     void try_get_dma_read_data(uint32_t size);
 };
 

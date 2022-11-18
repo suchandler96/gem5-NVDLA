@@ -147,7 +147,7 @@ public:
 
     // called by axiResponder.eval_timing()
     bool process_read_req();
-    bool process_read_resp();
+    void process_read_resp();
 
     // callback methods, called by gem5 ports in rtlNVDLA when data is returned
     void inflight_resp(uint32_t addr, const uint8_t* data);

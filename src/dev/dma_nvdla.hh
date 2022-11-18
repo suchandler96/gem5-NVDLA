@@ -110,8 +110,9 @@ class DmaNvdla : public Drainable, public Serializable
              DmaPort &port, bool _is_write, size_t size,
              unsigned max_req_size,
              unsigned max_pending,
-             Request::Flags flags=0,
-             EventFunctionWrapper event=[this]{});
+             Request::Flags flags=0//,
+             // EventFunctionWrapper event=[this]{}
+             );
 
     ~DmaNvdla();
 
@@ -316,7 +317,7 @@ class DmaNvdla : public Drainable, public Serializable
   public:
     std::vector<std::pair<Addr, std::vector<uint8_t>>> owner_fetch_buffer;
     ClockedObject* owner;   // e.g., SPM, rtlNVDLA, ...
-    EventFunctionWrapper accessDMADataEvent;
+    // EventFunctionWrapper accessDMADataEvent;
 };
 
 } // namespace gem5

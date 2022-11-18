@@ -716,7 +716,7 @@ AXIResponder::process_read_req() {
 }
 
 
-bool
+void
 AXIResponder::process_read_resp() {
     auto it_addr = inflight_req_order.begin();
     if (!inflight_req_order.empty()) {

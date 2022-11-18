@@ -228,9 +228,25 @@ def addOptions(parser):
     # options.dma_enable
     parser.add_argument("--dma-enable", action="store_true", default=False, help="Use scratchpad in NVDLA aided with DMA")
 
-    # options.spm_lat
-    parser.add_argument("--spm-lat", type=int, default=12, help="NVDLA private scratchpad memory latency")
 
+
+    # options.add-accel-private-spm
+    parser.add_argument("--add-accel-private-spm", action="store_true", default=False, help="Add private scratchpad memories for NVDLA")
+
+    # options.accel_pr_spm_size
+    parser.add_argument("--accel-pr-spm-size", type=str, default="1MB", help="specify private SPM size for accelerators")
+    # options.pr_spm_lat
+    parser.add_argument("--pr-spm-lat", type=int, default=12, help="NVDLA private scratchpad memory latency")
+
+
+
+    # options.add-accel-shared-spm
+    parser.add_argument("--add-accel-shared-spm", action="store_true", default=False, help="Add shared scratchpad memories for NVDLAs")
+
+    # options.accel_sh_spm_size
+    parser.add_argument("--accel-sh-spm-size", type=str, default="1MB", help="specify shared SPM size for accelerators")
+    # options.sh_spm_lat
+    parser.add_argument("--sh-spm-lat", type=int, default=12, help="NVDLA shared scratchpad memory latency")
 
 
     # options.add_accel_private_cache
