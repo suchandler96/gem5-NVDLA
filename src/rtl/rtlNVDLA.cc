@@ -55,6 +55,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     spm_line_size(params.spm_line_size),
     spm_line_num(params.spm_line_num),
     dma_enable(params.dma_enable),
+    pft_threshold(params.pft_threshold),
     dmaPort(this, params.system),
     dma_try_get_length(spm_line_size / params.dma_try_get_fraction),
     need_inform_flush(params.need_inform_flush),
@@ -141,7 +142,8 @@ rtlNVDLA::handleRequest(PacketPtr pkt)
 void
 rtlNVDLA::initNVDLA() {
     // Wrapper
-    wr = new Wrapper_nvdla(id_nvdla, traceEnable, "trace.vcd", max_req_inflight, dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable);
+    wr = new Wrapper_nvdla(id_nvdla, traceEnable, "trace.vcd", max_req_inflight,
+    dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable, pft_threshold);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
 }
@@ -294,14 +296,14 @@ rtlNVDLA::runIterationNVDLA() {
             flushing_spm = 1;
             if(flushing_spm && output.dma_write_buffer.empty()) {   // all items have been flushed to dma write engine
                 flushing_spm = 0;
-                printf("nvdla#%d spm flush complete!\n", id_nvdla);
+                // printf("nvdla#%d spm flush complete!\n", id_nvdla);
             }
         }
     }
     processOutput(output);
     if (((wr->csb->done() && !waiting_for_gem5_mem) || extevent == TraceLoaderGem5::TRACE_RESET)
         && need_inform_flush) {
-        // printf("rtlNVDLA: begin to send flush instruction.\n");
+        DPRINTF(rtlNVDLA, "begin to send flush instruction.\n");
         // send a pkt to inform the connected gem5 SPM to flush
         RequestPtr req = std::make_shared<Request>(baseAddrDRAM, 1, 0, 0);
         PacketPtr new_pkt = new Packet(req, MemCmd::CleanEvict, 64);

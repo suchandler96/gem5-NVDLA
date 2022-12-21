@@ -164,12 +164,13 @@ class CpuCluster(SubSystem):
 
             cpu.num_accels = options.numNVDLA
 
-            sft_pft_ctrl_str = "prefetch_enable=1" if options.sft_pft_enable else "prefetch_enable=0"
+            sft_pft_ctrl_str = "prefetch_enable=1, pft_threshold=options.pft_threshold"\
+                if options.sft_pft_enable else "prefetch_enable=0"
 
             # in the current phase, we only use one NVDLA accelerator, and spm cannot be used with caches
             if options.dma_enable:
                 assert not options.add_accel_private_cache and not options.add_accel_shared_cache
-                dma_ctrl_str = "dma_enable=1, dma_try_get_fraction=1, spm_latency=options.spm_lat, spm_line_size=1024"
+                dma_ctrl_str = "dma_enable=1, dma_try_get_fraction=1, spm_latency=options.accel_pr_spm_lat, spm_line_size=1024"
             else:
                 dma_ctrl_str = "dma_enable=0"
 
@@ -225,7 +226,11 @@ class CpuCluster(SubSystem):
 
             if options.add_accel_private_spm:
                 for i in range(options.numNVDLA):
-                    exec("self.accel_%d_pr_spm = SimpleSPM(latency=12, size='256kB')" % i)
+                    exec("self.accel_%d_pr_spm = SimpleSPM(latency=12,\
+                          size=options.accel_pr_spm_size,\
+                          need_write_back=options.accel_pr_spm_wb,\
+                          dma_concurrency=options.accel_pr_spm_dma_concurrency)"
+                         % i)
                     exec("self.accel_%d_pr_spm.dma_port = membus" % i)
 
                 for i in range(options.numNVDLA):
@@ -233,7 +238,9 @@ class CpuCluster(SubSystem):
                     outside_ports[i] = "self.accel_%d_pr_spm.mem_side" % i
 
             if options.add_accel_shared_spm:
-                self.accel_sh_spm = SimpleSPM(latency=12, size="1MB")
+                self.accel_sh_spm = SimpleSPM(latency=options.accel_sh_spm_lat, size=options.accel_sh_spm_size,\
+                                              need_write_back=options.accel_sh_spm_wb,\
+                                              dma_concurrency=options.accel_pr_spm_dma_concurrency)
                 self.accel_sh_spm.dma_port = membus
                 for port in outside_ports:
                     exec("%s = self.accel_sh_spm.cpu_side" % port)

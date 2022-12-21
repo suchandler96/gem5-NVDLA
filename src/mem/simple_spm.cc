@@ -62,25 +62,32 @@ SimpleSPM::SimpleSPM(const SimpleSPMParams &params) :
         cpuPorts.emplace_back(name() + csprintf(".cpu_side[%d]", i), i, this);
     }
 
+    DPRINTF(SimpleSPM, "DMA engine size check: tot = %ld, blk = %d, con = %d\n",
+    capacity * blockSize, blockSize, capacity);
 
+    int max_inflight_dma;
+    if (params.dma_concurrency == 0) {
+        max_inflight_dma = capacity;
+    } else {
+        max_inflight_dma = params.dma_concurrency;
+    }
 
-    dma_rd_engine = new Dma4SPM(this,                      // owner
-                                 false,                     // proactive_get
-                                 dmaPort,
-                                 false,                     // is_write
-                                 capacity * blockSize,      // total size
-                                 blockSize,                 // DMA granularity
-                                 capacity,                  // max concurrent req
-                                 Request::UNCACHEABLE
-                                 );
+    dma_rd_engine = new Dma4SPM(this,                   // owner
+                                false,                  // proactive_get
+                                dmaPort,
+                                false,                  // is_write
+                                capacity * blockSize,   // total size
+                                blockSize,              // DMA granularity
+                                max_inflight_dma,       // max concurrent req
+                                Request::UNCACHEABLE);
     dma_wr_engine = new Dma4SPM(this,
-                                 false,
-                                 dmaPort,
-                                 true,
-                                 capacity * blockSize,
-                                 blockSize,
-                                 capacity,
-                                 Request::UNCACHEABLE);
+                                false,
+                                dmaPort,
+                                true,
+                                capacity * blockSize,
+                                blockSize,
+                                max_inflight_dma,
+                                Request::UNCACHEABLE);
 }
 
 Port &
@@ -496,20 +503,26 @@ SimpleSPM::handleRequest(PacketPtr pkt, int port_id)
     bool hit = checkHit(pkt);
     if ((!hit) && pkt->isRead()) {
         Addr block_addr = pkt->getBlockAddr(blockSize);
+        DPRINTF(SimpleSPM, "Request for addr %#x is read miss.\n", pkt->getAddr());
 
         bool access_suc = ((inflight_dma_reads.find(block_addr)
                             != inflight_dma_reads.end())
                             || dma_rd_engine->atEndOfBlock());
         if (!access_suc) {
+            DPRINTF(SimpleSPM, "Request for addr %#x is going to be "
+            "blocked by DMA engine\n", pkt->getAddr());
             // filter out accesses that are going to fail due to busy DMA engine
             // so that they won't be counted into stats
             //! another read miss, and DMA engine blocked.
             //! So SPM is also going to stall
             return false;
         }
+        DPRINTF(SimpleSPM, "Request for addr %#x is going to be "
+            "handled by accessTiming\n", pkt->getAddr());
 
         accessTiming(pkt, port_id);
     } else {
+        DPRINTF(SimpleSPM, "Request for addr %#x is read miss.\n", pkt->getAddr());
         schedule(new EventFunctionWrapper([this, pkt, port_id]
                                           {accessTiming(pkt, port_id);},
                                           name() + ".accessEvent", true),
@@ -574,8 +587,12 @@ SimpleSPM::accessTiming(PacketPtr pkt, int port_id)
 
     if (hit) {
         if (pkt->isRead()) {
+            DPRINTF(SimpleSPM, "accessTiming(): request to addr %#x "
+            "is read hit\n", pkt->getAddr());
             stats.read_hits++;  // update stats
         } else if(pkt->isWrite()) {
+            DPRINTF(SimpleSPM, "accessTiming(): request to addr %#x "
+            "is write hit\n", pkt->getAddr());
             stats.write_hits++; // update stats
         }
         // DDUMP(SimpleSPM, pkt->getConstPtr<uint8_t>(), pkt->getSize());
@@ -585,13 +602,19 @@ SimpleSPM::accessTiming(PacketPtr pkt, int port_id)
     } else {
         if (pkt->isWrite()) {
             stats.write_misses++; // update stats
+            DPRINTF(SimpleSPM, "accessTiming(): request to addr %#x "
+            "is write miss\n", pkt->getAddr());
             insert(pkt);
         } else {
-            //! distinguish write miss & read miss
+            //! distinguish between write miss & read miss
             //! this is different from SimpleCache,
             //! where on an unaligned miss, a read cmd is issued to lower memory.
             //! Here we assume the software has already been designed to avoid
             //! this kind of conflict
+
+            DPRINTF(SimpleSPM, "accessTiming(): request to addr %#x "
+            "is read miss\n", pkt->getAddr());
+
             miss_pkt_with_time_port_list.emplace_back(pkt, curTick(), port_id);
 
             // Forward to the memory side.
@@ -660,7 +683,10 @@ SimpleSPM::insert(PacketPtr pkt)
     Addr pkt_addr = pkt->getAddr();
     Addr pkt_aligned_addr = pkt->getBlockAddr(blockSize);
 
-    // The address should not be in the cache
+    DPRINTF(SimpleSPM, "Insert(pkt): Inserting pkt addr %#x at blk addr %#x\n",
+    pkt_addr, pkt_aligned_addr);
+
+    // The address should not be in SPM
     assert(SPMStore.find(pkt_aligned_addr) == SPMStore.end());
     //  should be a response
     //! The pkt is not necessarily a response in SPM.
@@ -695,8 +721,6 @@ SimpleSPM::insert(PacketPtr pkt)
     // there is certainly no record of this spm line in lru_order
     lru_order.push_back(pkt_aligned_addr);
 
-    DPRINTF(SimpleSPM, "Inserting pkt addr %#x, SPM line addr%#x\n",
-            pkt_addr, pkt_aligned_addr);
     // DDUMP(SimpleSPM, pkt->getConstPtr<uint8_t>(), blockSize);
 
     // Allocate space for the SPM line data
@@ -712,7 +736,6 @@ SimpleSPM::insert(PacketPtr pkt)
 void
 SimpleSPM::insert(Addr addr, std::vector<uint8_t>& to_insert_line) {
     // The address should not be in the SPM
-    printf("SPM trying to insert addr 0x%08x\n", addr);
     assert(SPMStore.find(addr) == SPMStore.end());
 
     DPRINTF(SimpleSPM, "Inserting line addr %#x\n", addr);
@@ -761,8 +784,6 @@ SimpleSPM::writeBackLine() {
     assert(to_del_it != SPMStore.end());
 
     //! Write back the data with DMA write engine (dma_nvdla)
-    printf("SPM full. Try to write back SPM line of addr %#x "
-                       "via DMA\n", to_del_addr);
     DPRINTF(SimpleSPM, "SPM full. Try to write back SPM line of addr %#x "
                        "via DMA\n", to_del_addr);
     if (dma_wr_engine->atEndOfBlock()) {
@@ -770,7 +791,7 @@ SimpleSPM::writeBackLine() {
                                  &to_del_it->second.first[0]);
         // startFill() will copy data to its internal buffer
 
-        DPRINTF(SimpleSPM, "DMA write for addr %#x is issued", to_del_addr);
+        DPRINTF(SimpleSPM, "DMA write for addr %#x is issued\n", to_del_addr);
     } else {
         DPRINTF(SimpleSPM, "DMA write addr %#x attempt fail, scheduled later",
                 to_del_addr);
@@ -807,7 +828,7 @@ SimpleSPM::tryFlush() {
             dma_wr_engine->startFill(to_flush_addr, blockSize, &to_flush_data[0]);
             // startFill() will copy data into DMA engine's internal buffer
 
-            DPRINTF(SimpleSPM, "DMA write addr %#x is issued",
+            DPRINTF(SimpleSPM, "DMA write addr %#x is issued\n",
                     to_flush_item.first);
 
             to_flush_list.pop_front();
@@ -828,6 +849,8 @@ SimpleSPM::accessDMAData() {
     std::list<std::pair<Addr, std::vector<uint8_t>>>& src_buffer =
             dma_rd_engine->owner_fetch_buffer;
     for (auto it = src_buffer.begin(); it != src_buffer.end(); it++) {
+        DPRINTF(SimpleSPM, "DMA rd addr %#x arrival ack "
+                "by SimpleSPM\n", it->first);
         insert(it->first, it->second);  // insert addr, std::vector<uint8_t>
         inflight_dma_reads.erase(it->first);    // remove the inflight record
     }
@@ -868,6 +891,7 @@ SimpleSPM::checkMissQueueOnResponse() {
 
 void
 SimpleSPM::allFlush() {
+    DPRINTF(SimpleSPM, "allFlush() is called\n");
     if (!SPMStore.empty()) {
         for (auto it = SPMStore.begin(); it != SPMStore.end(); it++) {
             to_flush_list.emplace_back(std::move(*it));

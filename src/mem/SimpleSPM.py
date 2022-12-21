@@ -46,6 +46,8 @@ class SimpleSPM(ClockedObject):
 
     spm_line_size = Param.Unsigned(1024, "The minimal granularity to copy data"
                                          "from memory to SPM")
+    
+    dma_concurrency = Param.UInt32(0, "SPM maximum inflight DMAs")
 
     read_only = Param.Bool(False, "Whether this SPM is read only,"
                                   "e.g., for Neural Network weights")

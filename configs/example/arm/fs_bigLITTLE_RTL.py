@@ -235,8 +235,12 @@ def addOptions(parser):
 
     # options.accel_pr_spm_size
     parser.add_argument("--accel-pr-spm-size", type=str, default="1MB", help="specify private SPM size for accelerators")
-    # options.pr_spm_lat
-    parser.add_argument("--pr-spm-lat", type=int, default=12, help="NVDLA private scratchpad memory latency")
+    # options.accel_pr_spm_lat
+    parser.add_argument("--accel-pr-spm-lat", type=int, default=12, help="NVDLA private scratchpad memory latency")
+    # options.accel_pr_spm_wb
+    parser.add_argument("--accel-pr-spm-wb", action="store_true", default=False, help="specify SPM write back policy for accelerators")
+    # options.accel_pr_spm_dma_concurrency
+    parser.add_argument("--accel-pr-spm-dma-concurrency", type=int, default=0, help="NVDLA private scratchpad memory maximum inflight DMAs")
 
 
 
@@ -245,8 +249,10 @@ def addOptions(parser):
 
     # options.accel_sh_spm_size
     parser.add_argument("--accel-sh-spm-size", type=str, default="1MB", help="specify shared SPM size for accelerators")
-    # options.sh_spm_lat
-    parser.add_argument("--sh-spm-lat", type=int, default=12, help="NVDLA shared scratchpad memory latency")
+    # options.accel_sh_spm_lat
+    parser.add_argument("--accel-sh-spm-lat", type=int, default=12, help="NVDLA shared scratchpad memory latency")
+    # options.accel_sh_spm_wb
+    parser.add_argument("--accel-sh-spm-wb", action="store_true", default=False, help="specify shared SPM write back policy for accelerators")
 
 
     # options.add_accel_private_cache
@@ -286,6 +292,8 @@ def addOptions(parser):
 
     # options.sft_pft_enable
     parser.add_argument("--sft-pft-enable", action="store_true", default=False, help="issue software prefetching when inflight request queue is underrun")
+    # options.pft_threshold
+    parser.add_argument("--pft-threshold", type=int, default=16, help="the threshold of current inflight memory requests to launch software prefetch")
 
     parser.add_argument("--prefetcher", type=str, default=None, help="Hardware prefetcher class name prefix")
 

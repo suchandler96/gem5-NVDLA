@@ -42,20 +42,22 @@ class rtlNVDLA(rtlObject):
     dram_port = RequestPort("Regular Speed to DRAM, sends requests")
     dma_port = RequestPort("DMA port to DRAM")
 
-    dma_enable = Param.UInt64(0, "Whether to use DMA in testing")
+    dma_enable = Param.UInt32(0, "Whether to use DMA in testing")
 
     need_inform_flush = Param.UInt32(0, "Whether we need to inform the memory hierarchy connected to flush")
 
-    dma_try_get_fraction = Param.UInt64(1, "Every NVDLA tick, try get (dma_line_length / dma_try_get_fraction) bytes from DMA")
+    dma_try_get_fraction = Param.UInt32(1, "Every NVDLA tick, try get (dma_line_length / dma_try_get_fraction) bytes from DMA")
 
-    spm_latency = Param.UInt64(12, "Latency for NVDLA private scratchpad memory")
+    spm_latency = Param.UInt32(12, "Latency for NVDLA private scratchpad memory")
 
-    spm_line_size = Param.UInt64(1024, "The minimal granularity to copy data from memory to SPM")
+    spm_line_size = Param.UInt32(1024, "The minimal granularity to copy data from memory to SPM")
 
-    spm_line_num = Param.UInt64(64, "Capacity of SPM, counted in spm line numbers")
+    spm_line_num = Param.UInt32(64, "Capacity of SPM, counted in spm line numbers")
 
-    prefetch_enable = Param.UInt64(0, "Whether to issue software prefetch when inflight read queue is under-fed")
+    prefetch_enable = Param.UInt32(0, "Whether to issue software prefetch when inflight read queue is under-fed")
 
+    pft_threshold = Param.UInt32(16, "the threshold of current inflight memory requests to launch software prefetch")
+    
     id_nvdla = Param.UInt64(0, "id of the NVDLA")
 
     maxReq = Param.UInt64(4, "Max Request inflight for NVDLA")

@@ -65,8 +65,14 @@ echo "begin running nvdla test..."
 # echo "use two nvdla accelerators to finish sanity 3 sequentially:"
 # /home/nvdla_sequential_invoke /home/sanity3_no_input/trace.bin
 
-echo "begin lenet_until:"
-/home/my_validation_nvdla_single_thread /home/lenet_until/trace.bin
+# echo "begin lenet_until:"
+# /home/my_validation_nvdla_single_thread /home/lenet_until/trace.bin
+
+echo "begin lenet_pft:"
+/home/my_validation_nvdla_single_thread /home/lenet_pft/trace.bin /home/lenet_pft/rd_only_var_log
+
+echo "begin lenet_pipeline"
+/home/pipeline_execute /home/lenet_pipeline_bin/ 4 2
 
 /sbin/m5 exit
 

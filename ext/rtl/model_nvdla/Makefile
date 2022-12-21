@@ -53,7 +53,7 @@ CXX=clang++ -std=c++0x -fPIC
 CLANG=/usr/local/clang_llvm/bin/clang
 
 create_sc_time_o: sc_time.cc sc_time.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
+	$(CXX) -fpic -I$(DIR) -O3 -I$(VERILATOR_ROOT)/include \
 	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
 	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
 	-Wno-sign-compare -Wno-uninitialized \
@@ -61,7 +61,7 @@ create_sc_time_o: sc_time.cc sc_time.hh
 	-c -o sc_time.o sc_time.cc
 
 create_csbMaster_o: csbMaster.cc csbMaster.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
+	$(CXX) -fpic -I$(DIR) -O3 -I$(VERILATOR_ROOT)/include \
 	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
 	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
 	-Wno-sign-compare -Wno-uninitialized \
@@ -69,7 +69,7 @@ create_csbMaster_o: csbMaster.cc csbMaster.hh
 	-c -o csbMaster.o csbMaster.cc
 
 create_axiResponder_o: axiResponder.cc axiResponder.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
+	$(CXX) -fpic -I$(DIR) -O3 -I$(VERILATOR_ROOT)/include \
 	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
 	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
 	-Wno-sign-compare -Wno-uninitialized \
@@ -77,7 +77,7 @@ create_axiResponder_o: axiResponder.cc axiResponder.hh
 	-c -o axiResponder.o axiResponder.cc
 
 create_wrapper_vcd_o: create_axiResponder_o create_csbMaster_o wrapper_nvdla.cc wrapper_nvdla.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
+	$(CXX) -fpic -I$(DIR) -O3 -I$(VERILATOR_ROOT)/include \
 	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
 	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
 	-Wno-sign-compare -Wno-uninitialized \
@@ -85,7 +85,7 @@ create_wrapper_vcd_o: create_axiResponder_o create_csbMaster_o wrapper_nvdla.cc 
 	-c -o wrapper_nvdla.o wrapper_nvdla.cc
 
 create_wrapper_fst_o: wrapper_nvdla.cc wrapper_nvdla.hh
-	$(CXX) -fpic -I$(DIR_FST) -g -I$(VERILATOR_ROOT)/include \
+	$(CXX) -fpic -I$(DIR_FST) -O3 -I$(VERILATOR_ROOT)/include \
 	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
 	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
 	-Wno-sign-compare -Wno-uninitialized \
@@ -103,7 +103,7 @@ create_wrapper_th_o:
 	 -c -o wrapper_nvdla.o wrapper_nvdla.cc
 
 create_nvdla_o: nvdla.cpp
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
+	$(CXX) -fpic -I$(DIR) -O3 -I$(VERILATOR_ROOT)/include \
 	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
 	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
 	-Wno-sign-compare -Wno-uninitialized \
@@ -111,7 +111,7 @@ create_nvdla_o: nvdla.cpp
 	-c -o nvdla.o nvdla.cpp
 
 create_library_vcd: create_wrapper_vcd_o
-	$(CXX) -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
+	$(CXX) -I$(DIR) -O3 -I$(VERILATOR_ROOT)/include \
 	wrapper_nvdla.o csbMaster.o axiResponder.o \
 	 -I$(VERILATOR_ROOT)/include/vltstd \
 	 $(VERILATOR_ROOT)/include/verilated.cpp \
@@ -170,7 +170,7 @@ main-static: main.cpp
 	 $(DIR)/VNV_nvdla__ALL.a -fpic -o main-static
 
 main-nvdla: nvdla.cpp 
-	$(CXX) -g -I$(DIR) -I$(VERILATOR_ROOT)/include nvdla.cpp\
+	$(CXX) -O3 -I$(DIR) -I$(VERILATOR_ROOT)/include nvdla.cpp\
 	 $(DIR)/verilated.o $(DIR)/verilated_vcd_c.o\
 	 $(DIR)/VNV_nvdla__ALL.a -fpic -o main-nvdla
 
