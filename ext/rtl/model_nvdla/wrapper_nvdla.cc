@@ -357,35 +357,182 @@ outputNVDLA& Wrapper_nvdla::tick(inputNVDLA in) {
     return output;    
 }
 
-uint8_t Wrapper_nvdla::read_spm(uint64_t addr) {
+uint8_t Wrapper_nvdla::read_spm_byte(uint64_t addr) {
     uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
-    assert(spm.find(addr_base) != spm.end());
+
+    auto spm_line_vec_it = spm.find(addr_base);
+
+    assert(spm_line_vec_it != spm.end());
+
     uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
-    return spm[addr_base][offset];
+    return spm_line_vec_it->second[offset];
 }
 
-// write is temporarily not used
-void Wrapper_nvdla::write_spm(uint64_t addr, uint8_t data) {
-    uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
+void Wrapper_nvdla::read_spm_line(uint64_t aligned_addr, uint8_t* data_out) {
+    assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
 
+    auto spm_line_vec_it = spm.find(aligned_addr);
+
+    assert(spm_line_vec_it != spm.end());
+
+    for (int i = 0; i < (AXI_WIDTH / 8); i++) {
+        data_out[i] = spm_line_vec_it->second[i];
+    }
+}
+
+void Wrapper_nvdla::write_spm_byte(uint64_t addr, uint8_t data) {
+    uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
-    if(spm.find(addr_base) == spm.end()) {      // if the element to write is not in spm
+
+    auto spm_line_vec_it = spm.find(addr_base);
+
+    if (spm_line_vec_it == spm.end()) {      // if the element to write is not in spm
+        // find an SPM line to erase if size exceeds
+        // temporarily write back everything
+
         // assign space to this spm line
         std::vector<uint8_t>& entry_vector = spm[addr_base];
         entry_vector.resize(spm_line_size, 0);
+        entry_vector[offset] = data;
+    } else {
+        spm_line_vec_it->second[offset] = data;
     }
-    spm[addr_base][offset] = data;
+}
+
+void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, uint8_t* data) {
+    assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
+
+    auto spm_line_vec_it = spm.find(aligned_addr);
+    if (spm_line_vec_it == spm.end()) {
+        // todo: find an SPM line to erase if size exceeds
+        // temporarily write back everything
+
+        // assign space to this spm line
+        spm[aligned_addr].assign(data, data + (AXI_WIDTH / 8));
+    } else {
+        spm_line_vec_it->second.assign(data, data + (AXI_WIDTH / 8));
+    }    
+}
+
+void Wrapper_nvdla::write_spm_axi_line(uint64_t axi_addr, uint8_t* data) {
+    assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
+
+    uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
+    uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
+
+    auto spm_line_vec_it = spm.find(addr_base);
+    std::vector<uint8_t>* entry_vector_ptr;
+    if (spm_line_vec_it == spm.end()) {
+        // find an SPM line to erase if size exceeds
+        // temporarily write back everything
+
+        // assign space to this spm line
+        entry_vector_ptr = &(spm[addr_base]);
+        entry_vector_ptr->resize(spm_line_size, 0);
+    } else {
+        entry_vector_ptr = &(spm_line_vec_it->second);
+    }
+    for (int i = 0; i < AXI_WIDTH / 8; i++) {
+        (*entry_vector_ptr)[offset + i] = data[i];
+    }
+}
+
+void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data) {
+    assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
+
+    auto spm_line_vec_it = spm.find(aligned_addr);
+    if (spm_line_vec_it == spm.end()) {
+        // todo: find an SPM line to erase if size exceeds
+        // temporarily write back everything
+
+        // assign space to this spm line
+        spm.emplace(std::make_pair(aligned_addr, data));
+    } else {
+        spm_line_vec_it->second.assign(data.begin(), data.end());
+    }
+}
+
+bool Wrapper_nvdla::check_txn_data_in_spm_and_wr_queue(uint64_t addr) {
+    // search spm_write_queue first
+    for (auto it = spm_write_queue.begin(); it != spm_write_queue.end(); it++) {
+        if ((it->addr) == addr)
+            return true;
+    }
+
+    // then search spm
+    uint64_t spm_line_addr = addr & ~((uint64_t)(spm_line_size - 1));
+    if (spm.find(spm_line_addr) == spm.end()) {
+        return false;
+    }
+    return true;
+}
+
+bool Wrapper_nvdla::get_txn_data_from_spm_and_wr_queue(uint64_t addr, uint32_t* to_be_filled_data) {
+    uint8_t* spm_write_queue_data = nullptr;
+    // search spm_write_queue first
+    for (auto it = spm_write_queue.begin(); it != spm_write_queue.end(); it++) {
+        if (it->addr == addr) {
+            spm_write_queue_data = it->data;
+            break;
+        }
+    }
+    if (spm_write_queue_data != nullptr) {
+        for (int k = 0; k < AXI_WIDTH / 8; k += 4) {
+            uint32_t da = spm_write_queue_data[k] + (spm_write_queue_data[k + 1] << 8) +
+                (spm_write_queue_data[k + 2] << 16) + (spm_write_queue_data[k + 3] << 24);
+            to_be_filled_data[k / 4] = da;
+        }
+        return true;
+    }
+    // then search spm
+    uint64_t spm_line_addr = addr & ~((uint64_t)(spm_line_size - 1));
+    if (spm.find(spm_line_addr) == spm.end())
+        return false;
+
+    for (int k = 0; k < AXI_WIDTH / 32; k++) {
+        uint32_t da = read_spm_byte(addr + k * 4) +
+            (read_spm_byte(addr + k * 4 + 1) << 8) +
+            (read_spm_byte(addr + k * 4 + 2) << 16) +
+            (read_spm_byte(addr + k * 4 + 3) << 24);
+        to_be_filled_data[k] = da;
+    }
+    return true;
+}
+
+void Wrapper_nvdla::countdown_spm_write_queue() {
+    if (dma_enable && !spm_write_queue.empty()) {
+        while (spm_write_queue.front().countdown == 0) {
+            // write to spm
+            auto& spm_txn = spm_write_queue.front();
+            for (int i = 0; i < AXI_WIDTH / 8; i++) {
+                if (!((spm_txn.mask >> i) & 1))
+                    continue;
+                write_spm_byte(spm_txn.addr + i, spm_txn.data[i]);
+            }
+
+            spm_write_queue.pop_front();
+            if (spm_write_queue.empty())
+                break;
+        }
+        for (auto it = spm_write_queue.begin(); it != spm_write_queue.end(); it++)
+            it->countdown--;
+    }
 }
 
 void Wrapper_nvdla::flush_spm() {
     // first write all items in spm write queue into spm
     while (!spm_write_queue.empty()) {
         auto &txn = spm_write_queue.front();
-        for (int i = 0; i < AXI_WIDTH / 8; i++) {
-            if (!((txn.mask >> i) & 1))
-                continue;
-            write_spm(txn.addr + i, txn.data[i]);
+        if (txn.mask == 0xffffffffffffffff) {
+            write_spm_axi_line(txn.addr, txn.data);
             spm_write_queue.pop_front();
+        } else {
+            for (int i = 0; i < AXI_WIDTH / 8; i++) {
+                if (!((txn.mask >> i) & 1))
+                    continue;
+                write_spm_byte(txn.addr + i, txn.data[i]);
+                spm_write_queue.pop_front();
+            }
         }
     }
 

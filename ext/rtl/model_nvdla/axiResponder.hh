@@ -10,6 +10,8 @@
 #ifndef __AXI_RESPONDER__
 #define __AXI_RESPONDER__
 
+#define AXI_BLOCK_SIZE 4096
+#define AXI_WIDTH 512
 #include <list>
 
 #include "wrapper_nvdla.hh"
@@ -49,9 +51,6 @@ public:
     };
 
 private:
-
-#define AXI_BLOCK_SIZE 4096
-#define AXI_WIDTH 512
 
     int AXI_R_LATENCY;
     const static int AXI_R_DELAY = 0;
@@ -120,8 +119,6 @@ public:
     // In this function we read from memory
     uint8_t read_ram(uint32_t addr);
 
-    uint8_t read(uint32_t addr);
-
     // In this function, we get read requests from traceLoaderGem5 and access memory for it
     void read_for_traceLoaderGem5(uint32_t start_addr, uint32_t length);
 
@@ -136,13 +133,9 @@ public:
     void write(uint32_t addr, uint8_t data, bool timing);
     void write_ram(uint32_t addr, uint8_t data);
 
-    bool check_txn_data_in_spm_and_wr_queue(uint32_t addr);
-    bool get_txn_data_from_spm_and_wr_queue(uint32_t addr, uint32_t* to_be_filled_data);
-
     void insertPacket(uint8_t* data, axi_r_txn* txn);
 
     void eval_timing();
-    void eval_atomic();
     void eval_ram();
 
     // called by axiResponder.eval_timing()

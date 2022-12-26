@@ -55,12 +55,12 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     spm_line_size(params.spm_line_size),
     spm_line_num(params.spm_line_num),
     dma_enable(params.dma_enable),
-    pft_threshold(params.pft_threshold),
     dmaPort(this, params.system),
     dma_try_get_length(spm_line_size / params.dma_try_get_fraction),
-    need_inform_flush(params.need_inform_flush),
     last_dma_actual_size(0),
-    last_dma_got_size(0)
+    last_dma_got_size(0),
+    pft_threshold(params.pft_threshold),
+    need_inform_flush(params.need_inform_flush)
 {
 
     initNVDLA();
@@ -143,7 +143,7 @@ void
 rtlNVDLA::initNVDLA() {
     // Wrapper
     wr = new Wrapper_nvdla(id_nvdla, traceEnable, "trace.vcd", max_req_inflight,
-    dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable, pft_threshold);
+    dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
 }

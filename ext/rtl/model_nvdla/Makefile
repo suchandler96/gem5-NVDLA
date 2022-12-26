@@ -174,13 +174,10 @@ main-nvdla: nvdla.cpp
 	 $(DIR)/verilated.o $(DIR)/verilated_vcd_c.o\
 	 $(DIR)/VNV_nvdla__ALL.a -fpic -o main-nvdla
 
-hellomake: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
-
-install:
-	cp wrapper_nvdla.hh ..
-	cp libVerilatorNVDLA.so ..
-	cp rtl_packet_nvdla.hh ..
+# install:
+# 	cp wrapper_nvdla.hh ..
+# 	cp libVerilatorNVDLA.so ..
+# 	cp rtl_packet_nvdla.hh ..
 
 # this is to make it visible outsite command line
 .PHONY: clean create_library_wrapper main create_nvdla_o main-nvdla 

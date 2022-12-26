@@ -52,5 +52,5 @@ main.Append(CPPPATH=[Dir('model_nvdla/verilator_nvdla')])
 
 ## Find the library path and add library
 main.Append(LIBS=['VerilatorNVDLA'])
-main.Prepend(LIBPATH=Dir('.'))
+main.Prepend(LIBPATH=Dir('./model_nvdla/'))
 main.Append(CPPDEFINES=['VM_SC=0', 'VM_TRACE=1','VL_THREADED=0'])

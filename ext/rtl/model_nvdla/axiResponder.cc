@@ -253,193 +253,6 @@ AXIResponder::eval_ram() {
 }
 
 void
-AXIResponder::eval_atomic() {
-    /* write request */
-    if (*dla.aw_awvalid && *dla.aw_awready) {
-        #ifdef PRINT_DEBUG
-            printf("(%lu) %s: write request from dla, addr %08lx id %d\n",
-                wrapper->tickcount,
-                name,
-                *dla.aw_awaddr,
-                *dla.aw_awid);
-        #endif
-
-        axi_aw_txn txn;
-
-        txn.awid = *dla.aw_awid;
-        txn.awaddr = *dla.aw_awaddr & ~(uint64_t)(AXI_WIDTH / 8 - 1);
-        txn.awlen = *dla.aw_awlen;
-        aw_fifo.push(txn);
-
-        *dla.aw_awready = 0;
-    } else
-        *dla.aw_awready = 1;
-
-    /* write data */
-    if (*dla.w_wvalid) {
-        #ifdef PRINT_DEBUG
-            printf("(%lu) %s: write data from dla (%08x %08x...)\n",
-                wrapper->tickcount,
-                name,
-                dla.w_wdata[0],
-                dla.w_wdata[1]);
-        #endif
-
-        axi_w_txn txn;
-
-        for (int i = 0; i < AXI_WIDTH / 32; i++)
-            txn.wdata[i] = dla.w_wdata[i];
-        txn.wstrb = *dla.w_wstrb;
-        txn.wlast = *dla.w_wlast;
-        w_fifo.push(txn);
-    }
-
-    /* read request */
-    if (*dla.ar_arvalid && *dla.ar_arready) {
-        uint64_t addr = *dla.ar_araddr & ~(uint64_t)(AXI_WIDTH / 8 - 1);
-        uint8_t len = *dla.ar_arlen;
-        #ifdef PRINT_DEBUG
-            printf("(%lu) %s: read request from dla, addr %08lx burst %d id %d\n",
-                wrapper->tickcount,
-                name,
-                *dla.ar_araddr,
-                *dla.ar_arlen,
-                *dla.ar_arid);
-        #endif
-
-        do {
-            axi_r_txn txn;
-
-            txn.rvalid = 1;
-            txn.rlast = len == 0;
-            txn.rid = *dla.ar_arid;
-
-            /*for (int i = 0; i < AXI_WIDTH / 32; i++) {
-                uint32_t da = read_ram(addr + i * 4) +
-                             (read_ram(addr + i * 4 + 1) << 8) +
-                             (read_ram(addr + i * 4 + 2) << 16) +
-                             (read_ram(addr + i * 4 + 3) << 24);
-                txn.rdata[i] = da;
-            }*/
-            const uint8_t* dataPtr = read_variable(addr, false, 512/8);
-            inflight_resp_atomic(addr,dataPtr,&txn);
-
-            r_fifo.push(txn);
-
-            addr += AXI_WIDTH / 8;
-        } while (len--);
-
-        axi_r_txn txn;
-
-        txn.rvalid = 0;
-        txn.rid = 0;
-        txn.rlast = 0;
-        for (int i = 0; i < AXI_WIDTH / 32; i++) {
-            txn.rdata[i] = 0x55555555;
-        }
-
-        for (int i = 0; i < AXI_R_DELAY; i++)
-            r_fifo.push(txn);
-
-        *dla.ar_arready = 0;
-    } else
-        *dla.ar_arready = 1;
-
-    /* now handle the write FIFOs ... */
-    if (!aw_fifo.empty() && !w_fifo.empty()) {
-        axi_aw_txn &awtxn = aw_fifo.front();
-        axi_w_txn &wtxn = w_fifo.front();
-
-        if (wtxn.wlast != (awtxn.awlen == 0)) {
-            printf("(%lu) %s: wlast / awlen mismatch\n",
-                   wrapper->tickcount, name);
-            abort();
-        }
-
-        for (int i = 0; i < AXI_WIDTH / 8; i++) {
-            if (!((wtxn.wstrb >> i) & 1))
-                continue;
-
-            write(awtxn.awaddr + i,
-                 (wtxn.wdata[i / 4] >> ((i % 4) * 8)) & 0xFF,
-                 false);
-        }
-
-
-        if (wtxn.wlast) {
-            #ifdef PRINT_DEBUG
-                printf("(%lu) %s: write, last tick\n", wrapper->tickcount, name);
-            #endif
-            aw_fifo.pop();
-
-            axi_b_txn btxn;
-            btxn.bid = awtxn.awid;
-            b_fifo.push(btxn);
-        } else {
-            #ifdef PRINT_DEBUG
-                printf("(%lu) %s: write, ticks remaining\n",
-                       wrapper->tickcount, name);
-            #endif
-
-            awtxn.awlen--;
-            awtxn.awaddr += AXI_WIDTH / 8;
-        }
-
-        w_fifo.pop();
-    }
-
-    /* read response */
-    if (!r_fifo.empty()) {
-        axi_r_txn &txn = r_fifo.front();
-
-        r0_fifo.push(txn);
-        r_fifo.pop();
-    } else {
-        axi_r_txn txn;
-
-        txn.rvalid = 0;
-        txn.rid = 0;
-        txn.rlast = 0;
-        for (int i = 0; i < AXI_WIDTH / 32; i++) {
-            txn.rdata[i] = 0xAAAAAAAA;
-        }
-
-        r0_fifo.push(txn);
-    }
-
-    *dla.r_rvalid = 0;
-    if (*dla.r_rready && !r0_fifo.empty()) {
-        axi_r_txn &txn = r0_fifo.front();
-
-        *dla.r_rvalid = txn.rvalid;
-        *dla.r_rid = txn.rid;
-        *dla.r_rlast = txn.rlast;
-        for (int i = 0; i < AXI_WIDTH / 32; i++) {
-            dla.r_rdata[i] = txn.rdata[i];
-        }
-        #ifdef PRINT_DEBUG
-            if (txn.rvalid) {
-                printf("(%lu) %s: read push: id %d, da %08x %08x %08x %08x\n",
-                    wrapper->tickcount, name, txn.rid, txn.rdata[0],
-                    txn.rdata[1], txn.rdata[2], txn.rdata[3]);
-            }
-        #endif
-
-        r0_fifo.pop();
-    }
-
-    /* write response */
-    *dla.b_bvalid = 0;
-    if (*dla.b_bready && !b_fifo.empty()) {
-        *dla.b_bvalid = 1;
-
-        axi_b_txn &txn = b_fifo.front();
-        *dla.b_bid = txn.bid;
-        b_fifo.pop();
-    }
-}
-
-void
 AXIResponder::eval_timing() {
     /* write request */
     if (*dla.aw_awvalid && *dla.aw_awready) {
@@ -543,8 +356,7 @@ AXIResponder::eval_timing() {
             b_fifo.push(btxn);
         } else {
             #ifdef PRINT_DEBUG
-                printf("(%lu) nvdla#%d %s: write, ticks remaining\n",
-                   wrapper->tickcount, wrapper->id_nvdla, name);
+                printf("(%lu) nvdla#%d %s: write, ticks remaining\n", wrapper->tickcount, wrapper->id_nvdla, name);
             #endif
 
             awtxn.awlen--;
@@ -555,23 +367,7 @@ AXIResponder::eval_timing() {
     }
 
     // process spm write queue countdown
-    if (wrapper->dma_enable && !wrapper->spm_write_queue.empty()) {
-        while (wrapper->spm_write_queue.front().countdown == 0) {
-            // write to spm
-            auto& spm_txn = wrapper->spm_write_queue.front();
-            for (int i = 0; i < AXI_WIDTH / 8; i++) {
-                if (!((spm_txn.mask >> i) & 1))
-                    continue;
-                wrapper->write_spm(spm_txn.addr + i, spm_txn.data[i]);
-            }
-
-            wrapper->spm_write_queue.pop_front();
-            if(wrapper->spm_write_queue.empty())
-                break;
-        }
-        for (auto it = wrapper->spm_write_queue.begin(); it != wrapper->spm_write_queue.end(); it++)
-            it->countdown--;
-    }
+    wrapper->countdown_spm_write_queue();
 
     /* read response */
     if (!r_fifo.empty()) {
@@ -657,11 +453,10 @@ AXIResponder::process_read_req() {
                 txn.rid = *dla.ar_arid;
                 txn.is_prefetch = 0;
 
-                if(wrapper->prefetch_enable)
-                    log_req_issue(start_addr);
+                if(wrapper->prefetch_enable) log_req_issue(start_addr);
 
                 // check spm and write queue
-                bool data_get_in_spm_or_queue = get_txn_data_from_spm_and_wr_queue(start_addr, txn.rdata);
+                bool data_get_in_spm_or_queue = wrapper->get_txn_data_from_spm_and_wr_queue(start_addr, txn.rdata);
                 if (data_get_in_spm_or_queue) {
                     // need to maintain the order of issuing requests
                     // printf("this spm_line_addr exists in spm, 0x%08lx\n", spm_line_addr);
@@ -692,15 +487,14 @@ AXIResponder::process_read_req() {
                 txn.rid = *dla.ar_arid;
                 txn.is_prefetch = 0;
 
-                if(wrapper->prefetch_enable)
-                    log_req_issue(addr);
+                if(wrapper->prefetch_enable) log_req_issue(addr);
 
                 // put txn to the map
                 inflight_req[addr].push_back(txn);
                 // put in req the txn
                 inflight_req_order.push_back(addr);
 
-                read_variable(addr, true, AXI_WIDTH / 8);
+                wrapper->addReadReq(sram, true, addr, AXI_WIDTH / 8);
 
                 addr += AXI_WIDTH / 8;
                 i++;
@@ -732,7 +526,7 @@ AXIResponder::process_read_resp() {
         axi_r_txn &txn = inflight_req[addr_front].front();
         // data just arrived in spm via DMA will not update its corresponding txn.rvalid
         if (wrapper->dma_enable && txn.rvalid == 0) {
-            bool got = get_txn_data_from_spm_and_wr_queue(addr_front, txn.rdata);
+            bool got = wrapper->get_txn_data_from_spm_and_wr_queue(addr_front, txn.rdata);
             if (got)
                 txn.rvalid = 1;
         }
@@ -848,21 +642,8 @@ AXIResponder::inflight_dma_resp(const uint8_t* data, uint32_t len) {
 const uint8_t*
 AXIResponder::read_variable(uint32_t addr, bool timing,
                                 unsigned int bytes) {
-    //printf("name: %s %d\n", name, strcmp(name,"DBB"));
     wrapper->addReadReq(sram,timing,addr,bytes);
-    return 0;//readGem5;
-}
-
-// Reads 1 value
-uint8_t
-AXIResponder::read(uint32_t addr) {
-    ram[addr / AXI_BLOCK_SIZE].resize(AXI_BLOCK_SIZE, 0);
-
-    wrapper->addReadReq(sram,false,addr,1);
-
-    //printf("Compare reading gem5ram: %08lx, ram: %08lx \n",
-    //        readGem5, readRam);
-    return 0;//readGem5;
+    return 0;
 }
 
 void
@@ -878,7 +659,7 @@ AXIResponder::read_for_traceLoaderGem5(uint32_t start_addr, uint32_t length) {
         txn.burst = true;
         txn.rlast = (txn_start_addr + delta_addr + (AXI_WIDTH / 8) >= start_addr + length);
         if(wrapper->dma_enable) {
-            bool got = get_txn_data_from_spm_and_wr_queue(txn_addr, txn.rdata);
+            bool got = wrapper->get_txn_data_from_spm_and_wr_queue(txn_addr, txn.rdata);
             if(got) {
                 txn.rvalid = 1;
             } else      // when verifying results, no need to use dma...
@@ -926,55 +707,6 @@ AXIResponder::read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* da
         printf("(%lu) nvdla#%d still waiting for memory request at 0x%08x\n", wrapper->tickcount, wrapper->id_nvdla, start_addr);
         return 0;
     }
-}
-
-bool
-AXIResponder::check_txn_data_in_spm_and_wr_queue(uint32_t addr) {
-    // search spm_write_queue first
-    for (auto it = wrapper->spm_write_queue.begin(); it != wrapper->spm_write_queue.end(); it++) {
-        if ((uint32_t)(it->addr) == addr)
-            return true;
-    }
-
-    // then search spm
-    uint64_t spm_line_addr = addr & ~((uint64_t)(wrapper->spm_line_size - 1));
-    if (wrapper->spm.find(spm_line_addr) == wrapper->spm.end()) {
-        return false;
-    }
-    return true;
-}
-
-bool
-AXIResponder::get_txn_data_from_spm_and_wr_queue(uint32_t addr, uint32_t* to_be_filled_data) {
-    uint8_t* spm_write_queue_data = nullptr;
-    // search spm_write_queue first
-    for (auto it = wrapper->spm_write_queue.begin(); it != wrapper->spm_write_queue.end(); it++) {
-        if ((uint32_t)it->addr == addr) {
-            spm_write_queue_data = it->data;
-            break;
-        }
-    }
-    if (spm_write_queue_data != nullptr) {
-        for (int k = 0; k < AXI_WIDTH / 8; k += 4) {
-            uint32_t da = spm_write_queue_data[k] + (spm_write_queue_data[k + 1] << 8) +
-                          (spm_write_queue_data[k + 2] << 16) + (spm_write_queue_data[k + 3] << 24);
-            to_be_filled_data[k / 4] = da;
-        }
-        return true;
-    }
-    // then search spm
-    uint64_t spm_line_addr = addr & ~((uint64_t)(wrapper->spm_line_size - 1));
-    if (wrapper->spm.find(spm_line_addr) == wrapper->spm.end())
-        return false;
-
-    for (int k = 0; k < AXI_WIDTH / 32; k++) {
-        uint32_t da = wrapper->read_spm(addr + k * 4) +
-                (wrapper->read_spm(addr + k * 4 + 1) << 8) +
-                (wrapper->read_spm(addr + k * 4 + 2) << 16) +
-                (wrapper->read_spm(addr + k * 4 + 3) << 24);
-        to_be_filled_data[k] = da;
-    }
-    return true;
 }
 
 uint32_t
@@ -1035,7 +767,7 @@ AXIResponder::generate_prefetch_request() {
     printf("(%lu) nvdla#%d PREFETCH request addr %08x issued.\n", wrapper->tickcount, wrapper->id_nvdla, to_issue_addr);
 
     if (wrapper->dma_enable) {
-        assert(!check_txn_data_in_spm_and_wr_queue(to_issue_addr)); // weights are unique, shouldn't have been prefetched
+        assert(!wrapper->check_txn_data_in_spm_and_wr_queue(to_issue_addr)); // weights are unique, shouldn't have been prefetched
         // first check whether this addr has been covered by an inflight DMA request or not
         uint64_t spm_line_addr = to_issue_addr & ~((uint64_t)(wrapper->spm_line_size - 1));
         if (inflight_dma_addr_size.find(spm_line_addr) == inflight_dma_addr_size.end()) {
@@ -1052,7 +784,7 @@ AXIResponder::generate_prefetch_request() {
     } else {
         inflight_req[to_issue_addr].push_back(txn);
         inflight_req_order.push_back(to_issue_addr);
-        read_variable(to_issue_addr, true, AXI_WIDTH / 8);
+        wrapper->addReadReq(sram, true, to_issue_addr, AXI_WIDTH / 8);
         log_entry_issued_len += AXI_WIDTH / 8;  // here the gap of issuing should be cache line size
     }
 

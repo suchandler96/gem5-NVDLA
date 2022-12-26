@@ -49,15 +49,18 @@ echo "begin running nvdla test..."
 # echo "begin sanity 3:"
 # /home/my_validation_nvdla_single_thread /home/sanity3/trace.bin
 
+# echo "begin sanity 3 no input:"
+# /home/my_validation_nvdla_single_thread /home/sanity3_no_input/trace.bin
+
 # echo "begin conv_8x8_fc_int16:"
 # /home/my_validation_nvdla_single_thread /home/conv_8x8_fc_int16/trace.bin
 
 # echo "begin sdp_relu_int16:"
 # /home/my_validation_nvdla_single_thread /home/sdp_relu_int16/trace.bin
 
-# echo "begin googlenet_conv2_3x3_int16:"
+echo "begin googlenet_conv2_3x3_int16:"
 # this test is supposed to fail with csb read mismatch, but the output memory dump should be fine
-# /home/my_validation_nvdla_single_thread /home/mod_googlenet_conv2_3x3_int16/trace.bin
+/home/my_validation_nvdla_single_thread /home/mod_googlenet_conv2_3x3_int16/trace.bin
 
 # echo "begin cc_alexnet_conv5_relu5_int16_dtest_dbb:"
 # /home/my_validation_nvdla_single_thread /home/cc_alexnet_conv5_relu5_int16_dtest_dbb/trace.bin
@@ -68,11 +71,11 @@ echo "begin running nvdla test..."
 # echo "begin lenet_until:"
 # /home/my_validation_nvdla_single_thread /home/lenet_until/trace.bin
 
-echo "begin lenet_pft:"
-/home/my_validation_nvdla_single_thread /home/lenet_pft/trace.bin /home/lenet_pft/rd_only_var_log
+# echo "begin lenet_pft:"
+# /home/my_validation_nvdla_single_thread /home/lenet_pft/trace.bin /home/lenet_pft/rd_only_var_log
 
-echo "begin lenet_pipeline"
-/home/pipeline_execute /home/lenet_pipeline_bin/ 4 2
+# echo "begin lenet_pipeline"
+# /home/pipeline_execute /home/lenet_pipeline_bin/ 4 2
 
 /sbin/m5 exit
 

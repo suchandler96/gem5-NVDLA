@@ -165,14 +165,21 @@ class Wrapper_nvdla {
             uint64_t addr;
             uint64_t mask;
             uint32_t countdown;
-            uint8_t data[512 / 8];
+            uint8_t data[AXI_WIDTH / 8];
         };
         std::list<spm_wr_txn> spm_write_queue;
 
         void addDMAReadReq(uint64_t read_addr, uint32_t read_bytes);
 
-        uint8_t read_spm(uint64_t addr);
-        void write_spm(uint64_t addr, uint8_t data);
+        uint8_t read_spm_byte(uint64_t addr);
+        void read_spm_line(uint64_t aligned_addr, uint8_t* data_out);
+        void write_spm_byte(uint64_t addr, uint8_t data);
+        void write_spm_line(uint64_t aligned_addr, uint8_t* data);
+        void write_spm_axi_line(uint64_t axi_addr, uint8_t* data);
+        void write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data);
+        bool check_txn_data_in_spm_and_wr_queue(uint64_t addr);
+        bool get_txn_data_from_spm_and_wr_queue(uint64_t addr, uint32_t* to_be_filled_data);
+        void countdown_spm_write_queue();
         void flush_spm();
 
         // software prefetching
