@@ -59,7 +59,7 @@ private:
         int rvalid;
         int rlast;
         bool burst;
-        uint32_t rdata[AXI_WIDTH / 32];
+        uint8_t rdata[AXI_WIDTH / 8];
         uint8_t rid;
         uint8_t is_prefetch;
     };
@@ -74,7 +74,7 @@ private:
     std::queue<axi_aw_txn> aw_fifo;
 
     struct axi_w_txn {
-        uint32_t wdata[AXI_WIDTH / 32];
+        uint8_t wdata[AXI_WIDTH / 8];
         uint64_t wstrb;
         uint8_t wlast;
     };
@@ -126,9 +126,6 @@ public:
     // If so, we forward the response to traceLoaderGem5
     uint32_t read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* data_buffer);
 
-    // In this function we read from memory
-    const uint8_t* read_variable(uint32_t addr, bool timing, unsigned int bytes);
-
     // In this function we write to memory
     void write(uint32_t addr, uint8_t data, bool timing);
     void write_ram(uint32_t addr, uint8_t data);
@@ -145,8 +142,6 @@ public:
     // callback methods, called by gem5 ports in rtlNVDLA when data is returned
     void inflight_resp(uint32_t addr, const uint8_t* data);
     void inflight_dma_resp(const uint8_t* data, uint32_t len);
-
-    void inflight_resp_atomic(uint32_t addr, const uint8_t* data, axi_r_txn *txn);
 
     // prefetching-related
     void add_rd_var_log_entry(uint32_t addr, uint32_t size);

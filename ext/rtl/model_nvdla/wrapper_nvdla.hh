@@ -133,7 +133,7 @@ class Wrapper_nvdla {
         void addWriteReq(bool write_sram, bool write_timing,
                          uint32_t write_addr, uint8_t write_data);
         void addLongWriteReq(bool write_sram, bool write_timing,
-                         uint32_t write_addr, uint32_t length, uint8_t* write_data, uint64_t mask);
+            uint32_t write_addr, uint32_t length, const uint8_t* const write_data, uint64_t mask);
         void clearOutput();
 
         VNV_nvdla *dla;// = new VNV_nvdla;
@@ -173,12 +173,13 @@ class Wrapper_nvdla {
 
         uint8_t read_spm_byte(uint64_t addr);
         void read_spm_line(uint64_t aligned_addr, uint8_t* data_out);
+        void read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out);
         void write_spm_byte(uint64_t addr, uint8_t data);
-        void write_spm_line(uint64_t aligned_addr, uint8_t* data);
-        void write_spm_axi_line(uint64_t axi_addr, uint8_t* data);
+        void write_spm_line(uint64_t aligned_addr, const uint8_t* const data);
+        void write_spm_axi_line(uint64_t axi_addr, const uint8_t* const data);
         void write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data);
         bool check_txn_data_in_spm_and_wr_queue(uint64_t addr);
-        bool get_txn_data_from_spm_and_wr_queue(uint64_t addr, uint32_t* to_be_filled_data);
+        bool get_txn_data_from_spm_and_wr_queue(uint64_t addr, uint8_t* to_be_filled_data);
         void countdown_spm_write_queue();
         void flush_spm();
 

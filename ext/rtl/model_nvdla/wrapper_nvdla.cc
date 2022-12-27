@@ -313,7 +313,7 @@ void Wrapper_nvdla::addWriteReq(bool write_sram, bool write_timing,
 }
 
 void Wrapper_nvdla::addLongWriteReq(bool write_sram, bool write_timing,
-                uint32_t write_addr, uint32_t length, uint8_t* write_data, uint64_t mask) {
+                uint32_t write_addr, uint32_t length, const uint8_t* const write_data, uint64_t mask) {
     output.write_valid = true;
     long_write_req_entry_t wr;
     wr.write_sram = write_sram;
@@ -321,8 +321,10 @@ void Wrapper_nvdla::addLongWriteReq(bool write_sram, bool write_timing,
     wr.write_addr = write_addr;
     wr.length = length;
     wr.write_mask = mask;
-    for(int i = 0; i < length; i++)
+    wr.write_data = new uint8_t[length];
+    for (int i = 0; i < length; i++) {
         wr.write_data[i] = write_data[i];
+    }
     output.long_write_buffer.push(std::move(wr));
 }
 
@@ -380,6 +382,20 @@ void Wrapper_nvdla::read_spm_line(uint64_t aligned_addr, uint8_t* data_out) {
     }
 }
 
+void Wrapper_nvdla::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) {
+    assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
+
+    uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
+    uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
+
+    auto spm_line_vec_it = spm.find(addr_base);
+    assert(spm_line_vec_it != spm.end());
+    std::vector<uint8_t>& entry_vector = spm_line_vec_it->second;
+    for (int i = 0; i < AXI_WIDTH / 8; i++) {
+        data_out[i] = entry_vector[offset + i];
+    }
+}
+
 void Wrapper_nvdla::write_spm_byte(uint64_t addr, uint8_t data) {
     uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
@@ -399,7 +415,7 @@ void Wrapper_nvdla::write_spm_byte(uint64_t addr, uint8_t data) {
     }
 }
 
-void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, uint8_t* data) {
+void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const uint8_t* const data) {
     assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
 
     auto spm_line_vec_it = spm.find(aligned_addr);
@@ -414,7 +430,7 @@ void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, uint8_t* data) {
     }    
 }
 
-void Wrapper_nvdla::write_spm_axi_line(uint64_t axi_addr, uint8_t* data) {
+void Wrapper_nvdla::write_spm_axi_line(uint64_t axi_addr, const uint8_t* const data) {
     assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
 
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
@@ -467,7 +483,7 @@ bool Wrapper_nvdla::check_txn_data_in_spm_and_wr_queue(uint64_t addr) {
     return true;
 }
 
-bool Wrapper_nvdla::get_txn_data_from_spm_and_wr_queue(uint64_t addr, uint32_t* to_be_filled_data) {
+bool Wrapper_nvdla::get_txn_data_from_spm_and_wr_queue(uint64_t addr, uint8_t* to_be_filled_data) {
     uint8_t* spm_write_queue_data = nullptr;
     // search spm_write_queue first
     for (auto it = spm_write_queue.begin(); it != spm_write_queue.end(); it++) {
@@ -477,10 +493,8 @@ bool Wrapper_nvdla::get_txn_data_from_spm_and_wr_queue(uint64_t addr, uint32_t* 
         }
     }
     if (spm_write_queue_data != nullptr) {
-        for (int k = 0; k < AXI_WIDTH / 8; k += 4) {
-            uint32_t da = spm_write_queue_data[k] + (spm_write_queue_data[k + 1] << 8) +
-                (spm_write_queue_data[k + 2] << 16) + (spm_write_queue_data[k + 3] << 24);
-            to_be_filled_data[k / 4] = da;
+        for (int k = 0; k < AXI_WIDTH / 8; k++) {
+            to_be_filled_data[k] = spm_write_queue_data[k];
         }
         return true;
     }
@@ -489,13 +503,7 @@ bool Wrapper_nvdla::get_txn_data_from_spm_and_wr_queue(uint64_t addr, uint32_t* 
     if (spm.find(spm_line_addr) == spm.end())
         return false;
 
-    for (int k = 0; k < AXI_WIDTH / 32; k++) {
-        uint32_t da = read_spm_byte(addr + k * 4) +
-            (read_spm_byte(addr + k * 4 + 1) << 8) +
-            (read_spm_byte(addr + k * 4 + 2) << 16) +
-            (read_spm_byte(addr + k * 4 + 3) << 24);
-        to_be_filled_data[k] = da;
-    }
+    read_spm_axi_line(addr, to_be_filled_data);
     return true;
 }
 

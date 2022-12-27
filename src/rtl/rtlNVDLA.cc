@@ -60,8 +60,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     last_dma_actual_size(0),
     last_dma_got_size(0),
     pft_threshold(params.pft_threshold),
-    need_inform_flush(params.need_inform_flush)
-{
+    need_inform_flush(params.need_inform_flush) {
 
     initNVDLA();
     startMemRegion = 0xC0000000;
@@ -93,8 +92,7 @@ rtlNVDLA::~rtlNVDLA() {
 }
 
 Port &
-rtlNVDLA::getPort(const std::string &if_name, PortID idx)
-{
+rtlNVDLA::getPort(const std::string &if_name, PortID idx) {
     if (if_name == "mem_side") {
         return memPort;
     } else if (if_name == "cpu_side") {
@@ -113,8 +111,7 @@ rtlNVDLA::getPort(const std::string &if_name, PortID idx)
 }
 
 bool
-rtlNVDLA::handleRequest(PacketPtr pkt)
-{
+rtlNVDLA::handleRequest(PacketPtr pkt) {
     // Here we have just received the start rtlNVDLA function
     // we check if there is an outstanding call
     // otherwise start getting the whole trace
@@ -357,17 +354,15 @@ rtlNVDLA::tick() {
 
 
 bool
-rtlNVDLA::handleResponse(PacketPtr pkt)
-{
-    if (pkt->hasData()){
-
+rtlNVDLA::handleResponse(PacketPtr pkt) {
+    if (pkt->hasData()) {
         char *data_ptr = pkt->getPtr<char>();
 
         int maxRead = ((bytesToRead - bytesReaded) > 64) ?
                          64 : (bytesToRead - bytesReaded);
 
-        for (int i=0;i<maxRead;i++) {
-            ptrTrace[bytesReaded+i] = data_ptr[i];
+        for (int i = 0;i < maxRead; i++) {
+            ptrTrace[bytesReaded + i] = data_ptr[i];
             //DPRINTF(rtlNVDLA, "Got response for addr %x %02x\n",
             //                        pkt->getAddr()+(i),
             //                        data_ptr[i]);
@@ -407,24 +402,23 @@ rtlNVDLA::handleResponse(PacketPtr pkt)
 }
 
 bool
-rtlNVDLA::handleResponseNVDLA(PacketPtr pkt, bool sram)
-{
-    if (pkt->hasData()){
-        if (pkt->isRead()){
+rtlNVDLA::handleResponseNVDLA(PacketPtr pkt, bool sram) {
+    if (pkt->hasData()) {
+        if (pkt->isRead()) {
             // Get data from gem5 memory system
             // and set it to AXI
             DPRINTF(rtlNVDLADebug,
                     "Handling response for data read Timing\n");
             // Get the data ptr and sent it
             const uint8_t* dataPtr = pkt->getConstPtr<uint8_t>();
-            uint32_t addr_nvdla = getAddrNVDLA(pkt->getAddr(),sram);
+            uint32_t addr_nvdla = getAddrNVDLA(pkt->getAddr(), sram);
             if (sram) {
                 // SRAM
-                wr->axi_cvsram->inflight_resp(addr_nvdla,dataPtr);
+                wr->axi_cvsram->inflight_resp(addr_nvdla, dataPtr);
             }
             else {
                 // DBBIF
-                wr->axi_dbb->inflight_resp(addr_nvdla,dataPtr);
+                wr->axi_dbb->inflight_resp(addr_nvdla, dataPtr);
             }
         } else {
             // this is somehow odd, report!
@@ -441,23 +435,20 @@ rtlNVDLA::handleResponseNVDLA(PacketPtr pkt, bool sram)
 }
 
 void
-rtlNVDLA::handleFunctional(PacketPtr pkt)
-{
+rtlNVDLA::handleFunctional(PacketPtr pkt) {
     // Just pass this on to the memory side to handle for now.
     memPort.sendFunctional(pkt);
 }
 
 AddrRangeList
-rtlNVDLA::getAddrRanges() const
-{
+rtlNVDLA::getAddrRanges() const {
     DPRINTF(rtlNVDLA, "Sending new ranges\n");
     // Just use the same ranges as whatever is on the memory side.
     return memPort.getAddrRanges();
 }
 
 void
-rtlNVDLA::sendRangeChange()
-{
+rtlNVDLA::sendRangeChange() {
     cpuPort.sendRangeChange();
 }
 
@@ -492,8 +483,7 @@ rtlNVDLA::finishTranslation(WholeTranslationState *state) {
 
 // DRAM PORT
 void
-rtlNVDLA::MemNVDLAPort::sendPacket(PacketPtr pkt, bool timing)
-{
+rtlNVDLA::MemNVDLAPort::sendPacket(PacketPtr pkt, bool timing) {
     if (timing) {
         DPRINTF(rtlNVDLA, "Add Mem Req pending %#x size: %d timing s: %d\n",
             pkt->getAddr(), pkt->getSize(), pending_req.size());
@@ -513,21 +503,18 @@ rtlNVDLA::MemNVDLAPort::sendPacket(PacketPtr pkt, bool timing)
 }
 
 void
-rtlNVDLA::MemNVDLAPort::recvRangeChange()
-{
+rtlNVDLA::MemNVDLAPort::recvRangeChange() {
     owner->sendRangeChange();
 }
 
 bool
-rtlNVDLA::MemNVDLAPort::recvTimingResp(PacketPtr pkt)
-{
+rtlNVDLA::MemNVDLAPort::recvTimingResp(PacketPtr pkt) {
     DPRINTF(rtlNVDLA, "Got response SRAM?: %d\n", sram);
     return owner->handleResponseNVDLA(pkt,sram);
 }
 
 void
-rtlNVDLA::MemNVDLAPort::recvReqRetry()
-{
+rtlNVDLA::MemNVDLAPort::recvReqRetry() {
     // we check we have pending packets
     assert(blockedRetry);
     // Grab the blocked packet.
@@ -545,8 +532,7 @@ rtlNVDLA::MemNVDLAPort::recvReqRetry()
 
 // In this function we send the packets
 void
-rtlNVDLA::MemNVDLAPort::tick()
-{
+rtlNVDLA::MemNVDLAPort::tick() {
     // we check we have pending packets
     if (!blockedRetry and !pending_req.empty()) {
         PacketPtr pkt = pending_req.front();
@@ -626,8 +612,7 @@ rtlNVDLA::readAXI32(uint32_t addr, bool sram, bool timing) {
 
     uint32_t real_addr = getRealAddr(addr,sram);
 
-    RequestPtr req = std::make_shared<Request>(real_addr, 4,
-                                               Request::UNCACHEABLE, 0);
+    RequestPtr req = std::make_shared<Request>(real_addr, 4, Request::UNCACHEABLE, 0);
     PacketPtr packet = nullptr;
     // we create the real packet, write request
     packet = Packet::createRead(req);
@@ -644,9 +629,7 @@ rtlNVDLA::readAXI32(uint32_t addr, bool sram, bool timing) {
 }
 
 const uint8_t *
-rtlNVDLA::readAXIVariable(uint32_t addr, bool sram,
-                             bool timing,
-                             unsigned int size) {
+rtlNVDLA::readAXIVariable(uint32_t addr, bool sram, bool timing, unsigned int size) {
     // Update stats
     stats.nvdla_reads++;
 
@@ -656,8 +639,7 @@ rtlNVDLA::readAXIVariable(uint32_t addr, bool sram,
             "Read AXI Variable addr: %#x, real_addr %#x, size %d\n",
             addr, real_addr, size);
 
-    RequestPtr req = std::make_shared<Request>(real_addr, size,
-                                               0, 0);
+    RequestPtr req = std::make_shared<Request>(real_addr, size, 0, 0);
     PacketPtr packet = nullptr;
     // we create the real packet, write request
     packet = Packet::createRead(req);
@@ -721,11 +703,13 @@ rtlNVDLA::writeAXILong(uint32_t addr, uint32_t length, uint8_t* data, uint64_t m
     PacketPtr packet = nullptr;
     packet = Packet::createWrite(req);
     // always in Little Endian
-    PacketDataPtr dataAux = new uint8_t[length];
-    for (int i = 0; i < length; i++)
-        dataAux[i] = data[i];
+    // PacketDataPtr dataAux = new uint8_t[length];
+    // for (int i = 0; i < length; i++)
+    //     dataAux[i] = data[i];
 
-    packet->dataDynamic(dataAux);
+    // here we directly give the 'data' ptr to pkt.
+    // This is supported by the fact that 'data' is malloced by ourselves
+    packet->dataDynamic(data);
     // send the packet in timing?
     if (sram) {
         sramPort.sendPacket(packet, timing);
@@ -755,8 +739,7 @@ rtlNVDLA::try_get_dma_read_data(uint32_t size) {
 }
 
 void
-rtlNVDLA::regStats()
-{
+rtlNVDLA::regStats() {
     // If you don't do this you get errors about uninitialized stats.
     ClockedObject::regStats();
 
