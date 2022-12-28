@@ -452,7 +452,7 @@ AXIResponder::process_read_req() {
                 if(wrapper->prefetch_enable) log_req_issue(start_addr);
 
                 // check spm and write queue
-                bool data_get_in_spm = wrapper->get_txn_data_from_spm(start_addr, txn.rdata);
+                bool data_get_in_spm = wrapper->read_spm_axi_line(start_addr, txn.rdata);
                 if (data_get_in_spm) {
                     // need to maintain the order of issuing requests
                     // printf("this spm_line_addr exists in spm, 0x%08lx\n", spm_line_addr);
@@ -535,7 +535,7 @@ AXIResponder::process_read_resp() {
     axi_r_txn &txn = req_list_ptr->front();
     // data just arrived in spm via DMA will not update its corresponding txn.rvalid
     if (wrapper->dma_enable && txn.rvalid == 0) {
-        bool got = wrapper->get_txn_data_from_spm(addr_front, txn.rdata);
+        bool got = wrapper->read_spm_axi_line(addr_front, txn.rdata);
         if (got) txn.rvalid = 1;
     }
     if (txn.rvalid) {  // ensures the order of response
@@ -616,31 +616,19 @@ AXIResponder::inflight_resp(uint32_t addr, const uint8_t* data) {
 void
 AXIResponder::inflight_dma_resp(const uint8_t* data, uint32_t len) {
     //! we HAVE TO assume dma is in-order. If it is out-of-order due to bus arbitration, even DMAFifo can't handle it
-    uint32_t addr = inflight_dma_addr_queue.front();
+    uint64_t addr = inflight_dma_addr_queue.front();
     printf("(%lu) nvdla#%d AXIResponder handling DMA return data @0x%08x with length %d.\n",
            wrapper->tickcount, wrapper->id_nvdla, addr, len);
 
-    auto it = inflight_dma_addr_size.find(addr);
-    uint32_t old_size_remaining = it->second;
-    uint32_t size_remaining = old_size_remaining - len;
-    it->second = size_remaining;
-
-    std::vector<uint8_t>& entry_vector = wrapper->spm[addr];
-    entry_vector.resize(wrapper->spm_line_size - size_remaining, 0);
-    for (int i = 0; i < len; i++) {
-        entry_vector[wrapper->spm_line_size - old_size_remaining + i] = data[i];
-    }
-
-    if (size_remaining == 0) {  // all data for this DMA transfer has been got
-        inflight_dma_addr_size.erase(it);
-        inflight_dma_addr_queue.pop();
-    }
+    wrapper->write_spm_line(addr, data, 0);
+    inflight_dma_addr_size.erase(addr);
+    inflight_dma_addr_queue.pop();
 }
 
 void
 AXIResponder::read_for_traceLoaderGem5(uint32_t start_addr, uint32_t length) {
     uint64_t txn_start_addr = (uint64_t)start_addr & ~(uint64_t)(AXI_WIDTH / 8 - 1);
-    if(txn_start_addr != start_addr)
+    if (txn_start_addr != start_addr)
         printf("this dump_mem is not aligned to AXI_WIDTH / 8, op.addr = 0x%08x\n", start_addr);
 
     for (uint32_t delta_addr = 0; txn_start_addr + delta_addr < start_addr + length; delta_addr += (AXI_WIDTH / 8)) {
@@ -650,8 +638,8 @@ AXIResponder::read_for_traceLoaderGem5(uint32_t start_addr, uint32_t length) {
         txn.burst = true;
         txn.rlast = (txn_start_addr + delta_addr + (AXI_WIDTH / 8) >= start_addr + length);
         txn.is_prefetch = 0;
-        if(wrapper->dma_enable) {
-            bool got = wrapper->get_txn_data_from_spm(txn_addr, txn.rdata);
+        if (wrapper->dma_enable) {
+            bool got = wrapper->read_spm_axi_line(txn_addr, txn.rdata);
             if(got) {
                 txn.rvalid = 1;
             } else {    // when verifying results, no need to use dma...
@@ -685,20 +673,21 @@ AXIResponder::read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* da
     auto& addr_front_list = inflight_req[addr_front];
 
     assert(!addr_front_list.empty());
-    axi_r_txn txn = addr_front_list.front();
+    axi_r_txn& txn = addr_front_list.front();
     if (txn.rvalid) {
         printf("(%lu) nvdla#%d memory request at 0x%08x has arrived.\n", wrapper->tickcount, wrapper->id_nvdla, start_addr);
+
+        // get the value
+        for (uint32_t i = 0; i < AXI_WIDTH / 8; i++) {
+            data_buffer[i] = txn.rdata[i];
+        }
+
         addr_front_list.pop_front();
         if (addr_front_list.empty()) {
             inflight_req.erase(addr_front);
         }
 
         inflight_req_order.pop_front();
-
-        // get the value
-        for (uint32_t i = 0; i < AXI_WIDTH / 8; i++) {
-            data_buffer[i] = txn.rdata[i];
-        }
 
         return 1;
     } else {

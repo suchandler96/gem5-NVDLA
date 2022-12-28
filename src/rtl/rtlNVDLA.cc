@@ -56,9 +56,6 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     spm_line_num(params.spm_line_num),
     dma_enable(params.dma_enable),
     dmaPort(this, params.system),
-    dma_try_get_length(spm_line_size / params.dma_try_get_fraction),
-    last_dma_actual_size(0),
-    last_dma_got_size(0),
     pft_threshold(params.pft_threshold),
     need_inform_flush(params.need_inform_flush) {
 
@@ -177,7 +174,6 @@ rtlNVDLA::loadTraceNVDLA(char *ptr) {
 
 void
 rtlNVDLA::processOutput(outputNVDLA& out) {
-
     if (out.read_valid) {
         while (!out.read_buffer.empty()) {
             read_req_entry_t aux = out.read_buffer.front();
@@ -216,22 +212,12 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
         auto& aux = out.dma_read_buffer.front();
 
         uint32_t real_addr = getRealAddr(aux.first, false);      // always suppose dram DMA fetch
-        // if DMA request not sent, have to stop here
-        if (!dma_rd_engine->atEndOfBlock()) {
-            // printf("DMA engine busy, can't deal with req: addr 0x%08lx, len %d, try again later!\n", aux.first, aux.second);
-        // } else if(last_dma_got_size < last_dma_actual_size) {
-            // printf("DMA get too slow! Waiting for previous Get (addr 0x%08lx) to read the dma buffer.\n", last_dma_nvdla_addr);
-            // printf("last_dma_got_size = %d, last_dma_actual_size = %d\n", last_dma_got_size, last_dma_actual_size);
-        } else {
-            last_dma_nvdla_addr = aux.first;
-            last_dma_actual_size = aux.second;
-            // last_dma_got_size = 0;
-
+        if (dma_rd_engine->atEndOfBlock()) {
             dma_rd_engine->startFill(real_addr, aux.second);
             printf("nvdla#%d DMA read req is issued: addr %08x, len %d\n", id_nvdla, aux.first, aux.second);
             // after successfully calling DMA, pop aux
             out.dma_read_buffer.pop();
-        }
+        }   // if DMA request not sent, have to stop here
     }
 
 
@@ -286,7 +272,7 @@ rtlNVDLA::runIterationNVDLA() {
     outputNVDLA& output = wr->tick(input);
 
     if (dma_enable) {
-        try_get_dma_read_data(dma_try_get_length);
+        try_get_dma_read_data(spm_line_size);
         if (wr->csb->done()) {
             // write back dirty data in spm to main memory
             wr->flush_spm();    // if it is called for a second time, no more items will be flushed
@@ -322,8 +308,7 @@ rtlNVDLA::tick() {
         cyclesNVDLA++;
         runIterationNVDLA();
         schedule(tickEvent,nextCycle());
-    }
-    else {
+    } else {
         // we have finished running the trace
         printf("done at %lu ticks\n", wr->tickcount);
 
@@ -363,9 +348,6 @@ rtlNVDLA::handleResponse(PacketPtr pkt) {
 
         for (int i = 0;i < maxRead; i++) {
             ptrTrace[bytesReaded + i] = data_ptr[i];
-            //DPRINTF(rtlNVDLA, "Got response for addr %x %02x\n",
-            //                        pkt->getAddr()+(i),
-            //                        data_ptr[i]);
         }
 
         bytesReaded += 64;
@@ -373,11 +355,6 @@ rtlNVDLA::handleResponse(PacketPtr pkt) {
         if (bytesReaded < bytesToRead) {
             startTranslate(pkt->req->getVaddr()+64, 0);
         } else {
-            //for (int i=0;i<bytesToRead;i++) {
-            //    DPRINTF(rtlNVDLA, "Trace: %02x\n",
-            //                        ptrTrace[i]);
-            //}
-
             bytesReaded = 0;
             bytesToRead = 0;
 
@@ -415,8 +392,7 @@ rtlNVDLA::handleResponseNVDLA(PacketPtr pkt, bool sram) {
             if (sram) {
                 // SRAM
                 wr->axi_cvsram->inflight_resp(addr_nvdla, dataPtr);
-            }
-            else {
+            } else {
                 // DBBIF
                 wr->axi_dbb->inflight_resp(addr_nvdla, dataPtr);
             }
@@ -425,8 +401,7 @@ rtlNVDLA::handleResponseNVDLA(PacketPtr pkt, bool sram) {
             DPRINTF(rtlNVDLA, "Got response for addr %#x no read\n",
                     pkt->getAddr());
         }
-    }
-    else {
+    } else {
          DPRINTF(rtlNVDLA, "Got response for addr %#x no data\n",
          pkt->getAddr());
     }
@@ -454,7 +429,6 @@ rtlNVDLA::sendRangeChange() {
 
 void
 rtlNVDLA::finishTranslation(WholeTranslationState *state) {
-
     DPRINTF(rtlNVDLA, "Finishing translation\n");
 
     RequestPtr req = state->mainReq;
@@ -474,8 +448,7 @@ rtlNVDLA::finishTranslation(WholeTranslationState *state) {
 
     if (memPort.blockedPacket != nullptr) {
         DPRINTF(rtlNVDLA, "Packet lost\n");
-    }
-    else {
+    } else {
         new_pkt->allocate();
         memPort.sendPacket(new_pkt);
     }
@@ -489,8 +462,7 @@ rtlNVDLA::MemNVDLAPort::sendPacket(PacketPtr pkt, bool timing) {
             pkt->getAddr(), pkt->getSize(), pending_req.size());
         // we add as a pending request, we deal later
         pending_req.push(pkt);
-    }
-    else {
+    } else {
         DPRINTF(rtlNVDLA, "Send Mem Req to DRAM %#x size: %d functional\n",
             pkt->getAddr(), pkt->getSize());
         // send Atomic
@@ -548,7 +520,6 @@ rtlNVDLA::MemNVDLAPort::tick() {
 
 uint32_t
 rtlNVDLA::getRealAddr(uint32_t addr, bool sram) {
-
     uint32_t real_addr;
 
     if (sram) {
@@ -563,7 +534,6 @@ rtlNVDLA::getRealAddr(uint32_t addr, bool sram) {
 
 uint32_t
 rtlNVDLA::getAddrNVDLA(uint32_t addr, bool sram) {
-
     uint32_t real_addr;
 
     if (sram) {
@@ -722,19 +692,9 @@ void
 rtlNVDLA::try_get_dma_read_data(uint32_t size) {
     uint8_t dma_temp_buffer[size];
     bool get_success = dma_rd_engine->tryGet(dma_temp_buffer, size);
-    // int get_result = get_success;
-    // printf("Get result:%d\n\n", get_result);
-    if(get_success) {
-        // last_dma_got_size += size;
+    if (get_success) {
         // todo: remember whether this DMA request comes from CVSRAM or DBBIF
-        // if ((last_dma_nvdla_addr & 0xF0000000) >= 0x80000000)   // check traceLoaderGem5.cc to see why offset can be greater than 0x8
-            wr->axi_dbb->inflight_dma_resp(dma_temp_buffer, size);
-        // else if ((last_dma_nvdla_addr & 0xF0000000) == 0x50000000)
-            // wr->axi_cvsram->inflight_dma_resp(dma_temp_buffer, size);
-        // else {
-            // printf("Unexpected address offset, aborting...\n");
-            // abort();
-        // }
+        wr->axi_dbb->inflight_dma_resp(dma_temp_buffer, size);
     }
 }
 

@@ -362,72 +362,130 @@ outputNVDLA& Wrapper_nvdla::tick(inputNVDLA in) {
 uint8_t Wrapper_nvdla::read_spm_byte(uint64_t addr) {
     uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
 
-    auto spm_line_vec_it = spm.find(addr_base);
+    auto spm_line_it = spm.find(addr_base);
 
-    assert(spm_line_vec_it != spm.end());
+    assert(spm_line_it != spm.end());
 
     uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
-    return spm_line_vec_it->second[offset];
+    
+    lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
+
+    return spm_line_it->second.spm_line[offset];
 }
 
 void Wrapper_nvdla::read_spm_line(uint64_t aligned_addr, uint8_t* data_out) {
     assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
 
-    auto spm_line_vec_it = spm.find(aligned_addr);
+    auto spm_line_it = spm.find(aligned_addr);
 
-    assert(spm_line_vec_it != spm.end());
+    assert(spm_line_it != spm.end());
 
-    for (int i = 0; i < (AXI_WIDTH / 8); i++) {
-        data_out[i] = spm_line_vec_it->second[i];
+    for (int i = 0; i < spm_line_size; i++) {
+        data_out[i] = spm_line_it->second.spm_line[i];
     }
+
+    lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
 }
 
-void Wrapper_nvdla::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) {
+bool Wrapper_nvdla::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) {
     assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
 
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
 
-    auto spm_line_vec_it = spm.find(addr_base);
-    assert(spm_line_vec_it != spm.end());
-    std::vector<uint8_t>& entry_vector = spm_line_vec_it->second;
+    auto spm_line_it = spm.find(addr_base);
+    if (spm_line_it == spm.end()) {
+        return false;
+    }
+    std::vector<uint8_t>& entry_vector = spm_line_it->second.spm_line;
     for (int i = 0; i < AXI_WIDTH / 8; i++) {
         data_out[i] = entry_vector[offset + i];
     }
+    lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
+
+    return true;
 }
 
 void Wrapper_nvdla::write_spm_byte(uint64_t addr, uint8_t data) {
     uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
 
-    auto spm_line_vec_it = spm.find(addr_base);
+    auto spm_line_it = spm.find(addr_base);
 
-    if (spm_line_vec_it == spm.end()) {      // if the element to write is not in spm
-        // find an SPM line to erase if size exceeds
-        // temporarily write back everything
+    if (spm_line_it == spm.end()) {      // if the element to write is not in spm
+        if (spm.size() >= spm_line_num) {
+            erase_spm_line();   // lru_order maintanence of erasing is done inside
+        }
 
         // assign space to this spm line
-        std::vector<uint8_t>& entry_vector = spm[addr_base];
+        std::map<uint64_t, SPMLineWithTag>::iterator entry_it;
+        bool alloc_succ;
+        std::tie(entry_it, alloc_succ) = spm.insert(std::move(std::make_pair(addr_base, SPMLineWithTag())));
+        lru_order.push_back(entry_it);
+
+        std::vector<uint8_t>& entry_vector = entry_it->second.spm_line;
         entry_vector.resize(spm_line_size, 0);
         entry_vector[offset] = data;
+        entry_it->second.dirty = 1;    // write bytes are always coming from NVDLA
+        entry_it->second.lru_it = std::prev(lru_order.end());
     } else {
-        spm_line_vec_it->second[offset] = data;
+        spm_line_it->second.spm_line[offset] = data;
+        spm_line_it->second.dirty = 1;
+
+        lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
     }
 }
 
-void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const uint8_t* const data) {
+void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const uint8_t* const data, uint8_t dirty) {
     assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
 
-    auto spm_line_vec_it = spm.find(aligned_addr);
-    if (spm_line_vec_it == spm.end()) {
-        // todo: find an SPM line to erase if size exceeds
-        // temporarily write back everything
+    auto spm_line_it = spm.find(aligned_addr);
+    if (spm_line_it == spm.end()) {
+        if (spm.size() >= spm_line_num) {
+            erase_spm_line();   // lru_order maintenance of erasing is done inside
+        }
 
         // assign space to this spm line
-        spm[aligned_addr].assign(data, data + (AXI_WIDTH / 8));
+        std::map<uint64_t, SPMLineWithTag>::iterator entry_it;
+        bool alloc_succ;
+        std::tie(entry_it, alloc_succ) = spm.insert(std::move(std::make_pair(aligned_addr, SPMLineWithTag())));
+        lru_order.push_back(entry_it);
+
+        auto& entry = entry_it->second;
+        entry.spm_line.assign(data, data + spm_line_size);
+        entry.dirty = dirty;
+        entry.lru_it = std::prev(lru_order.end());
     } else {
-        spm_line_vec_it->second.assign(data, data + (AXI_WIDTH / 8));
+        spm_line_it->second.spm_line.assign(data, data + spm_line_size);
+        spm_line_it->second.dirty = dirty;
+
+        lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
     }    
+}
+
+void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data, uint8_t dirty) {
+    assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
+
+    auto spm_line_it = spm.find(aligned_addr);
+    if (spm_line_it == spm.end()) {
+        if (spm.size() >= spm_line_num) {
+            erase_spm_line();   // lru_order maintenance of erasing is done inside
+        }
+
+        // assign space to this spm line
+        std::map<uint64_t, SPMLineWithTag>::iterator entry_it;
+        bool alloc_succ;
+        std::tie(entry_it, alloc_succ) = spm.insert(std::move(std::make_pair(aligned_addr,
+            SPMLineWithTag{ data, std::list<std::map<uint64_t, SPMLineWithTag>::iterator>::iterator(), dirty })));
+        lru_order.push_back(entry_it);
+
+        entry_it->second.lru_it = std::prev(lru_order.end());
+    } else {
+        spm_line_it->second.spm_line.assign(data.begin(), data.end());
+        spm_line_it->second.dirty = dirty;
+
+        lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
+    }
 }
 
 void Wrapper_nvdla::write_spm_axi_line(uint64_t axi_addr, const uint8_t* const data) {
@@ -436,20 +494,25 @@ void Wrapper_nvdla::write_spm_axi_line(uint64_t axi_addr, const uint8_t* const d
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
 
-    auto spm_line_vec_it = spm.find(addr_base);
-    std::vector<uint8_t>* entry_vector_ptr;
-    if (spm_line_vec_it == spm.end()) {
-        // find an SPM line to erase if size exceeds
-        // temporarily write back everything
+    auto spm_line_it = spm.find(addr_base);
+    if (spm_line_it == spm.end()) {
+        if (spm.size() >= spm_line_num) {
+            erase_spm_line();   // lru_order maintenance of erasing is done inside
+        }
 
         // assign space to this spm line
-        entry_vector_ptr = &(spm[addr_base]);
-        entry_vector_ptr->resize(spm_line_size, 0);
+        bool alloc_succ;
+        std::tie(spm_line_it, alloc_succ) = spm.insert(std::move(std::make_pair(addr_base, SPMLineWithTag())));
+        lru_order.push_back(spm_line_it);
+        spm_line_it->second.lru_it = std::prev(lru_order.end());
+        spm_line_it->second.spm_line.resize(spm_line_size, 0);
     } else {
-        entry_vector_ptr = &(spm_line_vec_it->second);
+        lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
     }
+    // writes at AXI_WIDTH/8-granularity is always coming from NVDLA, so we write dirty bit
+    spm_line_it->second.dirty = 1;
     for (int i = 0; i < AXI_WIDTH / 8; i++) {
-        (*entry_vector_ptr)[offset + i] = data[i];
+        spm_line_it->second.spm_line[offset + i] = data[i];
     }
 }
 
@@ -459,44 +522,33 @@ void Wrapper_nvdla::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
 
-    auto spm_line_vec_it = spm.find(addr_base);
-    std::vector<uint8_t>* entry_vector_ptr;
-    if (spm_line_vec_it == spm.end()) {
-        // find an SPM line to erase if size exceeds
-        // temporarily write back everything
+    auto spm_line_it = spm.find(addr_base);
+    if (spm_line_it == spm.end()) {
+        if (spm.size() >= spm_line_num) {
+            erase_spm_line();   // lru_order maintenance of erasing is done inside
+        }
 
         // assign space to this spm line
-        entry_vector_ptr = &(spm[addr_base]);
-        entry_vector_ptr->resize(spm_line_size, 0);
+        bool alloc_succ;
+        std::tie(spm_line_it, alloc_succ) = spm.insert(std::move(std::make_pair(addr_base, SPMLineWithTag())));
+        lru_order.push_back(spm_line_it);
+        spm_line_it->second.lru_it = std::prev(lru_order.end());
+        spm_line_it->second.spm_line.resize(spm_line_size, 0);
+    } else {
+        lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
     }
-    else {
-        entry_vector_ptr = &(spm_line_vec_it->second);
-    }
-    if (mask == 0xffffffffffffffff) {
+    // writes at AXI_WIDTH/8-granularity is always coming from NVDLA, so we write dirty bit
+    spm_line_it->second.dirty = 1;
+    if (mask == 0xFFFFFFFFFFFFFFFF) {
         for (int i = 0; i < AXI_WIDTH / 8; i++) {
-            (*entry_vector_ptr)[offset + i] = data[i];
+            spm_line_it->second.spm_line[offset + i] = data[i];
         }
     } else {
         for (int i = 0; i < AXI_WIDTH / 8; i++) {
             if (!((mask >> i) & 1))
                 continue;
-            (*entry_vector_ptr)[offset + i] = data[i];
+            spm_line_it->second.spm_line[offset + i] = data[i];
         }
-    }
-}
-
-void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data) {
-    assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
-
-    auto spm_line_vec_it = spm.find(aligned_addr);
-    if (spm_line_vec_it == spm.end()) {
-        // todo: find an SPM line to erase if size exceeds
-        // temporarily write back everything
-
-        // assign space to this spm line
-        spm.emplace(std::make_pair(aligned_addr, data));
-    } else {
-        spm_line_vec_it->second.assign(data.begin(), data.end());
     }
 }
 
@@ -508,24 +560,36 @@ bool Wrapper_nvdla::check_txn_data_in_spm(uint64_t addr) {
     return true;
 }
 
-bool Wrapper_nvdla::get_txn_data_from_spm(uint64_t addr, uint8_t* to_be_filled_data) {
-    uint64_t spm_line_addr = addr & ~((uint64_t)(spm_line_size - 1));
-    if (spm.find(spm_line_addr) == spm.end())
-        return false;
+std::map<uint64_t, Wrapper_nvdla::SPMLineWithTag>::iterator Wrapper_nvdla::get_it_to_erase() {
+    // naive: spm.begin()
+    // return spm.begin();
 
-    read_spm_axi_line(addr, to_be_filled_data);
-    return true;
+    return lru_order.front();
+}
+
+void Wrapper_nvdla::erase_spm_line() {
+    assert(!spm.empty());
+
+    auto to_erase_it = get_it_to_erase();
+
+    if (to_erase_it->second.dirty) {
+        output.dma_write_buffer.push(std::make_pair(to_erase_it->first, std::move(to_erase_it->second.spm_line)));
+    }
+    lru_order.pop_front();
+    spm.erase(to_erase_it);
 }
 
 void Wrapper_nvdla::flush_spm() {
     auto it = spm.begin();
     while (it != spm.end()) {
-        if ((it->first & 0xF0000000) == 0x90000000) {   // this is a read-and-write variable
-            output.dma_write_buffer.push(std::make_pair(it->first, std::move(it->second)));
+        if (it->second.dirty) {   // this is a read-and-write variable
+            output.dma_write_buffer.push(std::make_pair(it->first, std::move(it->second.spm_line)));
             spm.erase(it++);
-        } else
+        } else {
             it++;
+        }
     }
+    lru_order.clear();
 }
 
 void Wrapper_nvdla::addDMAReadReq(uint64_t read_addr, uint32_t read_bytes) {

@@ -143,35 +143,42 @@ class Wrapper_nvdla {
 
         int id_nvdla;
 
-        // CSB Wrapper
+        //! CSB Wrapper
         CSBMaster *csb;
         AXIResponder *axi_dbb;
         AXIResponder *axi_cvsram;
 
-        // RTL Packet
+        //! RTL Packet
         outputNVDLA output;
 
-        // SPM & DMA
+        //! SPM & DMA
         int dma_enable;
         int spm_latency;
         // all the sizes are in bytes
         const uint32_t spm_line_size;
         const uint32_t spm_line_num;
-        std::map<uint64_t, std::vector<uint8_t> > spm;
+        struct SPMLineWithTag {
+            std::vector<uint8_t> spm_line;
+            std::list<std::map<uint64_t, SPMLineWithTag>::iterator>::iterator lru_it;
+            uint8_t dirty;
+        };
+        std::map<uint64_t, SPMLineWithTag> spm;
         // todo: need a spm write waiting list to temporarily store dirty data if write mask != 0xffffffffffffffff so that we can load clean from mem
+        std::list<std::map<uint64_t, SPMLineWithTag>::iterator> lru_order;
 
         void addDMAReadReq(uint64_t read_addr, uint32_t read_bytes);
 
         uint8_t read_spm_byte(uint64_t addr);
         void read_spm_line(uint64_t aligned_addr, uint8_t* data_out);
-        void read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out);
+        bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out);
         void write_spm_byte(uint64_t addr, uint8_t data);
-        void write_spm_line(uint64_t aligned_addr, const uint8_t* const data);
+        void write_spm_line(uint64_t aligned_addr, const uint8_t* const data, uint8_t dirty);
+        void write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data, uint8_t dirty);
         void write_spm_axi_line(uint64_t axi_addr, const uint8_t* const data);
         void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* const data, const uint64_t mask);
-        void write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data);
         bool check_txn_data_in_spm(uint64_t addr);
-        bool get_txn_data_from_spm(uint64_t addr, uint8_t* to_be_filled_data);
+        std::map<uint64_t, SPMLineWithTag>::iterator get_it_to_erase();
+        void erase_spm_line();
         void flush_spm();
 
         // software prefetching

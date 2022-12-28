@@ -280,10 +280,6 @@ public:
     DmaPort dmaPort;
     DmaReadFifo* dma_rd_engine;
     DmaNvdla* dma_wr_engine;
-    uint32_t dma_try_get_length;
-    uint64_t last_dma_nvdla_addr;
-    uint32_t last_dma_actual_size;
-    uint32_t last_dma_got_size;
 
     uint32_t pft_threshold;
 

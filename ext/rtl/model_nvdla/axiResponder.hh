@@ -100,7 +100,7 @@ private:
     // dma & spm
     // function together with inflight_req & inflight_req_order
     std::map<uint64_t, uint32_t> inflight_dma_addr_size;    // record the inflight dma request sizes
-    std::queue<uint32_t> inflight_dma_addr_queue;           // keep dma request order
+    std::queue<uint64_t> inflight_dma_addr_queue;           // keep dma request order
 
     // prefetch
     uint32_t pft_threshold;

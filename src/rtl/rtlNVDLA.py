@@ -46,7 +46,7 @@ class rtlNVDLA(rtlObject):
 
     need_inform_flush = Param.UInt32(0, "Whether we need to inform the memory hierarchy connected to flush")
 
-    dma_try_get_fraction = Param.UInt32(1, "Every NVDLA tick, try get (dma_line_length / dma_try_get_fraction) bytes from DMA")
+    # dma_try_get_fraction = Param.UInt32(1, "Every NVDLA tick, try get (dma_line_length / dma_try_get_fraction) bytes from DMA")
 
     spm_latency = Param.UInt32(12, "Latency for NVDLA private scratchpad memory")
 
