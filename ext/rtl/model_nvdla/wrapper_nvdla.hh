@@ -125,7 +125,6 @@ class Wrapper_nvdla {
         void disableTracing();
         void advanceTickCount();
         void reset();
-        void addInput(int writeCSB);
         void init();
 
         void addReadReq(bool read_sram, bool read_timing,
@@ -161,14 +160,6 @@ class Wrapper_nvdla {
         std::map<uint64_t, std::vector<uint8_t> > spm;
         // todo: need a spm write waiting list to temporarily store dirty data if write mask != 0xffffffffffffffff so that we can load clean from mem
 
-        struct spm_wr_txn{
-            uint64_t addr;
-            uint64_t mask;
-            uint32_t countdown;
-            uint8_t data[AXI_WIDTH / 8];
-        };
-        std::list<spm_wr_txn> spm_write_queue;
-
         void addDMAReadReq(uint64_t read_addr, uint32_t read_bytes);
 
         uint8_t read_spm_byte(uint64_t addr);
@@ -177,10 +168,10 @@ class Wrapper_nvdla {
         void write_spm_byte(uint64_t addr, uint8_t data);
         void write_spm_line(uint64_t aligned_addr, const uint8_t* const data);
         void write_spm_axi_line(uint64_t axi_addr, const uint8_t* const data);
+        void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* const data, const uint64_t mask);
         void write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data);
-        bool check_txn_data_in_spm_and_wr_queue(uint64_t addr);
-        bool get_txn_data_from_spm_and_wr_queue(uint64_t addr, uint8_t* to_be_filled_data);
-        void countdown_spm_write_queue();
+        bool check_txn_data_in_spm(uint64_t addr);
+        bool get_txn_data_from_spm(uint64_t addr, uint8_t* to_be_filled_data);
         void flush_spm();
 
         // software prefetching

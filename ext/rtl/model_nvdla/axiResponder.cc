@@ -270,7 +270,7 @@ AXIResponder::eval_timing() {
         txn.awid = *dla.aw_awid;
         txn.awaddr = *dla.aw_awaddr & ~(uint64_t)(AXI_WIDTH / 8 - 1);
         txn.awlen = *dla.aw_awlen;
-        aw_fifo.push(txn);
+        aw_fifo.push(std::move(txn));
 
         *dla.aw_awready = 0;
     } else
@@ -297,7 +297,7 @@ AXIResponder::eval_timing() {
         }
         txn.wstrb = *dla.w_wstrb;
         txn.wlast = *dla.w_wlast;
-        w_fifo.push(txn);
+        w_fifo.push(std::move(txn));
     }
 
     /* read request */
@@ -334,14 +334,7 @@ AXIResponder::eval_timing() {
 
         if(wrapper->dma_enable) {
             // intermediate variables and outputs should be written to spm (actually, all writes belong to this type)
-            Wrapper_nvdla::spm_wr_txn spm_txn;
-            spm_txn.addr = awtxn.awaddr;
-            spm_txn.mask = wtxn.wstrb;
-            spm_txn.countdown = wrapper->spm_latency;
-            for (int i = 0; i < AXI_WIDTH / 8; i++) {
-                spm_txn.data[i] = wtxn.wdata[i];
-            }
-            wrapper->spm_write_queue.push_back(spm_txn);
+            wrapper->write_spm_axi_line_with_mask(awtxn.awaddr, wtxn.wdata, wtxn.wstrb);
         } else {
             wrapper->addLongWriteReq(sram, true, awtxn.awaddr, AXI_WIDTH / 8, wtxn.wdata, wtxn.wstrb);
         }
@@ -355,7 +348,7 @@ AXIResponder::eval_timing() {
 
             axi_b_txn btxn;
             btxn.bid = awtxn.awid;
-            b_fifo.push(btxn);
+            b_fifo.push(std::move(btxn));
         } else {
             #ifdef PRINT_DEBUG
                 printf("(%lu) nvdla#%d %s: write, ticks remaining\n", wrapper->tickcount, wrapper->id_nvdla, name);
@@ -368,14 +361,11 @@ AXIResponder::eval_timing() {
         w_fifo.pop();
     }
 
-    // process spm write queue countdown
-    wrapper->countdown_spm_write_queue();
-
     /* read response */
     if (!r_fifo.empty()) {
         axi_r_txn &txn = r_fifo.front();
 
-        r0_fifo.push(txn);
+        r0_fifo.push(std::move(txn));
         r_fifo.pop();
     } else {
         axi_r_txn txn;
@@ -383,12 +373,12 @@ AXIResponder::eval_timing() {
         txn.rvalid = 0;
         txn.rid = 0;
         txn.rlast = 0;
-        // todo: check whether this assignment could be removed
+        // this assignment is removed to improve performance
         // for (int i = 0; i < AXI_WIDTH / 8; i++) {
         //     txn.rdata[i] = 0xAA;
         // }
 
-        r0_fifo.push(txn);
+        r0_fifo.push(std::move(txn));
     }
 
     *dla.r_rvalid = 0;
@@ -462,8 +452,8 @@ AXIResponder::process_read_req() {
                 if(wrapper->prefetch_enable) log_req_issue(start_addr);
 
                 // check spm and write queue
-                bool data_get_in_spm_or_queue = wrapper->get_txn_data_from_spm_and_wr_queue(start_addr, txn.rdata);
-                if (data_get_in_spm_or_queue) {
+                bool data_get_in_spm = wrapper->get_txn_data_from_spm(start_addr, txn.rdata);
+                if (data_get_in_spm) {
                     // need to maintain the order of issuing requests
                     // printf("this spm_line_addr exists in spm, 0x%08lx\n", spm_line_addr);
                     txn.rvalid = 1;
@@ -480,7 +470,7 @@ AXIResponder::process_read_req() {
                     txn.rvalid = 0;
                 }
                 inflight_req_order.push_back(start_addr);
-                inflight_req[start_addr].push_back(txn);
+                inflight_req[start_addr].push_back(std::move(txn));
             }
         } else {
             issued_req_this_cycle = true;
@@ -496,7 +486,7 @@ AXIResponder::process_read_req() {
                 if(wrapper->prefetch_enable) log_req_issue(addr);
 
                 // put txn to the map
-                inflight_req[addr].push_back(txn);
+                inflight_req[addr].push_back(std::move(txn));
                 // put in req the txn
                 inflight_req_order.push_back(addr);
 
@@ -519,38 +509,49 @@ AXIResponder::process_read_req() {
 void
 AXIResponder::process_read_resp() {
     auto it_addr = inflight_req_order.begin();
-    if (!inflight_req_order.empty()) {
-        // find the first non-prefetch inflight_req addr
-        // assume all entries in inflight_req & inflight_req_order for arrived prefetches have been removed in inflight_resp() and inflight_resp_dma()
-        while (inflight_req[*it_addr].front().is_prefetch && it_addr != inflight_req_order.end()) {
+    std::map<uint32_t, std::list<axi_r_txn>>::iterator req_it;
+    std::list<axi_r_txn>* req_list_ptr;
+
+    while (1) {
+        if (it_addr == inflight_req_order.end()) {
+            // this automatically filters out empty inflight_req_order
+            return;
+        }
+        req_it = inflight_req.find(*it_addr);
+        req_list_ptr = &(req_it->second);
+        if (req_list_ptr->front().is_prefetch) {
+            // find the first non-prefetch inflight_req addr;
+            // assume all entries in inflight_req & inflight_req_order for arrived prefetches
+            // have been removed in inflight_resp() and inflight_resp_dma()
             it_addr++;
+        } else {
+            break;
         }
     }
-    if (it_addr != inflight_req_order.end()) {  // that's a non-prefetch txn. we'll check valid or not inside the branch
-        uint32_t addr_front = *it_addr;
 
-        axi_r_txn &txn = inflight_req[addr_front].front();
-        // data just arrived in spm via DMA will not update its corresponding txn.rvalid
-        if (wrapper->dma_enable && txn.rvalid == 0) {
-            bool got = wrapper->get_txn_data_from_spm_and_wr_queue(addr_front, txn.rdata);
-            if (got) txn.rvalid = 1;
-        }
-        if (txn.rvalid) {  // ensures the order of response
-            printf("(%lu) nvdla#%d read data returned by gem5 (or already in spm), addr 0x%08x\n",
-                   wrapper->tickcount, wrapper->id_nvdla, addr_front);
+    // that's a non-prefetch txn. we'll check valid or not below
+    uint32_t addr_front = *it_addr;
 
-            // push the front one
-            r_fifo.push(inflight_req[addr_front].front());
-            // todo: add some AXI_R_DELAY txns. currently we are setting AXI_R_DELAY = 0 so it is also correct
+    axi_r_txn &txn = req_list_ptr->front();
+    // data just arrived in spm via DMA will not update its corresponding txn.rvalid
+    if (wrapper->dma_enable && txn.rvalid == 0) {
+        bool got = wrapper->get_txn_data_from_spm(addr_front, txn.rdata);
+        if (got) txn.rvalid = 1;
+    }
+    if (txn.rvalid) {  // ensures the order of response
+        printf("(%lu) nvdla#%d read data returned by gem5 (or already in spm), addr 0x%08x\n",
+                wrapper->tickcount, wrapper->id_nvdla, addr_front);
 
-            // remove the front
-            inflight_req[addr_front].pop_front();
-            // check if empty to remove entry from map
-            if (inflight_req[addr_front].empty())
-                inflight_req.erase(addr_front);
-            // delete in the queue order
-            inflight_req_order.erase(it_addr);
-        }
+        // push the front one
+        r_fifo.push(std::move(txn));
+        // todo: add some AXI_R_DELAY txns. currently we are setting AXI_R_DELAY = 0 so it is also correct
+
+        // remove the front
+        req_list_ptr->pop_front();
+        // check if empty to remove entry from map
+        if (req_list_ptr->empty()) inflight_req.erase(req_it);
+        // delete in the queue order
+        inflight_req_order.erase(it_addr);
     }
 }
 
@@ -562,14 +563,17 @@ AXIResponder::inflight_resp(uint32_t addr, const uint8_t* data) {
                 wrapper->tickcount, wrapper->id_nvdla, name, addr);
     #endif
 
-    std::list<axi_r_txn>::iterator it = inflight_req[addr].begin();
+    auto addr_it = inflight_req.find(addr);
+    std::list<axi_r_txn>& req_list = addr_it->second;
+
+    std::list<axi_r_txn>::iterator it = req_list.begin();
     // Get the correct ptr
     int count_pos = 0;
-    while (it != inflight_req[addr].end() and it->rvalid) {
+    while (it != req_list.end() && it->rvalid) {
        it++;
        count_pos++;
     }
-    assert(it != inflight_req[addr].end());
+    assert(it != req_list.end());
     for (int i = 0; i < AXI_WIDTH / 8; i++) {
         it->rdata[i] = data[i];
     }
@@ -594,9 +598,9 @@ AXIResponder::inflight_resp(uint32_t addr, const uint8_t* data) {
         assert(deleted);
 
         // then delete in inflight_req
-        inflight_req[addr].erase(it);
-        if (inflight_req[addr].empty()) {
-            inflight_req.erase(addr);
+        req_list.erase(it);
+        if (req_list.empty()) {
+            inflight_req.erase(addr_it);
         }
 
     } else {
@@ -616,17 +620,19 @@ AXIResponder::inflight_dma_resp(const uint8_t* data, uint32_t len) {
     printf("(%lu) nvdla#%d AXIResponder handling DMA return data @0x%08x with length %d.\n",
            wrapper->tickcount, wrapper->id_nvdla, addr, len);
 
-    uint32_t old_size_remaining = inflight_dma_addr_size[addr];
+    auto it = inflight_dma_addr_size.find(addr);
+    uint32_t old_size_remaining = it->second;
     uint32_t size_remaining = old_size_remaining - len;
-    inflight_dma_addr_size[addr] = size_remaining;
+    it->second = size_remaining;
 
     std::vector<uint8_t>& entry_vector = wrapper->spm[addr];
     entry_vector.resize(wrapper->spm_line_size - size_remaining, 0);
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < len; i++) {
         entry_vector[wrapper->spm_line_size - old_size_remaining + i] = data[i];
+    }
 
     if (size_remaining == 0) {  // all data for this DMA transfer has been got
-        inflight_dma_addr_size.erase(addr);
+        inflight_dma_addr_size.erase(it);
         inflight_dma_addr_queue.pop();
     }
 }
@@ -645,16 +651,18 @@ AXIResponder::read_for_traceLoaderGem5(uint32_t start_addr, uint32_t length) {
         txn.rlast = (txn_start_addr + delta_addr + (AXI_WIDTH / 8) >= start_addr + length);
         txn.is_prefetch = 0;
         if(wrapper->dma_enable) {
-            bool got = wrapper->get_txn_data_from_spm_and_wr_queue(txn_addr, txn.rdata);
+            bool got = wrapper->get_txn_data_from_spm(txn_addr, txn.rdata);
             if(got) {
                 txn.rvalid = 1;
-            } else      // when verifying results, no need to use dma...
+            } else {    // when verifying results, no need to use dma...
                 wrapper->addReadReq(sram, true, txn_addr, AXI_WIDTH / 8);
-        } else
+            }
+        } else {
             wrapper->addReadReq(sram, true, txn_addr, AXI_WIDTH / 8);
+        }
 
         // put txn to the map
-        inflight_req[txn_addr].push_back(txn);
+        inflight_req[txn_addr].push_back(std::move(txn));
         // put in req the txn
         inflight_req_order.push_back(txn_addr);
     }
@@ -674,13 +682,16 @@ AXIResponder::read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* da
         abort();
     }
 
-    assert(!inflight_req[addr_front].empty());
-    axi_r_txn txn = inflight_req[addr_front].front();
+    auto& addr_front_list = inflight_req[addr_front];
+
+    assert(!addr_front_list.empty());
+    axi_r_txn txn = addr_front_list.front();
     if (txn.rvalid) {
         printf("(%lu) nvdla#%d memory request at 0x%08x has arrived.\n", wrapper->tickcount, wrapper->id_nvdla, start_addr);
-        inflight_req[addr_front].pop_front();
-        if (inflight_req[addr_front].empty())
+        addr_front_list.pop_front();
+        if (addr_front_list.empty()) {
             inflight_req.erase(addr_front);
+        }
 
         inflight_req_order.pop_front();
 
@@ -754,7 +765,7 @@ AXIResponder::generate_prefetch_request() {
     printf("(%lu) nvdla#%d PREFETCH request addr %08x issued.\n", wrapper->tickcount, wrapper->id_nvdla, to_issue_addr);
 
     if (wrapper->dma_enable) {
-        assert(!wrapper->check_txn_data_in_spm_and_wr_queue(to_issue_addr)); // weights are unique, shouldn't have been prefetched
+        assert(!wrapper->check_txn_data_in_spm(to_issue_addr)); // weights are unique, shouldn't have been prefetched
         // first check whether this addr has been covered by an inflight DMA request or not
         uint64_t spm_line_addr = to_issue_addr & ~((uint64_t)(wrapper->spm_line_size - 1));
         if (inflight_dma_addr_size.find(spm_line_addr) == inflight_dma_addr_size.end()) {
