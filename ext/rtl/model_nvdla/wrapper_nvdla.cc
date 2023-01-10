@@ -577,6 +577,7 @@ void Wrapper_nvdla::erase_spm_line() {
     }
     lru_order.pop_front();
     spm.erase(to_erase_it);
+    printf("(%lu) SPM line addr 0x%08lx is erased, dirty: %d\n", tickcount, to_erase_it->first, to_erase_it->second.dirty);
 }
 
 void Wrapper_nvdla::flush_spm() {

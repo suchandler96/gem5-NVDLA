@@ -46,13 +46,11 @@ class rtlNVDLA(rtlObject):
 
     need_inform_flush = Param.UInt32(0, "Whether we need to inform the memory hierarchy connected to flush")
 
-    # dma_try_get_fraction = Param.UInt32(1, "Every NVDLA tick, try get (dma_line_length / dma_try_get_fraction) bytes from DMA")
+    spm_size = Param.MemorySize('64kB', "The size of the legacy embedded SPM")
 
     spm_latency = Param.UInt32(12, "Latency for NVDLA private scratchpad memory")
 
     spm_line_size = Param.UInt32(1024, "The minimal granularity to copy data from memory to SPM")
-
-    spm_line_num = Param.UInt32(64, "Capacity of SPM, counted in spm line numbers")
 
     prefetch_enable = Param.UInt32(0, "Whether to issue software prefetch when inflight read queue is under-fed")
 

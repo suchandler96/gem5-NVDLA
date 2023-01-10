@@ -227,6 +227,8 @@ def addOptions(parser):
 
     # options.dma_enable
     parser.add_argument("--dma-enable", action="store_true", default=False, help="Use scratchpad in NVDLA aided with DMA")
+    # options.old_spm_size
+    parser.add_argument("--old-spm-size", type=str, default="64kB", help="specify private SPM size for accelerators (legacy version - embedded SPM)")
 
 
 

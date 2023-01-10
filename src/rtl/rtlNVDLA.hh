@@ -220,6 +220,13 @@ class rtlNVDLA : public rtlObject
         statistics::Scalar nvdla_writes;
         statistics::Histogram nvdla_avgReqCVSRAM;
         statistics::Histogram nvdla_avgReqDBBIF;
+
+        // statistics::Scalar num_dma_rd;
+        // statistics::Scalar num_dma_wr;
+
+        // statistics::Scalar num_spm_hit;
+        // statistics::Scalar num_spm_miss;
+        // statistics::Scalar num_spm_use;
     };
     nvdla_stats stats;
     void processOutput(outputNVDLA& out);

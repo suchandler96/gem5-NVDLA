@@ -53,7 +53,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     prefetch_enable(params.prefetch_enable),
     spm_latency(params.spm_latency),
     spm_line_size(params.spm_line_size),
-    spm_line_num(params.spm_line_num),
+    spm_line_num(params.spm_size / params.spm_line_size),
     dma_enable(params.dma_enable),
     dmaPort(this, params.system),
     pft_threshold(params.pft_threshold),
@@ -214,10 +214,11 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
         uint32_t real_addr = getRealAddr(aux.first, false);      // always suppose dram DMA fetch
         if (dma_rd_engine->atEndOfBlock()) {
             dma_rd_engine->startFill(real_addr, aux.second);
-            printf("nvdla#%d DMA read req is issued: addr %08x, len %d\n", id_nvdla, aux.first, aux.second);
+            printf("(%lu) nvdla#%d DMA read req is issued: addr 0x%08x, len %d\n", wr->tickcount, id_nvdla, aux.first, aux.second);
+            // stats.num_dma_rd++;
             // after successfully calling DMA, pop aux
             out.dma_read_buffer.pop();
-        }   // if DMA request not sent, have to stop here
+        }   // if previous DMA request not sent, have to stop here
     }
 
 
@@ -227,7 +228,8 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
         if (dma_wr_engine->atEndOfBlock()) {                    // previous DMA write has been sent
             uint32_t real_addr = getRealAddr(aux.first, false);     // always suppose dram DMA write
             dma_wr_engine->startFill(real_addr, aux.second.size(), aux.second.data());
-            printf("nvdla#%d DMA write req is issued: addr %08x, len %d\n", id_nvdla, aux.first, aux.second.size());
+            printf("(%lu) nvdla#%d DMA write req is issued: addr 0x%08x, len %d\n", wr->tickcount, id_nvdla, aux.first, aux.second.size());
+            // stats.num_dma_wr++;
             out.dma_write_buffer.pop();
         }
     }
@@ -728,6 +730,13 @@ rtlNVDLA::regStats() {
         .desc("Histogram Requests onflight DBBIF")
         .flags(pdf);
 
+
+    // stats.num_dma_rd
+    //     .name(name() + ".num_dma_rd")
+    //     .desc("Number of DMA read issued by this NVDLA");
+    // stats.num_dma_wr
+    //     .name(name() + ".num_dma_wr")
+    //     .desc("Number of DMA write issued by this NVDLA");
 }
 
 } //End namespace gem5

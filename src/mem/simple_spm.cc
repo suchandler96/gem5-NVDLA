@@ -212,7 +212,7 @@ SimpleSPM::MemSidePort::sendPacket(PacketPtr pkt)
 bool
 SimpleSPM::MemSidePort::recvTimingResp(PacketPtr pkt)
 {
-    // Just forward to the cache.
+    // Just forward to the SPM.
     return owner->handleResponse(pkt);
 }
 

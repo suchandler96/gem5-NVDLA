@@ -560,10 +560,16 @@ class SimpleSPM : public ClockedObject
     /// True if this SPM is currently blocked waiting for DMA engine to be free.
     // bool blocked;
 
+    // /// each entry that the SPM is maintaining
+    // struct SPMLineWithTag {
+    //     std::vector<uint8_t> spm_line;
+    //     std::list<std::map<uint64_t, SPMLineWithTag>::iterator>::iterator lru_it;
+    //     uint8_t dirty;
+    // };
+
     /// Packet that we are currently handling. Used for upgrading to larger
     /// SPM line sizes
     // PacketPtr originalPacket;
-    // todo: we can also record the request port ID in each miss
     std::list<std::tuple<PacketPtr, Tick, int>> miss_pkt_with_time_port_list;
 
     /// To keep track of inflight DMA read transfers from main memory

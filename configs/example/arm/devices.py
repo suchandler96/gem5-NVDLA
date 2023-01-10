@@ -170,7 +170,7 @@ class CpuCluster(SubSystem):
             # in the current phase, we only use one NVDLA accelerator, and spm cannot be used with caches
             if options.dma_enable:
                 assert not options.add_accel_private_cache and not options.add_accel_shared_cache
-                dma_ctrl_str = "dma_enable=1, spm_latency=options.accel_pr_spm_lat, spm_line_size=1024"
+                dma_ctrl_str = "dma_enable=1, spm_latency=options.accel_pr_spm_lat, spm_line_size=1024, spm_size=options.old_spm_size"
             else:
                 dma_ctrl_str = "dma_enable=0"
 
