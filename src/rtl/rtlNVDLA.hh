@@ -292,6 +292,8 @@ public:
 
     int need_inform_flush;
 
+    bool use_fake_mem;
+
     void try_get_dma_read_data(uint32_t size);
 };
 

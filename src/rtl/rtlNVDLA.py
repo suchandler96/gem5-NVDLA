@@ -65,3 +65,5 @@ class rtlNVDLA(rtlObject):
     base_addr_sram = Param.UInt64(0xB0000000,"Max Request inglight for NVDLA")
 
     enableTimingAXI = Param.Bool(False, "Enable Timing mode in AXI")
+    
+    use_fake_mem = Param.Bool(False, "whether to use fake memory to simulate")

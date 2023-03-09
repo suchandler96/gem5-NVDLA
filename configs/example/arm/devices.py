@@ -175,9 +175,9 @@ class CpuCluster(SubSystem):
                 dma_ctrl_str = "dma_enable=0"
 
             if options.add_accel_private_spm:
-                spm_ctrl_str = "need_inform_flush = 1"
+                spm_ctrl_str = "need_inform_flush = 1, use_fake_mem=options.use_fake_mem"
             else:
-                spm_ctrl_str = "need_inform_flush = 0"
+                spm_ctrl_str = "need_inform_flush = 0, use_fake_mem=options.use_fake_mem"
 
             for i in range(4):
                 exec("cpu.accel_%d = rtlNVDLA(%s, %s, %s)" % (i, dma_ctrl_str, sft_pft_ctrl_str, spm_ctrl_str))
@@ -208,16 +208,15 @@ class CpuCluster(SubSystem):
             if options.add_accel_shared_cache:
                 assert not (options.add_accel_private_spm or options.add_accel_shared_spm)
                 self.accel_to_shared_bus = L2XBar(width=64, clk_domain=clk_domain)
-                self.accel_sh_cache = Cache(tag_latency=12,
-                                            data_latency=12,
-                                            response_latency=5,
-                                            mshrs=32,
-                                            tgts_per_mshr=8,
-                                            write_allocator=WriteAllocator(),
+                self.accel_sh_cache = Cache(tag_latency=options.accel_sh_cache_tag_lat,
+                                            data_latency=options.accel_sh_cache_dat_lat,
+                                            response_latency=options.accel_sh_cache_resp_lat,
+                                            mshrs=options.accel_sh_cache_mshr,
+                                            tgts_per_mshr=options.accel_sh_cache_tgts_per_mshr,
                                             size=options.accel_sh_cache_size,
                                             assoc=options.accel_sh_cache_assoc,
-                                            write_buffers=8,
-                                            clusivity='mostly_excl')
+                                            write_buffers=options.accel_sh_cache_wr_buf,
+                                            clusivity=options.accel_sh_cache_clus)
                 self.accel_to_shared_bus.mem_side_ports = self.accel_sh_cache.cpu_side
                 for port in outside_ports:
                     exec("%s = self.accel_to_shared_bus.cpu_side_ports" % port)

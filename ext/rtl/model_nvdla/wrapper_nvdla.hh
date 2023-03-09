@@ -115,7 +115,7 @@ class Wrapper_nvdla {
 
     public:
         Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name, const unsigned int maxReq,
-                      int _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num, int pft_enable);
+                      bool _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num, bool pft_enable);
         ~Wrapper_nvdla();
 
         void tick();

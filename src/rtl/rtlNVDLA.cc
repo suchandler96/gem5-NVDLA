@@ -57,7 +57,8 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     dma_enable(params.dma_enable),
     dmaPort(this, params.system),
     pft_threshold(params.pft_threshold),
-    need_inform_flush(params.need_inform_flush) {
+    need_inform_flush(params.need_inform_flush),
+    use_fake_mem(params.use_fake_mem) {
 
     initNVDLA();
     startMemRegion = 0xC0000000;
@@ -262,7 +263,7 @@ rtlNVDLA::runIterationNVDLA() {
     }
 
     if (!waiting_for_gem5_mem) {
-        if (timingMode) {
+        if (!use_fake_mem) {
             wr->axi_dbb->eval_timing();
             // wr->axi_cvsram->eval_timing();
         } else {
@@ -309,7 +310,7 @@ rtlNVDLA::tick() {
         stats.nvdla_cycles++;
         cyclesNVDLA++;
         runIterationNVDLA();
-        schedule(tickEvent,nextCycle());
+        schedule(tickEvent, nextCycle());
     } else {
         // we have finished running the trace
         printf("done at %lu ticks\n", wr->tickcount);
@@ -320,8 +321,7 @@ rtlNVDLA::tick() {
         } else if (!wr->csb->test_passed()) {
             printf("*** FAIL: test failed due to CSB read mismatch\n");
         } else {
-            std::cout << "NVDLA " << id_nvdla;
-            printf(" *** PASS\n");
+            printf("NVDLA %d *** PASS\n", id_nvdla);
         }
 
         // we send a null packet telling we have finished
@@ -355,7 +355,7 @@ rtlNVDLA::handleResponse(PacketPtr pkt) {
         bytesReaded += 64;
 
         if (bytesReaded < bytesToRead) {
-            startTranslate(pkt->req->getVaddr()+64, 0);
+            startTranslate(pkt->req->getVaddr() + 64, 0);
         } else {
             bytesReaded = 0;
             bytesToRead = 0;

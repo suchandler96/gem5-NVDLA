@@ -273,7 +273,7 @@ def addOptions(parser):
     # options.accel_pr_cache_mshr
     parser.add_argument("--accel-pr-cache-mshr", type=int, default=32, help="specify number of private cache mshrs")
     # options.accel_pr_cache_tgts_per_mshr
-    parser.add_argument("--accel-pr-cache-tgts_per_mshr", type=int, default=8, help="specify number of targets per private cache mshr")
+    parser.add_argument("--accel-pr-cache-tgts-per-mshr", type=int, default=8, help="specify number of targets per private cache mshr")
     # options.accel_pr_cache_wr_buf
     parser.add_argument("--accel-pr-cache-wr-buf", type=int, default=8, help="specify number of private cache write buffers for accelerators")
     # options.accel_pr_cache_clus
@@ -286,9 +286,21 @@ def addOptions(parser):
     parser.add_argument("--add-accel-shared-cache", action="store_true", default=False, help="Add shared cache for numNVDLA * NVDLA")
 
     # options.accel_sh_cache_size
-    parser.add_argument("--accel-sh-cache-size", type=str, default="1MB", help="specify shared cache size for accelerators")
+    parser.add_argument("--accel-sh-cache-size", type=str, default="4MB", help="specify shared cache size for accelerators")
     # options.accel_sh_cache_assoc
     parser.add_argument("--accel-sh-cache-assoc", type=int, default=16, help="specify shared cache associativity for accelerators")
+    # options.accel_sh_cache_tag_lat
+    parser.add_argument("--accel-sh-cache-tag-lat", type=int, default=12, help="specify shared cache tag latency for accelerators")
+    # options.accel_sh_cache_dat_lat
+    parser.add_argument("--accel-sh-cache-dat-lat", type=int, default=12, help="specify shared cache data latency for accelerators")
+    # options.accel_sh_cache_resp_lat
+    parser.add_argument("--accel-sh-cache-resp-lat", type=int, default=5, help="specify shared cache response latency for accelerators")
+    # options.accel_sh_cache_mshr
+    parser.add_argument("--accel-sh-cache-mshr", type=int, default=128, help="specify number of shared cache mshrs")
+    # options.accel_sh_cache_tgts_per_mshr
+    parser.add_argument("--accel-sh-cache-tgts-per-mshr", type=int, default=8, help="specify number of targets per shared cache mshr")
+    # options.accel_sh_cache_wr_buf
+    parser.add_argument("--accel-sh-cache-wr-buf", type=int, default=32, help="specify number of shared cache write buffers for accelerators")
     # options.accel_sh_cache_clus
     parser.add_argument("--accel-sh-cache-clus", type=str, default='mostly_excl', help="specify shared cache size cusivity for accelerators")
 
@@ -296,8 +308,12 @@ def addOptions(parser):
     parser.add_argument("--sft-pft-enable", action="store_true", default=False, help="issue software prefetching when inflight request queue is underrun")
     # options.pft_threshold
     parser.add_argument("--pft-threshold", type=int, default=16, help="the threshold of current inflight memory requests to launch software prefetch")
-
+    # options.prefetcher
     parser.add_argument("--prefetcher", type=str, default=None, help="Hardware prefetcher class name prefix")
+    
+    # options.use_fake_mem
+    parser.add_argument("--use-fake-mem", action="store_true", default=False, help="whether to use fake memory to simulate")
+    
 
     parser.add_argument("-P", "--param", action="append", default=[],
         help="Set a SimObject parameter relative to the root node. "

@@ -52,8 +52,9 @@ double sc_time_stamp(){
   return double_t(0);
 }
 
-Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name,const unsigned int maxReq,
-                             int _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num, int pft_enable) :
+Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name, const unsigned int maxReq,
+                             bool _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num,
+                             bool pft_enable) :
         id_nvdla(id_nvdla),
         tickcount(0),
         tfp(NULL),
@@ -119,7 +120,7 @@ Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name,const 
         .r_rdata = dla->nvdla_core2dbb_r_rdata,
     };
     axi_dbb = new AXIResponder(dbbconn, this, "DBB",
-                                   false, maxReq);
+              false, maxReq);
 
     // AXI CVSRAM
     AXIResponder::connections cvsramconn = {
