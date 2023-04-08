@@ -231,7 +231,8 @@ def addOptions(parser):
     parser.add_argument("--old-spm-size", type=str, default="64kB", help="specify private SPM size for accelerators (legacy version - embedded SPM)")
 
 
-
+    # SPM module Constructed with options.add-accel-private-spm and options.add-accel-shared-spm are somehow not working
+    '''
     # options.add-accel-private-spm
     parser.add_argument("--add-accel-private-spm", action="store_true", default=False, help="Add private scratchpad memories for NVDLA")
 
@@ -255,7 +256,7 @@ def addOptions(parser):
     parser.add_argument("--accel-sh-spm-lat", type=int, default=12, help="NVDLA shared scratchpad memory latency")
     # options.accel_sh_spm_wb
     parser.add_argument("--accel-sh-spm-wb", action="store_true", default=False, help="specify shared SPM write back policy for accelerators")
-
+    '''
 
     # options.add_accel_private_cache
     parser.add_argument("--add-accel-private-cache", action="store_true", default=False, help="Add private cache for NVDLA")
@@ -304,12 +305,10 @@ def addOptions(parser):
     # options.accel_sh_cache_clus
     parser.add_argument("--accel-sh-cache-clus", type=str, default='mostly_excl', help="specify shared cache size cusivity for accelerators")
 
-    # options.sft_pft_enable
-    parser.add_argument("--sft-pft-enable", action="store_true", default=False, help="issue software prefetching when inflight request queue is underrun")
+    # options.pft_enable
+    parser.add_argument("--pft-enable", action="store_true", default=False, help="issue hardware prefetching when inflight request queue is underrun")
     # options.pft_threshold
     parser.add_argument("--pft-threshold", type=int, default=16, help="the threshold of current inflight memory requests to launch software prefetch")
-    # options.prefetcher
-    parser.add_argument("--prefetcher", type=str, default=None, help="Hardware prefetcher class name prefix")
     
     # options.use_fake_mem
     parser.add_argument("--use-fake-mem", action="store_true", default=False, help="whether to use fake memory to simulate")

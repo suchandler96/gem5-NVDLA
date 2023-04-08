@@ -165,7 +165,7 @@ class CpuCluster(SubSystem):
             cpu.num_accels = options.numNVDLA
 
             sft_pft_ctrl_str = "prefetch_enable=1, pft_threshold=options.pft_threshold"\
-                if options.sft_pft_enable else "prefetch_enable=0"
+                if options.pft_enable else "prefetch_enable=0"
 
             # in the current phase, we only use one NVDLA accelerator, and spm cannot be used with caches
             if options.dma_enable:

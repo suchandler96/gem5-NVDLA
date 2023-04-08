@@ -1,0 +1,97 @@
+#!/bin/sh
+
+# Example how to run the application inside gem5
+# cd /romol/bin/
+
+# necessary export for parsec hooks 
+# export LD_LIBRARY_PATH=/romol/hooks/lib/shared/cpt:$LD_LIBRARY_PATH
+
+
+#. /etc/profile
+#module use /opt/arm/modulefiles/
+#module load Generic-AArch64/Ubuntu/16.04/suites/arm-compiler-for-hpc/19.1
+#module load Generic-SVE/Ubuntu/16.04/arm-hpc-compiler-0.0/armpl/0.0.0_sve_ea
+#module load Generic-AArch64/Ubuntu/16.04/arm-hpc-compiler-19.1/armpl/19.1.0
+#googlenet_conv2_3x3_int16 sanity0-1-2-3
+#Running trace:  cc_alexnet_conv5_relu5_int16_dtest_cvsram
+#Running trace:  conv_8x8_fc_int16
+#Running trace:  googlenet_conv2_3x3_int16
+#Running trace:  pdp_max_pooling_int16
+#Running trace:  sanity0
+#Running trace:  sanity1
+#Running trace:  sanity1_cvsram
+#Running trace:  sanity2
+#Running trace:  sanity2_cvsram
+#Running trace:  sanity3
+#Running trace:  sanity3_cvsram
+#Running trace:  sdp_relu_int16
+# sanity1 does not work with timing
+
+
+
+# ./validation_nvdla traces_nvdla/sanity0/trace.bin
+
+
+
+# begin running nvdla_validation_test:
+echo "begin running nvdla test..."
+# echo "begin sanity 0:"
+# /home/validation_nvdla /home/sanity0/trace.bin
+# echo "begin sanity 1:"
+# /home/validation_nvdla /home/sanity1/trace.bin
+
+# echo "begin sanity 1 cvsram:"
+# /home/validation_nvdla /home/sanity1_cvsram/trace.bin
+
+# echo "begin sanity 2:"
+# /home/validation_nvdla /home/sanity2/sanity2_converted_input.txn.bin
+
+# echo "begin sanity 3:"
+# /home/validation_nvdla /home/sanity3/trace.bin
+
+# echo "begin conv_8x8_fc_int16:"
+# /home/my_validation_nvdla_single_thread /home/conv_8x8_fc_int16/trace.bin
+
+# echo "begin sdp_relu_int16:"
+# /home/my_validation_nvdla_single_thread /home/sdp_relu_int16/trace.bin
+
+# echo "begin lenet_until:"
+# /home/my_validation_nvdla_single_thread /home/lenet_until/trace.bin
+
+# echo "begin lenet_pft:"
+# /home/my_validation_nvdla_single_thread /home/lenet_pft/trace.bin /home/lenet_pft/rd_only_var_log
+
+# echo "begin googlenet_conv2_3x3_int16:"
+# this test is supposed to fail with csb read mismatch, but the output memory dump should be fine
+# /home/validation_nvdla /home/mod_googlenet_conv2_3x3_int16/trace.bin
+
+# echo "begin cc_alexnet_conv5_relu5_int16_dtest_dbb:"
+# /home/validation_nvdla /home/cc_alexnet_conv5_relu5_int16_dtest_dbb/trace.bin
+
+# echo "use two nvdla accelerators to finish nino_googlenet_conv2_3x3_int16 sequentially:"
+# /home/nvdla_sequential_invoke /home/nino_googlenet_conv2_3x3_int16/trace.bin
+
+# echo "use two nvdla accelerators to finish lenet_pft sequentially:"
+# /home/nvdla_sequential_invoke /home/lenet_pft/trace.bin
+
+# echo "begin resnet18_in_fp16:"
+# /home/my_validation_nvdla_single_thread /home/resnet18_in_fp16/trace.bin
+
+# echo "begin lenet_pipeline:"
+# /home/pipeline_execute /home/lenet_pipeline_bin/lenet_ 4 2
+# /home/lenet_pipeline /home/lenet_pipeline_bin (old)
+
+# echo "begin resnet18_cf_short_part1:"
+# /home/my_validation_nvdla_single_thread /home/resnet18_cf_short_pipeline_bin/resnet18_cf_short_1_1_trace.bin
+
+# echo "begin resnet18_cf_fp16:"
+# /home/my_validation_nvdla_single_thread /home/resnet18_cf_fp16/trace.bin
+
+# echo "begin resnet18_cf_short_pipeline:"
+# /home/pipeline_execute /home/resnet18_cf_short_pipeline_bin/resnet18_cf_short_ 4 2
+
+echo "begin single head attention:"
+/home/my_validation_nvdla_single_thread /home/mha/trace.bin_1 /home/mha/rd_only_var_log_1
+
+/sbin/m5 exit
+
