@@ -338,9 +338,8 @@ void Wrapper_nvdla::clearOutput() {
     while (!output.write_buffer.empty()) {
         output.write_buffer.pop();
     }
-    // dma rd and wr buffer should be kept because dma_engine cannot be issued with multiple tasks at once
-    //memset(&output,0,sizeof(outputNVDLA));
-    //output.write_buffer = new std::queue<write_req_entry_t>();
+    // dma rd and wr buffer should be kept because
+    // dma_engine cannot be issued with multiple tasks at once
 }
 
 outputNVDLA& Wrapper_nvdla::tick(inputNVDLA in) {

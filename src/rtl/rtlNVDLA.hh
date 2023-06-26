@@ -289,9 +289,6 @@ public:
     DmaNvdla* dma_wr_engine;
 
     uint32_t pft_threshold;
-
-    int need_inform_flush;
-
     bool use_fake_mem;
 
     void try_get_dma_read_data(uint32_t size);

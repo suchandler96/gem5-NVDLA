@@ -725,7 +725,7 @@ AXIResponder::log_req_issue(uint32_t addr) {
                 if (log_entry_issued_len == log_entry_length)
                     read_var_log.erase(it);
             } else {
-                // printf("read req for %d has been covered by a previous pft / fetch.\n", addr);
+                // printf("read req for %#x has been covered by a previous pft / fetch.\n", addr);
             }
             break;
         }
@@ -773,7 +773,7 @@ AXIResponder::generate_prefetch_request() {
         inflight_req[to_issue_addr].push_back(txn);
         inflight_req_order.push_back(to_issue_addr);
         wrapper->addReadReq(sram, true, to_issue_addr, AXI_WIDTH / 8);
-        log_entry_issued_len += AXI_WIDTH / 8;  // todo: here the gap of issuing should be cache line size
+        log_entry_issued_len += AXI_WIDTH / 8;  // todo: here the gap of issuing should be cache line size. currently cache line size == AXI_WIDTH/8
     }
 
     if (log_entry_issued_len >= log_entry_length)       // this prefetch is the end of the variable

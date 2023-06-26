@@ -57,7 +57,6 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     dma_enable(params.dma_enable),
     dmaPort(this, params.system),
     pft_threshold(params.pft_threshold),
-    need_inform_flush(params.need_inform_flush),
     use_fake_mem(params.use_fake_mem) {
 
     initNVDLA();
@@ -72,7 +71,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     if (dma_enable) {
         dma_rd_engine = new DmaReadFifo(dmaPort, spm_line_size * spm_line_num,
                                     spm_line_size, spm_line_num, Request::UNCACHEABLE);
-        dma_wr_engine = new DmaNvdla(nullptr, true, dmaPort, true, spm_line_size * spm_line_num,
+        dma_wr_engine = new DmaNvdla(dmaPort, true, spm_line_size * spm_line_num,
                                      spm_line_size, spm_line_num, Request::UNCACHEABLE);
     } else {
         dma_rd_engine = nullptr;
@@ -287,14 +286,6 @@ rtlNVDLA::runIterationNVDLA() {
         }
     }
     processOutput(output);
-    if (((wr->csb->done() && !waiting_for_gem5_mem) || extevent == TraceLoaderGem5::TRACE_RESET)
-        && need_inform_flush) {
-        DPRINTF(rtlNVDLA, "begin to send flush instruction.\n");
-        // send a pkt to inform the connected gem5 SPM to flush
-        RequestPtr req = std::make_shared<Request>(baseAddrDRAM, 1, 0, 0);
-        PacketPtr new_pkt = new Packet(req, MemCmd::CleanEvict, 64);
-        dramPort.sendPacket(new_pkt, true); // timing = true
-    }
 }
 
 void

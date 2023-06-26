@@ -174,10 +174,7 @@ class CpuCluster(SubSystem):
             else:
                 dma_ctrl_str = "dma_enable=0"
 
-            if options.add_accel_private_spm:
-                spm_ctrl_str = "need_inform_flush = 1, use_fake_mem=options.use_fake_mem"
-            else:
-                spm_ctrl_str = "need_inform_flush = 0, use_fake_mem=options.use_fake_mem"
+            spm_ctrl_str = "use_fake_mem=options.use_fake_mem"
 
             for i in range(4):
                 exec("cpu.accel_%d = rtlNVDLA(%s, %s, %s)" % (i, dma_ctrl_str, sft_pft_ctrl_str, spm_ctrl_str))
@@ -189,7 +186,6 @@ class CpuCluster(SubSystem):
             outside_ports = ["cpu.accel_%d.dram_port" % i for i in range(4)]
 
             if options.add_accel_private_cache:
-                assert not (options.add_accel_private_spm or options.add_accel_shared_spm)
                 for i in range(options.numNVDLA):
                     exec("self.accel_%d_pr_cache = Cache(tag_latency=options.accel_pr_cache_tag_lat,\
                                                          data_latency=options.accel_pr_cache_dat_lat,\
@@ -206,7 +202,6 @@ class CpuCluster(SubSystem):
                     outside_ports[i] = "self.accel_%d_pr_cache.mem_side" % i
 
             if options.add_accel_shared_cache:
-                assert not (options.add_accel_private_spm or options.add_accel_shared_spm)
                 self.accel_to_shared_bus = L2XBar(width=64, clk_domain=clk_domain)
                 self.accel_sh_cache = Cache(tag_latency=options.accel_sh_cache_tag_lat,
                                             data_latency=options.accel_sh_cache_dat_lat,
@@ -222,30 +217,6 @@ class CpuCluster(SubSystem):
                     exec("%s = self.accel_to_shared_bus.cpu_side_ports" % port)
 
                 outside_ports = ["self.accel_sh_cache.mem_side"]
-
-            if options.add_accel_private_spm:
-                for i in range(options.numNVDLA):
-                    exec("self.accel_%d_pr_spm = SimpleSPM(latency=12,\
-                          size=options.accel_pr_spm_size,\
-                          need_write_back=options.accel_pr_spm_wb,\
-                          dma_concurrency=options.accel_pr_spm_dma_concurrency)"
-                         % i)
-                    exec("self.accel_%d_pr_spm.dma_port = membus" % i)
-
-                for i in range(options.numNVDLA):
-                    exec("%s = self.accel_%d_pr_spm.cpu_side" % (outside_ports[i], i))
-                    outside_ports[i] = "self.accel_%d_pr_spm.mem_side" % i
-
-            if options.add_accel_shared_spm:
-                self.accel_sh_spm = SimpleSPM(latency=options.accel_sh_spm_lat, size=options.accel_sh_spm_size,\
-                                              need_write_back=options.accel_sh_spm_wb,\
-                                              dma_concurrency=options.accel_pr_spm_dma_concurrency)
-                self.accel_sh_spm.dma_port = membus
-                for port in outside_ports:
-                    exec("%s = self.accel_sh_spm.cpu_side" % port)
-
-                outside_ports = ["self.accel_sh_spm.mem_side"]
-
 
             for port in outside_ports:
                 exec("%s = membus" % port)

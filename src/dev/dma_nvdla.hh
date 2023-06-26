@@ -105,14 +105,10 @@ class ClockedObject;
 class DmaNvdla : public Drainable, public Serializable
 {
   public:
-    DmaNvdla(ClockedObject* owner,
-             bool proactive_get,
-             DmaPort &port, bool _is_write, size_t size,
-             unsigned max_req_size,
-             unsigned max_pending,
-             Request::Flags flags=0//,
-             // EventFunctionWrapper event=[this]{}
-             );
+    DmaNvdla(DmaPort &port, bool _is_write, size_t size,
+                unsigned max_req_size,
+                unsigned max_pending,
+                Request::Flags flags=0);
 
     ~DmaNvdla();
 
@@ -265,7 +261,7 @@ class DmaNvdla : public Drainable, public Serializable
         void kill();
         void cancel();
         bool canceled() const { return _canceled; }
-        void reset(size_t size, Addr addr);
+        void reset(size_t size);
         void process();
 
         bool done() const { return _done; }
@@ -278,9 +274,7 @@ class DmaNvdla : public Drainable, public Serializable
         bool _done = false;
         bool _canceled = false;
         size_t _requestSize;
-      public:
         std::vector<uint8_t> _data;
-        Addr _addr;
     };
 
     typedef std::unique_ptr<DmaDoneEvent> DmaDoneEventUPtr;
@@ -312,12 +306,6 @@ class DmaNvdla : public Drainable, public Serializable
     std::deque<DmaDoneEventUPtr> pendingRequests;
     std::deque<DmaDoneEventUPtr> freeRequests;
     bool is_write;
-    bool proactive_get;     // whether owner will treGet() proactively
-
-  public:
-    std::vector<std::pair<Addr, std::vector<uint8_t>>> owner_fetch_buffer;
-    ClockedObject* owner;   // e.g., SPM, rtlNVDLA, ...
-    // EventFunctionWrapper accessDMADataEvent;
 };
 
 } // namespace gem5

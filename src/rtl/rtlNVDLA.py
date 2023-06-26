@@ -44,9 +44,7 @@ class rtlNVDLA(rtlObject):
 
     dma_enable = Param.UInt32(0, "Whether to use DMA in testing")
 
-    need_inform_flush = Param.UInt32(0, "Whether we need to inform the memory hierarchy connected to flush")
-
-    spm_size = Param.MemorySize('64kB', "The size of the legacy embedded SPM")
+    spm_size = Param.MemorySize('64kB', "The size of the embedded SPM")
 
     spm_latency = Param.UInt32(12, "Latency for NVDLA private scratchpad memory")
 

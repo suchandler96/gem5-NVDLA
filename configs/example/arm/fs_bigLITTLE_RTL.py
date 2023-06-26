@@ -231,33 +231,6 @@ def addOptions(parser):
     parser.add_argument("--old-spm-size", type=str, default="64kB", help="specify private SPM size for accelerators (legacy version - embedded SPM)")
 
 
-    # SPM module Constructed with options.add-accel-private-spm and options.add-accel-shared-spm are somehow not working
-    '''
-    # options.add-accel-private-spm
-    parser.add_argument("--add-accel-private-spm", action="store_true", default=False, help="Add private scratchpad memories for NVDLA")
-
-    # options.accel_pr_spm_size
-    parser.add_argument("--accel-pr-spm-size", type=str, default="1MB", help="specify private SPM size for accelerators")
-    # options.accel_pr_spm_lat
-    parser.add_argument("--accel-pr-spm-lat", type=int, default=12, help="NVDLA private scratchpad memory latency")
-    # options.accel_pr_spm_wb
-    parser.add_argument("--accel-pr-spm-wb", action="store_true", default=False, help="specify SPM write back policy for accelerators")
-    # options.accel_pr_spm_dma_concurrency
-    parser.add_argument("--accel-pr-spm-dma-concurrency", type=int, default=0, help="NVDLA private scratchpad memory maximum inflight DMAs")
-
-
-
-    # options.add-accel-shared-spm
-    parser.add_argument("--add-accel-shared-spm", action="store_true", default=False, help="Add shared scratchpad memories for NVDLAs")
-
-    # options.accel_sh_spm_size
-    parser.add_argument("--accel-sh-spm-size", type=str, default="1MB", help="specify shared SPM size for accelerators")
-    # options.accel_sh_spm_lat
-    parser.add_argument("--accel-sh-spm-lat", type=int, default=12, help="NVDLA shared scratchpad memory latency")
-    # options.accel_sh_spm_wb
-    parser.add_argument("--accel-sh-spm-wb", action="store_true", default=False, help="specify shared SPM write back policy for accelerators")
-    '''
-
     # options.add_accel_private_cache
     parser.add_argument("--add-accel-private-cache", action="store_true", default=False, help="Add private cache for NVDLA")
 
