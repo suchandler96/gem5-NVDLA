@@ -1,0 +1,5 @@
+#!/bin/sh
+
+%(run-cmd)s
+
+/sbin/m5 exit

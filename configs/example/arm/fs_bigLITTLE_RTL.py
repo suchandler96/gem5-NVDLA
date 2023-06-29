@@ -226,9 +226,11 @@ def addOptions(parser):
     parser.add_argument("--numNVDLA", type=int, default=1, help="number of NVDLAs")
 
     # options.dma_enable
-    parser.add_argument("--dma-enable", action="store_true", default=False, help="Use scratchpad in NVDLA aided with DMA")
-    # options.old_spm_size
-    parser.add_argument("--old-spm-size", type=str, default="64kB", help="specify private SPM size for accelerators (legacy version - embedded SPM)")
+    parser.add_argument("--dma-enable", action="store_true", default=False, help="Use scratchpad embedded in NVDLA wrapper, aided with DMA")
+    # options.embed_spm_size
+    parser.add_argument("--embed-spm-size", type=str, default="64kB", help="specify private SPM size for accelerators (embedded SPM)")
+    # options.accel_embed_spm_lat
+    parser.add_argument("--accel-embed-spm-lat", type=int, default=12, help="specify private SPM latency for accelerators (embedded SPM)")
 
 
     # options.add_accel_private_cache

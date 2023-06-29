@@ -170,14 +170,14 @@ class CpuCluster(SubSystem):
             # in the current phase, we only use one NVDLA accelerator, and spm cannot be used with caches
             if options.dma_enable:
                 assert not options.add_accel_private_cache and not options.add_accel_shared_cache
-                dma_ctrl_str = "dma_enable=1, spm_latency=options.accel_pr_spm_lat, spm_line_size=1024, spm_size=options.old_spm_size"
+                dma_ctrl_str = "dma_enable=1, spm_latency=options.accel_embed_spm_lat, spm_line_size=1024, spm_size=options.embed_spm_size"
             else:
                 dma_ctrl_str = "dma_enable=0"
 
-            spm_ctrl_str = "use_fake_mem=options.use_fake_mem"
+            fakemem_ctrl_str = "use_fake_mem=options.use_fake_mem"
 
             for i in range(4):
-                exec("cpu.accel_%d = rtlNVDLA(%s, %s, %s)" % (i, dma_ctrl_str, sft_pft_ctrl_str, spm_ctrl_str))
+                exec("cpu.accel_%d = rtlNVDLA(%s, %s, %s)" % (i, dma_ctrl_str, sft_pft_ctrl_str, fakemem_ctrl_str))
 
             for i in range(4):
                 exec("cpu.accel_port_%d = cpu.accel_%d.cpu_side" % (i, i))
@@ -237,7 +237,8 @@ class CpuCluster(SubSystem):
                 # ids
                 exec("cpu.accel_%d.id_nvdla = %d" % (i, i))
 
-            # DRAM base addr
+            # DRAM base addr, let all NVDLAs share common DRAM addr space,
+            # while keep SRAM addr spaces private
             cpu.accel_0.base_addr_dram = 0xA0000000
             cpu.accel_1.base_addr_dram = 0xA0000000
             cpu.accel_2.base_addr_dram = 0xA0000000
