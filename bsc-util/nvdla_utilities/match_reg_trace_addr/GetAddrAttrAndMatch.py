@@ -299,6 +299,8 @@ def main():
     for i in range(len(options.src_dirs)):
         txn_path = os.popen("ls " + os.path.join(options.src_dirs[i], "*_raw_input.txn")).read().strip()
         mem_trace_path = os.path.join(options.src_dirs[i], "VP_mem_rd_wr")
+        assert os.path.exists(txn_path)
+        assert os.path.exists(mem_trace_path)
 
         words = get_words(txn_path)
         txn_segments = get_txn_segments(words, txn_path)

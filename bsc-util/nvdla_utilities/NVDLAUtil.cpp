@@ -20,15 +20,23 @@ public:
     uint64_t address{};
     int print_rd_flag;
     int print_wr_flag;
+    int change_addr_flag;
 
-    AXI_Txn(int _print_rd, int _print_wr) : print_rd_flag(_print_rd), print_wr_flag(_print_wr) {}
+    AXI_Txn(int _print_rd, int _print_wr, int addr_convert_flag) : print_rd_flag(_print_rd), print_wr_flag(_print_wr), change_addr_flag(addr_convert_flag) {}
 
     void print_axi_txn() const {
+        uint64_t out_addr;
+        if(change_addr_flag) {
+            assert((address & 0xf0000000) == 0xc0000000);
+            out_addr = (address & 0x0fffffff) | 0x80000000;
+        } else {
+            out_addr = address;
+        }
         if(print_rd_flag && print_wr_flag) {
-            if(is_write) printf("w %lx\n", address);
-            else printf("r %lx\n", address);
+            if(is_write) printf("w %lx\n", out_addr);
+            else printf("r %lx\n", out_addr);
         } else if((print_wr_flag && is_write) || (print_rd_flag && !is_write)) {
-            printf("%lx\n", address);
+            printf("%lx\n", out_addr);
         }
     }
 
@@ -81,8 +89,6 @@ public:
                     printf("write_reg 0x%x 0x%08x\t\t\t#0x%04x\n", out_addr, data, addr);
                 }
             } else {
-                assert(data == 0x0);
-
                 if(addr == 0x000c && exp_data != 0) {
                     printf("until 0xffff0003 0x%08x\n", exp_data);
                 } else if(addr == 0xa004) {
@@ -106,27 +112,25 @@ void parse_args(int argc, char** argv, int* flags, std::vector<std::string>& in_
 
     for(int i = 1; i < argc; i++) {
         if(strcmp(argv[i], "--input1") == 0 || strcmp(argv[i], "-i1") == 0 || strcmp(argv[i], "--input2") == 0 || strcmp(argv[i], "-i2") == 0 || strcmp(argv[i], "-i") == 0) {
-            // todo: handle exception when argv[i+1] == nullptr or NULL
             in_files.emplace_back(argv[i + 1]);
             i++;
-        } else if(strcmp(argv[i], "--print_mem_rd") == 0) {
+        } else if(strcmp(argv[i], "--print-mem-rd") == 0) {
             // print AXI data read addresses (aligned to 0x40)
             flags[0] = 1;
-        } else if(strcmp(argv[i], "--print_mem_wr") == 0) {
+        } else if(strcmp(argv[i], "--print-mem-wr") == 0) {
             // print AXI data write addresses (aligned to 0x40)
             flags[1] = 1;
-        } else if(strcmp(argv[i], "--print_reg_txn") == 0) {
+        } else if(strcmp(argv[i], "--print-reg-txn") == 0) {
             // print CSB register transactions
             flags[2] = 1;
         } else if(strcmp(argv[i], "--function") == 0 || strcmp(argv[i], "-f") == 0) {
             // select the function to operate on
             i++;
-            // todo: handle exception when argv[i] == nullptr or NULL
-            if(strcmp(argv[i], "parse_vp_log") == 0) {
+            if(strcmp(argv[i], "parse-vp-log") == 0) {
                 flags[4] = parse_vp_log;
-            } else if(strcmp(argv[i], "comp_mem_trace") == 0) {
+            } else if(strcmp(argv[i], "comp-mem-trace") == 0) {
                 flags[4] = comp_mem_trace;
-            } else if(strcmp(argv[i], "nvdla_cpp_log2mem_trace") == 0) {
+            } else if(strcmp(argv[i], "nvdla-cpp-log2mem-trace") == 0) {
                 flags[4] = nvdla_cpp_log2mem_trace;
             } else {
                 std::cerr << "Error: invalid function type: " << argv[i] << "\n\nUse \"-h\" option to print help message.\n";
@@ -134,19 +138,19 @@ void parse_args(int argc, char** argv, int* flags, std::vector<std::string>& in_
             }
 
             func_determined = true;
-        } else if(strcmp(argv[i], "--change_addr") == 0) {
+        } else if(strcmp(argv[i], "--change-addr") == 0) {
             // change data address from 0xcxxxxxxxx to 0x8xxxxxxxx
             flags[5] = 1;
         } else if(strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-            printf("Usage: ./NVDLAUtil [-i1] in_file_1 ([-i2] in_file_2) [--function <function>] [--print_options]\n\n\n");
+            printf("Usage: ./NVDLAUtil [-i1] in_file_1 ([-i2] in_file_2) [--function <function>] [--print-options]\n\n\n");
             printf("\t--function | -f: select the function to operate on\n");
-            printf("\t <function>: parse_vp_log (convert VP debug info to NVDLA register traces (.txn), memory traces or both)\n");
-            printf("\t             comp_mem_trace (compare memory trace files)\n");
-            printf("\t             nvdla_cpp_log2mem_trace (convert terminal output of nvdla.cpp to memory traces)\n\n");
-            printf("\t[--print_options]:\n");
-            printf("\t\t--print_mem_rd: print AXI data read addresses (aligned to 0x40)\n");
-            printf("\t\t--print_mem_wr: print AXI data write addresses (aligned to 0x40)\n");
-            printf("\t\t--print_reg_txn: print CSB register transactions\n");
+            printf("\t <function>: parse-vp-log (convert VP debug info to NVDLA register traces (.txn), memory traces or both)\n");
+            printf("\t             comp-mem-trace (compare memory trace files)\n");
+            printf("\t             nvdla-cpp-log2mem-trace (convert terminal output of nvdla.cpp to memory traces)\n\n");
+            printf("\t[--print-options]:\n");
+            printf("\t\t--print-mem-rd: print AXI data read addresses (aligned to 0x40)\n");
+            printf("\t\t--print-mem-wr: print AXI data write addresses (aligned to 0x40)\n");
+            printf("\t\t--print-reg-txn: print CSB register transactions\n");
 
             exit(0);
         } else {
@@ -164,7 +168,7 @@ void parse_args(int argc, char** argv, int* flags, std::vector<std::string>& in_
 
 void VPLog2Txn(const std::string& vp_trace_file_name, const int* print_flags) {
     std::ifstream vp_trace_file;
-    AXI_Txn axi_txn(print_flags[0], print_flags[1]);
+    AXI_Txn axi_txn(print_flags[0], print_flags[1], print_flags[5]);
     CSB_Txn csb_txn(print_flags[2], print_flags[5]);
 
 

@@ -20,14 +20,69 @@ This is a preprocessing program to convert the debugging log of running [NVDLA V
 
 ## How to get VP debug info
 1. Get a sample caffe NN model. Here we provide a pretrained LeNet inference model(`example_usage/LeNet_caffe_model/`);
-2. Compile the NN model with [NVDLA compiler](https://github.com/nvdla/sw/tree/master/prebuilt/x86-ubuntu) using the following command: `./nvdla_compiler -o lenet --cprecision fp16 --configtarget nv_full --informat nchw --prototxt /path/to/LeNet_caffe_model/Lenet.prototxt --caffemodel /path/to/LeNet_caffe_model/lenet_iter_10000.caffemodel`. The output file with a suffix of ".nvdla" (e.g., fast-math.nvdla) is the "loadable" to be loaded by NVDLA_runtime;
+2. Compile the NN model with [prebuilt NVDLA compiler](https://github.com/nvdla/sw/tree/master/prebuilt/x86-ubuntu) using the following command: `./nvdla_compiler -o lenet --cprecision fp16 --configtarget nv_full --informat nchw --prototxt /path/to/LeNet_caffe_model/Lenet.prototxt --caffemodel /path/to/LeNet_caffe_model/lenet_iter_10000.caffemodel`. The output file with a suffix of ".nvdla" (e.g., fast-math.nvdla) is the "loadable" to be loaded by NVDLA_runtime;
 3. Follow the instructions at [NVDLA Virtual Platform documentation](http://nvdla.org/vp.html#running-the-virtual-simulator-from-docker) to run the docker version of VP. Note the commands in NVDLA documentation let the user to mount the host machine's `/home` directory to the docker's, making it possible to transfer files between the host machine and docker container;
 4. In the docker, before launching the QEMU simulator, toggle all the debug flags by typing `export SC_LOG="outfile:sc.log;verbosity_level:sc_debug;csb_adaptor:enable;dbb_adaptor:enable;sram_adaptor:enable"` as shown in section 2.7.1 on NVDLA VP webpage;
 5. Still in the docker, copy the loadable file and an image of handwritten digit to `/usr/local/nvdla/`;
 6. Inside the QEMU simulator, remember to load the NVDLA driver (`insmod drm.ko && insmod opendla_1.ko`);
-7. After the runtime program finishes, exit QEMU and move the `sc.log` file to somewhere in **the host computer's** file system. The sc.log file for the provided LeNet test case is around 2.9GB. But if the patch file in tip 9 below is applied, it can be reduced to about 100MB.
+7. After the runtime program finishes, exit QEMU and move the `sc.log` file to somewhere in **the host computer's** file system. The sc.log file for the provided LeNet test case is around 2.9GB. But if the patch file in tip 9 below is applied, it can be reduced to ~100MB.
 8. Users may refer to [this blog](https://medium.com/@anakin1028/run-lenet-on-nvdla-837a6fac6f8b) for more details to run a testcase on VP.
-9. Usually, the VP debug info file is SO LARGE that it may overflow the whole hard disk space. To resolve this issue, a patch file is provided in `bsc-util/nvdla_utilities/modify_cmod`. This patch comments out most of the debugging output except those related to NVDLA register transactions and memory traces. Users may apply that patch with `git apply /path/to/modify_cmod` under the `nvdla/hw` path, and then rebuild `cmod` and `vp` according to instructions on [NVDLA VP documentation](http://nvdla.org/vp.html#download-the-virtual-simulator) (As for the building environment, the docker provided with VP would be enough). Reducing those IO's not only reduces hard disk usage, but also accelerates simulation process.
+9. Usually, the VP debug info file is SO LARGE that it may overflow the whole hard disk space. To resolve this issue, a patch file is provided in `bsc-util/nvdla_utilities/modify_cmod`. This patch comments out most of the debugging output except those related to NVDLA register transactions and memory traces. Users may apply that patch with `git apply /path/to/modify_cmod` under the `nvdla/hw` path, and then rebuild `cmod` and `vp` according to instructions on [NVDLA VP documentation](http://nvdla.org/vp.html#download-the-virtual-simulator) (As for the building environment, the docker provided with VP would be enough). Reducing those IO's not only reduces hard disk usage, but also accelerates simulation process. If users want to try out testcases like ResNet-18/50 for 3x224x224 images, this step is crucial. The detailed process would be:
+```
+    # in the host machine, cd to nvdla/vp path
+    # change the sources to update qemu repos according to [this thread](https://github.com/riscv-collab/riscv-gnu-toolchain/issues/280).
+    touch ~/.gitconfig
+    echo "[url \"https://git.qemu.org/git\"]" >> ~/.gitconfig
+    echo "insteadOf = git://git.qemu-project.org" >> ~/.gitconfig
+    git submodule update --init --recursive
+
+    # If some submodules are still not able to be pulled, users may need to pull mannually.
+    # For example, in my case, `QemuMacDrivers`, `qemu-palcode`, `skiboot`, `tlm2c` and `memory` failed, so I did the following:
+    cd /path/to/nvdla/vp/libs/qbox/roms
+    git clone https://git.qemu.org/QemuMacDrivers.git
+    cd QemuMacDrivers/
+    git checkout d4e7d7a
+
+    cd ../
+    git clone https://github.com/rth7680/qemu-palcode
+    cd qemu-palcode/
+    git checkout f3c7e44
+
+    cd ../
+    git clone https://git.qemu.org/skiboot.git
+    cd skiboot/
+    git checkout 762d008
+
+    # re-download everything in tlm2c/
+    cd /path/to/nvdla/vp/libs/
+    rm -rf tlm2c/
+    git clone git@github.com:nvdla/tlm2c.git
+    cd tlm2c/
+    git checkout c54ade0
+
+    # re-download everything in memory/
+    cd ../models/
+    rm -rf memory/
+    git clone git@github.com:nvdla/simple_memory.git
+    mv simple_memory/ memory/
+    cd memory/
+    git checkout 1018f8
+
+    
+    # switch into nvdla/vp docker container
+    # because cmod may lack dependencies in host machine
+    cd /path/to/nvdla/hw
+    git apply path/to/this/repo/bsc-util/nvdla_utilities/modify_cmod
+    tools/bin/tmake -build cmod_top
+    cmake -DCMAKE_INSTALL_PREFIX=build -DSYSTEMC_PREFIX=/usr/local/systemc-2.3.0/ -DNVDLA_HW_PREFIX=/home/YOUR_USR_NAME/path/to/nvdla/hw/ -DNVDLA_HW_PROJECT=nv_full -DCMAKE_BUILD_TYPE=Debug
+    make
+    make install
+```
+And an executable named `aarch64_toplevel` will appear under `vp/` directory. Use the path to the newly-built executable to replace the one used in [NVDLA VP documentation](http://nvdla.org/vp.html#running-the-virtual-simulator-from-docker) will work, i.e.,
+```
+    cd /usr/local/nvdla
+    /path/to/nvdla/vp/aarch64_toplevel -c aarch64_toplevel.lua
+```
 
 ## Convert VP debug info to NVDLA trace file and memory traces with the utility
 1. Compile NVDLAUtil.cpp with any c++ compiler with c++11:
@@ -36,30 +91,75 @@ This is a preprocessing program to convert the debugging log of running [NVDLA V
    ```
 2. Type the following command to convert `sc.log` to NVDLA register traces:
     ```
-    ./NVDLAUtil -i /path/to/sc.log --print_reg_txn --function parse_vp_log > /path/to/output/file.txn
+    mkdir /path/to/nvdla/hw/verif/traces/traceplayer/lenet/
+    ./NVDLAUtil -i /path/to/sc.log --print-reg-txn --function parse-vp-log > /path/to/nvdla/hw/verif/traces/traceplayer/lenet/input.txn
+    # Do not modify the output file names.
     ```
 3. Type the following command to convert sc.log to NVDLA memory traces:
     ```
-    ./NVDLAUtil -i /path/to/sc.log --print_mem_rd --function parse_vp_log > /path/to/vp/rd/mem/trace
-    ./NVDLAUtil -i /path/to/sc.log --print_mem_wr --function parse_vp_log > /path/to/vp/wr/mem/trace
+    ./NVDLAUtil -i /path/to/sc.log --print-mem-rd --function parse-vp-log > /path/to/nvdla/hw/verif/traces/traceplayer/lenet/VP_mem_rd
+    ./NVDLAUtil -i /path/to/sc.log --print-mem-wr --function parse-vp-log > /path/to/nvdla/hw/verif/traces/traceplayer/lenet/VP_mem_wr
+    ./NVDLAUtil -i /path/to/sc.log --print-mem-rd --print-mem-wr --function parse-vp-log > /path/to/nvdla/hw/verif/traces/traceplayer/lenet/VP_mem_rd_wr
     ```
-4. Use '-h' option to get help for all the options for NVDLAUtil.
+4. Generate memory trace description file for read-only variables, which will be used by a prefetching mechanism in the simulator
+    ```
+    python3 nvdla_utilities/match_reg_trace_addr/GetAddrAttrAndMatch.py --src-dirs /path/to/nvdla/hw/verif/traces/traceplayer/lenet/ --output-rd-only-var-log
+    ```
+5. Use '-h' option to get help for all the options for NVDLAUtil.
 
+## Test generated register trace file and memory traces in gem5-NVDLA framework
+1. Mount the disk image if not mounted
+    ```
+    cd /path/to/gem5-NVDLA
+    python3 util/gem5img.py mount /path/to/gem5_linux_images/ubuntu-18.04-arm64-docker.img ./mnt
+    sudo mkdir ./mnt/home/lenet     # doesn't matter if exists
+    ```
+2. Convert the NVDLA register trace file into binary format:
+    ```
+    perl /path/to/nvdla/hw/verif/traces/traceplayer/lenet/ /path/to/nvdla/hw/verif/traces/traceplayer/lenet/trace.bin
+    ```
+3. Copy files needed by the scheduler to the disk image:
+    ```
+    sudo cp /path/to/nvdla/hw/verif/traces/traceplayer/lenet/rd_only_var_log ./mnt/home/lenet
+    sudo cp /path/to/nvdla/hw/verif/traces/traceplayer/lenet/trace.bin ./mnt/home/lenet
+    ```
+4. Create checkpoint for simulation:
+    ```
+    # Suppose the user has already got the `my_validation_nvdla_single_thread` scheduler
+    # under `./mnt/home/`, following README.md at root directory of this repo
+    build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py \
+ 	--big-cpus 0 --little-cpus 1 \
+  	--cpu-type atomic --bootscript=configs/boot/hack_back_ckpt.rcS
+    ```
+5. Run simulation with various memory subsystem configurations (or so called parameter sweep):
+    ```
+    cd /path/to/gem5-NVDLA/bsc-util/nvdla_utilities/sweep
+    python3 main.py --jsons-dir ../example_usage/experiments/jsons --output-dir ../example_usage/experiments/logs/ --cpt-dir ../../../m5out/cpt.xxxxxxxxxxxx/ --run-points --scheduler my_validation_nvdla_single_thread --params /home/lenet/trace.bin /home/lenet/rd_only_var_log --num-threads 8
+    ```
+6. Get a csv file summarizing the results of simulation under `~/`
+    ```
+    python3 get_sweep_stats.py --get-root-dir ../example_usage/experiments/logs/ --out-dir ~/ --out-prefix lenet_demo_sweep_
+    ```
 
 ## Verify the converted NVDLA register trace file with verilator verification flow and get its memory traces
+This step is to ensure the users that the NVDLA register trace file is extracted correctly, so that using the verification tools in `nvdla/hw` will lead to the same memory access behaviors. Several memory accesses very close to each oter could have some minor differences in access order, but the number of times each address is accessed should preserve the same.
 1. Verify the above converted register trace file like [other traces](https://github.com/nvdla/hw/tree/nvdlav1/verif/traces/traceplayer) (put the converted register trace in a standalone directory just beside other test cases) with the verilator flow, and capture the output on the terminal (e.g., with tee) with a command like
     ```
-    nvdla/hw/verif/verilator$ make run TEST=lenet_converted | tee /path/to/put/lenet_nvdla_cpp_term_log
+    cd /path/to/nvdla/hw
+    git apply /path/to/gem5-NVDLA/bsc_util/nvdla_utilities/nvdla.cpp.patch
+
+    cd /path/to/nvdla/hw/verif/verilator
+    make run TEST=lenet | tee /path/to/put/lenet_nvdla_cpp_term_log
     ```
 2. Use the utility to crop out read / write memory traces of this converted register trace. The command could be like:
     ```
-    ./NVDLAUtil -i /path/to/put/lenet_nvdla_cpp_term_log --print_mem_rd --function nvdla_cpp_log2mem_trace > /path/to/lenet/converted/rd/mem/trace
-    ./NVDLAUtil -i /path/to/put/lenet_nvdla_cpp_term_log --print_mem_wr --function nvdla_cpp_log2mem_trace > /path/to/lenet/converted/wr/mem/trace
+    ./NVDLAUtil -i /path/to/put/lenet_nvdla_cpp_term_log --print-mem-rd --function nvdla-cpp-log2mem-trace > /path/to/lenet/converted/rd/mem/trace
+    ./NVDLAUtil -i /path/to/put/lenet_nvdla_cpp_term_log --print-mem-wr --function nvdla-cpp-log2mem-trace > /path/to/lenet/converted/wr/mem/trace
     ```
 
 3. Compare the read (and write) memory traces of the two versions. For example,
     ```
-    ./NVDLAUtil -i1 /path/to/vp/rd/mem/trace -i2 /path/to/lenet/converted/rd/mem/trace --function comp_mem_trace
-    ./NVDLAUtil -i1 /path/to/vp/wr/mem/trace -i2 /path/to/lenet/converted/wr/mem/trace --function comp_mem_trace
+    ./NVDLAUtil -i1 /path/to/nvdla/hw/verif/traces/traceplayer/lenet/VP_mem_rd -i2 /path/to/lenet/converted/rd/mem/trace --function comp-mem-trace
+    ./NVDLAUtil -i1 /path/to/nvdla/hw/verif/traces/traceplayer/lenet/VP_mem_wr -i2 /path/to/lenet/converted/wr/mem/trace --function comp-mem-trace
     ```
    The result should be "No differences are found". Users may also plot the memory traces to visualize the comparison.
