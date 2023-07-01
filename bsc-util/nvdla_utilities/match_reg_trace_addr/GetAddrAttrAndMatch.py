@@ -297,7 +297,7 @@ def main():
     sorted_addr_list = []
 
     for i in range(len(options.src_dirs)):
-        txn_path = os.popen("ls " + os.path.join(options.src_dirs[i], "*_raw_input.txn")).read().strip()
+        txn_path = os.popen("ls " + os.path.join(options.src_dirs[i], "input.txn")).read().strip()
         mem_trace_path = os.path.join(options.src_dirs[i], "VP_mem_rd_wr")
         assert os.path.exists(txn_path)
         assert os.path.exists(mem_trace_path)
