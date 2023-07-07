@@ -180,6 +180,7 @@ class Wrapper_nvdla {
         std::map<uint64_t, SPMLineWithTag>::iterator get_it_to_erase();
         void erase_spm_line();
         void flush_spm();
+        void write_back_dirty();
 
         // software prefetching
         int prefetch_enable;

@@ -1,0 +1,5 @@
+{
+    "numNVDLA": [1],
+    "dma-enable": [""],
+    "pft-enable": ["", "--pft-enable"]
+}

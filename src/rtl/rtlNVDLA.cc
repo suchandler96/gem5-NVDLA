@@ -277,9 +277,11 @@ rtlNVDLA::runIterationNVDLA() {
         try_get_dma_read_data(spm_line_size);
         if (wr->csb->done()) {
             // write back dirty data in spm to main memory
-            wr->flush_spm();    // if it is called for a second time, no more items will be flushed
-            flushing_spm = 1;
-            if(flushing_spm && output.dma_write_buffer.empty()) {   // all items have been flushed to dma write engine
+            if (!flushing_spm) {
+                wr->write_back_dirty();
+                flushing_spm = 1;
+            }
+            if (flushing_spm && output.dma_write_buffer.empty()) {   // all items have been flushed to dma write engine
                 flushing_spm = 0;
                 // printf("nvdla#%d spm flush complete!\n", id_nvdla);
             }

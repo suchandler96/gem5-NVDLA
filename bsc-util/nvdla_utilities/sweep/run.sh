@@ -1,5 +1,4 @@
 #!/bin/bash
-# cpt dir: /home/lactose/gem5-rtl/m5out/cpt.348616490000/
 %(gem5-binary)s \
 -d %(output-dir)s \
 %(config-dir)s --big-cpus 0 --little-cpus 1 --last-cache-level 2 --caches --accelerators \

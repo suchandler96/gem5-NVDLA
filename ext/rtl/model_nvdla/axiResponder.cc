@@ -753,7 +753,10 @@ AXIResponder::generate_prefetch_request() {
     // if to_issue_addr is covered by a previous dma, it's useless to issue such prefetch request
 
     if (wrapper->dma_enable) {
-        assert(!wrapper->check_txn_data_in_spm(to_issue_addr)); // weights are unique, shouldn't have been prefetched
+        // assert(!wrapper->check_txn_data_in_spm(to_issue_addr)); // weights are unique, shouldn't have been prefetched
+        // todo: whether to assert should be consistent with rd_only_var_log: if the script generating it allows `input` in rd_only_var_log, this should not be asserted
+        // if not, this could be asserted
+
         // first check whether this addr has been covered by an inflight DMA request or not
         uint64_t spm_line_addr = to_issue_addr & ~((uint64_t)(wrapper->spm_line_size - 1));
         if (inflight_dma_addr_size.find(spm_line_addr) == inflight_dma_addr_size.end()) {

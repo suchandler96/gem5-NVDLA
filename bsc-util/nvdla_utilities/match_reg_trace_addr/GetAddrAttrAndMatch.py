@@ -224,8 +224,8 @@ def generate_addr_mappings(options, txn_addr_book_list):
 
 def output_result_txn(options, suggested_addr_mappings):
     for i in range(len(options.src_dirs)):
-        txn_path = os.popen("ls " + os.path.join(options.src_dirs[i], "*_raw_input.txn")).read().strip()
-        new_txn_path = txn_path.replace("raw_input", "matched_input")
+        txn_path = os.popen("ls " + os.path.join(options.src_dirs[i], "input.txn")).read().strip()
+        new_txn_path = txn_path.replace("input", "matched_input")
 
         with open(txn_path) as fp:
             lines = fp.readlines()
@@ -275,7 +275,7 @@ def output_rd_only_var_log(options, txn_addr_book_list, raw_addr_log_list, sugge
 def main():
     parser = argparse.ArgumentParser(description="GetAddrAttrAndMatch.py options")
     parser.add_argument("--src-dirs", type=str, metavar="dir", nargs='+',
-                        help="a list of directories containing *_raw_input.txn and VP_mem_rd_wr,"
+                        help="a list of directories containing *input.txn and VP_mem_rd_wr,"
                              "if --mark-addr-type is also specified, expect the first to be the unpartitioned NN's txn"
                              "while the following to be each pipeline stage in order")
     parser.add_argument("--match-pipeline-stages", action="store_true", default=False,
@@ -283,7 +283,7 @@ def main():
     parser.add_argument("--mark-addr-type", action="store_true", default=False,
                         help="to remap weight, input data, intermediate data, output data into different address spaces."
                              "weight & input addr starts from 0x80000000, output: 0x90000000, intermediate: 0xa0000000;"
-                             "but currently since NVDLA compiler will sometimes reuse output addresses,"
+                             "but currently since NVDLA compiler will sometimes reuse output addresses, "
                              "all non-read-only variables start from 0x90000000")
     parser.add_argument("--output-result-txn", action="store_true", default=False,
                         help="to output the mapped addresses to a new txn file under the original directories")

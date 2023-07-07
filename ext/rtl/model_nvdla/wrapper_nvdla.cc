@@ -472,6 +472,8 @@ void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const std::vector<uint
             erase_spm_line();   // lru_order maintenance of erasing is done inside
         }
 
+        assert(lru_order.size() == spm_line_num - 1);
+
         // assign space to this spm line
         std::map<uint64_t, SPMLineWithTag>::iterator entry_it;
         bool alloc_succ;
@@ -481,10 +483,12 @@ void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const std::vector<uint
 
         entry_it->second.lru_it = std::prev(lru_order.end());
     } else {
+        auto size = lru_order.size();
         spm_line_it->second.spm_line.assign(data.begin(), data.end());
         spm_line_it->second.dirty = dirty;
 
         lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
+        assert(size == lru_order.size());
     }
 }
 
@@ -591,6 +595,19 @@ void Wrapper_nvdla::flush_spm() {
         }
     }
     lru_order.clear();
+}
+
+void Wrapper_nvdla::write_back_dirty() {
+    auto it = spm.begin();
+    while (it != spm.end()) {
+        if (it->second.dirty) {
+            output.dma_write_buffer.push(std::make_pair(it->first, std::move(it->second.spm_line)));
+            lru_order.erase(it->second.lru_it);
+            spm.erase(it++);
+        } else {
+            it++;
+        }
+    }
 }
 
 void Wrapper_nvdla::addDMAReadReq(uint64_t read_addr, uint32_t read_bytes) {

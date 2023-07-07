@@ -7,7 +7,7 @@ This is a preprocessing program to convert the debugging log of running [NVDLA V
 ## Terminologies
 **VP**: NVDLA virtual platform
 
-**NVDLA register (transaction) traces**: A sequence of commands composed of "read_reg", "write_reg", "wait" that configures NVDLA by writing values to its registers directly. It also involves some other CPU activities like waiting for interrupts from NVDLA. More details about this format can be found [here](http://nvdla.org/hw/v1/integration_guide.html#test-format).
+**NVDLA register (transaction) traces / register control sequence**: A sequence of commands composed of "read_reg", "write_reg", "wait" that configures NVDLA by writing values to its registers directly. It also involves some other CPU activities like waiting for interrupts from NVDLA. More details about this format can be found [here](http://nvdla.org/hw/v1/integration_guide.html#test-format).
 
 **Memory traces**: A sequence of memory addresses that NVDLA accesses. These accesses include input data, NN model parameters, output data of some NN layers, etc. NVDLA accesses the memory in a 64-byte-aligned and 64-byte-long manner, so keeping track of the address of the first byte of each 64-byte request would be enough. Can be further divided into memory reads and writes.
 
@@ -170,7 +170,7 @@ And an executable named `aarch64_toplevel` will appear under `vp/` directory. Us
     ```
 
 ## Verify the converted NVDLA register trace file with verilator verification flow and get its memory traces
-This step is to ensure the users that the NVDLA register trace file is extracted correctly, so that using the verification tools in `nvdla/hw` will lead to the same memory access behaviors. Several memory accesses very close to each oter could have some minor differences in access order, but the number of times each address is accessed should preserve the same.
+This step is to ensure the users that the NVDLA register trace file is extracted correctly, so that using the verification tools in `nvdla/hw` will lead to the same memory access behaviors. Several memory accesses very close to each other could have some minor differences in access order, but the number of times each address is accessed should preserve the same.
 1. Verify the above converted register trace file like [other traces](https://github.com/nvdla/hw/tree/nvdlav1/verif/traces/traceplayer) (put the converted register trace in a standalone directory just beside other test cases) with the verilator flow, and capture the output on the terminal (e.g., with tee) with a command like
     ```
     cd /path/to/nvdla/hw

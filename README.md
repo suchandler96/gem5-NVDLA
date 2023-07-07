@@ -3,7 +3,7 @@ gem5-NVDLA is a specialized version of gem5-RTL that is designed to be used with
 
 Apart from specialized adaption of gem5 memory system for NVDLA, this project also enables the conversion from any NVDLA-supported caffe NN model to NVDLA register transaction traces (i.e., something like input.txn [here](https://github.com/nvdla/hw/tree/nvdlav1/verif/traces/traceplayer)). The code and detailed usage of this conversion utility can be found in `bsc-util/nvdla_utilities`.
 
-The NVDLA (NVIDIA Deep Learning Accelerator) is a full-stack utility demonstrating how a industry-level accelerator works. With its maintenance stopped in 2018, the public are on their own to make it work from compilation to runtime. Previously the only way to run NVDLA is to instantiate on an FPGA and run NNs physically on board, using the compiler and runtime provided with NVDLA. This, however, leaves memory architects unable to explore memory subsystem in AI accelerator systems, since they require **a simulator** to get statistics with different memory configuration. The aim of this repo is thus to bridge this gap. On one hand, it integrates all the undocumented bugs and usages required to run NVDLA compiler, runtime, and virtual platform. On the other hand, it provides new capabilities to run NVDLA in a simulator, and to apply scheduling algorithms and hardware prefetching mechanisms, enabling further exploration with NVDLA.
+The NVDLA (NVIDIA Deep Learning Accelerator) is a full-stack utility demonstrating how a industry-level accelerator works. With its maintenance stopped in 2018, the public are on their own to make it work from compilation to runtime. Previously the only way to run NVDLA is to instantiate on an FPGA and run NNs physically on board, using the compiler and runtime provided with NVDLA. This, however, leaves memory architects unable to explore memory subsystem in AI accelerator systems, since they require **a simulator** to get statistics with different memory configuration. The aim of this repo is thus to bridge this gap. On one hand, it integrates solutions to all the undocumented bugs and usages required to run NVDLA compiler, runtime, and virtual platform. On the other hand, it provides new capabilities to run NVDLA in a simulator, i.e., to apply scheduling algorithms and hardware prefetching mechanisms, which enables further exploration with NVDLA.
 
 Currently there are only a handful of works available on system integration between accelerators and cycle accurate simulators. [gem5-RTL](https://gitlab.bsc.es/glopez/gem5-rtl.git), the skeleton that this repo is based on, focuses on integrating arbitrary RTL models with gem5 simulator. It only provides simple connection between gem5 and NVDLA, i.e., through memory bus, lacking various connections like through cache hierarchy and DMA with private scratchpad memories, let alone hardware prefetching mechanisms that this repo features. Most importantly, its experiments are only conducted against the sanity tests provided with NVDLA repo, which are far from real world neural networks in terms of sizes and structures. [SMAUG](https://github.com/harvard-acc/smaug) is a scheduling framework to map NN workloads to gem5-aladdin systems. The accelerator model they employ is a set of parameters based on Aladdin, which is an HLS-like interpretation mechanism. Compared with NVDLA RTL model used in this repo, Aladdin-based accelerator description lacks accuracy and interpretability. Furthermore, SMAUG employs a redundant and repetitive "tiling - computation - untiling" procedure for every operator, instead of generating addresses from the accelerator model, introducing tremendous excessive memory accesses.
 
@@ -20,10 +20,17 @@ If you use gem5+RTL in your research please cite the gem5+RTL article:
 ```
 gem5 + rtl: A Framework to Enable RTL Models Inside a Full-System Simulator. Guillem López-Paradís, Adrià Armejach, Miquel Moretó. ICPP 2021: 29:1-29:11
 ```
+# Code Structure
+Here we list the structure of codes apart from the gem5 skeleton:
+1. `ext/rtl/model_nvdla/` includes the wrapper class of NVDLA and embedded SPM (`wrapper_nvdla.cc`) and the logic of converting between gem5 packets and NVDLA AXI requests (`axiResponder.cc`);
+2. `src/rtl/rtlNVDLA.cc` puts the behavior of NVDLA as a gem5 object, e.g., sending and receiving memory requests;
+3. `src/dev/dma_nvdla.cc` describes the behavior of DMA engine;
+4. `bsc-util/` puts all the schedulers for invoking NVDLA in simulation;
+5. `bsc-util/nvdla_utilities/` puts all the compilation-related stuffs for NVDLA.
 
 # Installation
 ## Step 0: Install dependencies
-Verilator v3.912, clang v3.4 (install from pre-built binary), clang v6.0.0 (apt-get), aarch64-linux-gnu-gcc-7 (and g++) (apt-get), and other dependencies that this repo refers the user to other websites. The following installation process is verified on Ubuntu 18.04.6.
+Verilator v3.912, clang v3.4 (install from pre-built binary), clang v6.0.0 (through apt-get), aarch64-linux-gnu-gcc-7 (and g++) (apt-get), SystemC 2.3.0, perl (v5.10 required on NVDLA website, but v5.26.1 was tested ok, with IO-Tee, yaml packages installed), jdk 1.7 (tested with jdk 1.7.0_80) and other dependencies that this repo refers the user to other websites. The following installation process is verified on Ubuntu 18.04.6.
 
 ## Step 1: Clone gem5-NVDLA repo
 ```
@@ -45,7 +52,7 @@ export CC=clang
 export CXX=clang++
 
 autoconf 
-./configure --prefix /Specific/location ---> FOR NVDLA 3.912
+./configure --prefix /usr/local/verilator_3.912 ---> FOR NVDLA 3.912
 
 make -j (e.g. 2|4|8) 
 [sudo] make install
@@ -75,29 +82,18 @@ gem5_linux_images/
 ```
 And add them to `M5_PATH`:
 ```
-echo "export M5_PATH=/path/to/gem5_linux_images/:/path/to/gem5_linux_images/aarch-system-20210904:/path/to/gem5_linux_images/aarch-system-20210904/binaries/:$M5_PATH" >> ~/.bashrc
+echo "export M5_PATH=/path/to/gem5_linux_images/:/path/to/gem5_linux_images/aarch-system-20220707:/path/to/gem5_linux_images/aarch-system-20220707/binaries/:$M5_PATH" >> ~/.bashrc
 ```
 ## Step 4: Build the RTL C++ model using Verilator
 
 1. Download repo and follow instructions at [NVDLA](http://nvdla.org/hw/v1/integration_guide.html) and switch to `nvdlav1` branch to obtain the model and compiling. Make sure you use verilator v3.912 and clang 3.4. RAM requirements > 24GB.
-2. Before building NVDLA for verilator verification, modify the Makefile at `nvdla/hw/verif/verilator/Makefile` (See also [this pull request](https://github.com/nvdla/hw/pull/312/files)):
-    ```
-    # add the '-fPIC' flag
-    VERILATOR_PARAMS ?= --compiler clang --output-split 250000000 -CFLAGS -fPIC
-
-    # use the VERILATOR_PARAMS variable defined above:
-    $(DEPTH)/outdir/nv_full/verilator/VNV_nvdla.mk: verilator.f ../../outdir/nv_full/vmod # and a lot of RTL...
-    $(VERILATOR) --cc --exe -f verilator.f --Mdir ../../outdir/nv_full/verilator/ nvdla.cpp $(VERILATOR_PARAMS)
-    ```
-3. Run some sanity tests provided in `nvdla/hw/verif/traces` as introduced at their website. Note for `googlenet_conv2_3x3_int16` and `cc_alexnet_conv5_relu5_int16_dtest_cvsram`, a bug related to NVDLA register mismatch could be fixed by changing
+2. Before building NVDLA for verilator verification, apply some bugfixes (for reasons see [this pull request](https://github.com/nvdla/hw/pull/312/files) and [this issue](https://github.com/nvdla/hw/issues/219)):
 ```
-    read_reg 0xffff1403 0x00000001 0x00000000 #NVDLA_CDMA.S_CBUF_FLUSH_STATUS_0
+    git clone git@github.com:nvdla/hw.git
+    cd hw/
+    git apply /path/to/gem5-NVDLA/bsc-util/nvdla_utilities/nvdla_hw_bugfixes.patch
 ```
-to
-```
-    read_reg 0xffff1403 0x00000001 0x00000001 #NVDLA_CDMA.S_CBUF_FLUSH_STATUS_0
-```
-as proposed [here](https://github.com/nvdla/hw/issues/219).
+3. Run some sanity tests provided in `nvdla/hw/verif/traces` as introduced at their website to ensure correct compilation.
 
 4. Make sure the NVDLA register transaction traces have been automatically generated after running a sanity test (like `nvdla/hw/outdir/nv_full/verilator/test/YOUR_SANITY_TEST/trace.bin`) and move them to the disk image that will be used in gem5 full system simulation.
 ```

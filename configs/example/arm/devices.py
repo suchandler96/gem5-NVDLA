@@ -505,10 +505,10 @@ class SimpleSystem(BaseSimpleSystem):
     def addAccelerators(self, options):
         # For now only add one
         for cluster in self._clusters:
-                #for cpu in cluster.cpu:
-                cluster.addPrivateAccelerator(cluster.clk_domain,
-                                              self.membus.cpu_side_ports,
-                                              options)
+            #for cpu in cluster.cpu:
+            cluster.addPrivateAccelerator(cluster.clk_domain,
+                                            self.membus.cpu_side_ports,
+                                            options)
 
     def attach_pci(self, dev):
         self.realview.attachPciDevice(dev, self.iobus)

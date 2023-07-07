@@ -1,0 +1,6 @@
+{
+    "numNVDLA": [1],
+    "dma-enable": ["--dma-enable"],
+    "embed-spm-size": ["64kB", "128kB", "256kB", "512kB", "1MB", "2MB", "4MB", "8MB", "16MB"],
+    "pft-enable": ["", "--pft-enable"]
+}

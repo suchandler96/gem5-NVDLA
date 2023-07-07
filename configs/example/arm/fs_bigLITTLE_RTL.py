@@ -55,7 +55,7 @@ import devices
 from devices import AtomicCluster, KvmCluster, FastmodelCluster
 
 default_kernel = '/home/lactose/gem5_linux_images/\
-aarch-system-20210904/binaries/vmlinux.arm64'
+aarch-system-20220707/binaries/vmlinux.arm64'
 
 default_disk = '/home/lactose/gem5_linux_images/ubuntu-18.04-arm64-docker.img'
 
