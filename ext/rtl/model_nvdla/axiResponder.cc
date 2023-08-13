@@ -36,7 +36,7 @@ AXIResponder::AXIResponder(struct connections _dla,
 
     max_req_inflight = (maxReq < 240) ? maxReq : 240;
 
-    AXI_R_LATENCY = wrapper->dma_enable ? wrapper->spm_latency : 0;
+    AXI_R_LATENCY = wrapper->dma_enable ? wrapper->spm.spm_latency : 0;
     // for non-spm configuration, this fixed latency is modeled by gem5 memory system
 
     pft_threshold = 16;
@@ -332,9 +332,9 @@ AXIResponder::eval_timing() {
             abort();
         }
 
-        if(wrapper->dma_enable) {
+        if (wrapper->dma_enable) {
             // intermediate variables and outputs should be written to spm (actually, all writes belong to this type)
-            wrapper->write_spm_axi_line_with_mask(awtxn.awaddr, wtxn.wdata, wtxn.wstrb);
+            wrapper->spm.write_spm_axi_line_with_mask(awtxn.awaddr, wtxn.wdata, wtxn.wstrb);
         } else {
             wrapper->addLongWriteReq(sram, true, awtxn.awaddr, AXI_WIDTH / 8, wtxn.wdata, wtxn.wstrb);
         }
@@ -452,20 +452,20 @@ AXIResponder::process_read_req() {
                 if(wrapper->prefetch_enable) log_req_issue(start_addr);
 
                 // check spm and write queue
-                bool data_get_in_spm = wrapper->read_spm_axi_line(start_addr, txn.rdata);
+                bool data_get_in_spm = wrapper->spm.read_spm_axi_line(start_addr, txn.rdata);
                 if (data_get_in_spm) {
                     // need to maintain the order of issuing requests
                     printf("(%lu) this spm_line_addr exists in spm, addr 0x%08lx\n", wrapper->tickcount, start_addr);
                     txn.rvalid = 1;
                 } else {
                     // first check whether this addr has been covered by an inflight DMA request or not
-                    uint64_t spm_line_addr = start_addr & ~((uint64_t)(wrapper->spm_line_size - 1));
+                    uint64_t spm_line_addr = start_addr & ~((uint64_t)(wrapper->spm.spm_line_size - 1));
                     if (inflight_dma_addr_size.find(spm_line_addr) == inflight_dma_addr_size.end()) {
                         // not covered, need to initiate a new DMA
                         printf("(%lu) DMA read req issued from NVDLA side, addr 0x%08lx\n", wrapper->tickcount, start_addr);
-                        inflight_dma_addr_size[spm_line_addr] = wrapper->spm_line_size;
+                        inflight_dma_addr_size[spm_line_addr] = wrapper->spm.spm_line_size;
                         inflight_dma_addr_queue.push(spm_line_addr);
-                        wrapper->addDMAReadReq(spm_line_addr, wrapper->spm_line_size);
+                        wrapper->addDMAReadReq(spm_line_addr, wrapper->spm.spm_line_size);
                         issued_req_this_cycle = true;
                     }
                     txn.rvalid = 0;
@@ -536,7 +536,7 @@ AXIResponder::process_read_resp() {
     axi_r_txn &txn = req_list_ptr->front();
     // data just arrived in spm via DMA will not update its corresponding txn.rvalid
     if (wrapper->dma_enable && txn.rvalid == 0) {
-        bool got = wrapper->read_spm_axi_line(addr_front, txn.rdata);
+        bool got = wrapper->spm.read_spm_axi_line(addr_front, txn.rdata);
         if (got) txn.rvalid = 1;
     }
     if (txn.rvalid) {  // ensures the order of response
@@ -621,7 +621,7 @@ AXIResponder::inflight_dma_resp(const uint8_t* data, uint32_t len) {
     printf("(%lu) nvdla#%d AXIResponder handling DMA return data addr 0x%08lx with length %d.\n",
            wrapper->tickcount, wrapper->id_nvdla, addr, len);
 
-    wrapper->write_spm_line(addr, data, 0);
+    wrapper->spm.write_spm_line(addr, data, 0);
     inflight_dma_addr_size.erase(addr);
     inflight_dma_addr_queue.pop();
 }
@@ -640,7 +640,7 @@ AXIResponder::read_for_traceLoaderGem5(uint32_t start_addr, uint32_t length) {
         txn.rlast = (txn_start_addr + delta_addr + (AXI_WIDTH / 8) >= start_addr + length);
         txn.is_prefetch = 0;
         if (wrapper->dma_enable) {
-            bool got = wrapper->read_spm_axi_line(txn_addr, txn.rdata);
+            bool got = wrapper->spm.read_spm_axi_line(txn_addr, txn.rdata);
             if(got) {
                 txn.rvalid = 1;
             } else {    // when verifying results, no need to use dma...
@@ -758,15 +758,15 @@ AXIResponder::generate_prefetch_request() {
         // if not, this could be asserted
 
         // first check whether this addr has been covered by an inflight DMA request or not
-        uint64_t spm_line_addr = to_issue_addr & ~((uint64_t)(wrapper->spm_line_size - 1));
+        uint64_t spm_line_addr = to_issue_addr & ~((uint64_t)(wrapper->spm.spm_line_size - 1));
         if (inflight_dma_addr_size.find(spm_line_addr) == inflight_dma_addr_size.end()) {
             // not covered, need to initiate a new DMA
             printf("(%lu) nvdla#%d PREFETCH (DMA) request addr 0x%08x issued.\n", wrapper->tickcount, wrapper->id_nvdla, to_issue_addr);
-            inflight_dma_addr_size[spm_line_addr] = wrapper->spm_line_size;
+            inflight_dma_addr_size[spm_line_addr] = wrapper->spm.spm_line_size;
             inflight_dma_addr_queue.push(spm_line_addr);
-            wrapper->addDMAReadReq(spm_line_addr, wrapper->spm_line_size);
+            wrapper->addDMAReadReq(spm_line_addr, wrapper->spm.spm_line_size);
 
-            log_entry_issued_len += wrapper->spm_line_size;
+            log_entry_issued_len += wrapper->spm.spm_line_size;
             // here we don't add dma prefetch to inflight_req and inflight_order
             // because as long as spm can get the prefetched data, we don't bother axi responder to check it
 

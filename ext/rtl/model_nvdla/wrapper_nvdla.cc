@@ -48,7 +48,7 @@
 #include "wrapper_nvdla.hh"
 #include <iostream>
 
-double sc_time_stamp(){
+double sc_time_stamp() {
   return double_t(0);
 }
 
@@ -61,10 +61,8 @@ Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name, const
         tfpname(name),
         traceOn(traceOn),
         dma_enable(_dma_enable),
-        spm_latency(_spm_latency),
-        spm_line_size(_spm_line_size),
-        spm_line_num(_spm_line_num),
-        prefetch_enable(pft_enable) {
+        prefetch_enable(pft_enable),
+        spm(this, _spm_latency, _spm_line_size, _spm_line_num) {
 
     int argcc = 1;
     char* buf[] = {(char*)"aaa",(char*)"bbb"};
@@ -359,7 +357,15 @@ outputNVDLA& Wrapper_nvdla::tick(inputNVDLA in) {
     return output;    
 }
 
-uint8_t Wrapper_nvdla::read_spm_byte(uint64_t addr) {
+void Wrapper_nvdla::addDMAWriteReq(uint64_t addr, std::vector<uint8_t>&& write_data) {
+    output.dma_write_buffer.emplace(addr, write_data);
+}
+
+void Wrapper_nvdla::addDMAReadReq(uint64_t read_addr, uint32_t read_bytes) {
+    output.dma_read_buffer.emplace(read_addr, read_bytes);
+}
+
+uint8_t ScratchpadMemory::read_spm_byte(uint64_t addr) {
     uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
 
     auto spm_line_it = spm.find(addr_base);
@@ -373,7 +379,7 @@ uint8_t Wrapper_nvdla::read_spm_byte(uint64_t addr) {
     return spm_line_it->second.spm_line[offset];
 }
 
-void Wrapper_nvdla::read_spm_line(uint64_t aligned_addr, uint8_t* data_out) {
+void ScratchpadMemory::read_spm_line(uint64_t aligned_addr, uint8_t* data_out) {
     assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
 
     auto spm_line_it = spm.find(aligned_addr);
@@ -387,7 +393,7 @@ void Wrapper_nvdla::read_spm_line(uint64_t aligned_addr, uint8_t* data_out) {
     lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
 }
 
-bool Wrapper_nvdla::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) {
+bool ScratchpadMemory::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) {
     assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
 
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
@@ -406,7 +412,7 @@ bool Wrapper_nvdla::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) {
     return true;
 }
 
-void Wrapper_nvdla::write_spm_byte(uint64_t addr, uint8_t data) {
+void ScratchpadMemory::write_spm_byte(uint64_t addr, uint8_t data) {
     uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
 
@@ -436,7 +442,7 @@ void Wrapper_nvdla::write_spm_byte(uint64_t addr, uint8_t data) {
     }
 }
 
-void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const uint8_t* const data, uint8_t dirty) {
+void ScratchpadMemory::write_spm_line(uint64_t aligned_addr, const uint8_t* const data, uint8_t dirty) {
     assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
 
     auto spm_line_it = spm.find(aligned_addr);
@@ -463,7 +469,7 @@ void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const uint8_t* const d
     }    
 }
 
-void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data, uint8_t dirty) {
+void ScratchpadMemory::write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data, uint8_t dirty) {
     assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
 
     auto spm_line_it = spm.find(aligned_addr);
@@ -492,7 +498,7 @@ void Wrapper_nvdla::write_spm_line(uint64_t aligned_addr, const std::vector<uint
     }
 }
 
-void Wrapper_nvdla::write_spm_axi_line(uint64_t axi_addr, const uint8_t* const data) {
+void ScratchpadMemory::write_spm_axi_line(uint64_t axi_addr, const uint8_t* const data) {
     assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
 
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
@@ -520,7 +526,7 @@ void Wrapper_nvdla::write_spm_axi_line(uint64_t axi_addr, const uint8_t* const d
     }
 }
 
-void Wrapper_nvdla::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* const data, const uint64_t mask) {
+void ScratchpadMemory::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* const data, const uint64_t mask) {
     assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
 
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
@@ -556,7 +562,7 @@ void Wrapper_nvdla::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_
     }
 }
 
-bool Wrapper_nvdla::check_txn_data_in_spm(uint64_t addr) {
+bool ScratchpadMemory::check_txn_data_in_spm(uint64_t addr) {
     uint64_t spm_line_addr = addr & ~((uint64_t)(spm_line_size - 1));
     if (spm.find(spm_line_addr) == spm.end()) {
         return false;
@@ -564,31 +570,31 @@ bool Wrapper_nvdla::check_txn_data_in_spm(uint64_t addr) {
     return true;
 }
 
-std::map<uint64_t, Wrapper_nvdla::SPMLineWithTag>::iterator Wrapper_nvdla::get_it_to_erase() {
+std::map<uint64_t, ScratchpadMemory::SPMLineWithTag>::iterator ScratchpadMemory::get_it_to_erase() {
     // naive: spm.begin()
     // return spm.begin();
 
     return lru_order.front();
 }
 
-void Wrapper_nvdla::erase_spm_line() {
+void ScratchpadMemory::erase_spm_line() {
     assert(!spm.empty());
 
     auto to_erase_it = get_it_to_erase();
 
     if (to_erase_it->second.dirty) {
-        output.dma_write_buffer.push(std::make_pair(to_erase_it->first, std::move(to_erase_it->second.spm_line)));
+        wrapper->addDMAWriteReq(to_erase_it->first, std::move(to_erase_it->second.spm_line));
     }
     lru_order.pop_front();
     spm.erase(to_erase_it);
-    printf("(%lu) SPM line addr 0x%08lx is erased, dirty: %d\n", tickcount, to_erase_it->first, to_erase_it->second.dirty);
+    printf("(%lu) SPM line addr 0x%08lx is erased, dirty: %d\n", wrapper->tickcount, to_erase_it->first, to_erase_it->second.dirty);
 }
 
-void Wrapper_nvdla::flush_spm() {
+void ScratchpadMemory::flush_spm() {
     auto it = spm.begin();
     while (it != spm.end()) {
         if (it->second.dirty) {   // this is a read-and-write variable
-            output.dma_write_buffer.push(std::make_pair(it->first, std::move(it->second.spm_line)));
+            wrapper->addDMAWriteReq(it->first, std::move(it->second.spm_line));
             spm.erase(it++);
         } else {
             it++;
@@ -597,11 +603,11 @@ void Wrapper_nvdla::flush_spm() {
     lru_order.clear();
 }
 
-void Wrapper_nvdla::write_back_dirty() {
+void ScratchpadMemory::write_back_dirty() {
     auto it = spm.begin();
     while (it != spm.end()) {
         if (it->second.dirty) {
-            output.dma_write_buffer.push(std::make_pair(it->first, std::move(it->second.spm_line)));
+            wrapper->addDMAWriteReq(it->first, std::move(it->second.spm_line));
             lru_order.erase(it->second.lru_it);
             spm.erase(it++);
         } else {
@@ -610,6 +616,7 @@ void Wrapper_nvdla::write_back_dirty() {
     }
 }
 
-void Wrapper_nvdla::addDMAReadReq(uint64_t read_addr, uint32_t read_bytes) {
-    output.dma_read_buffer.push(std::make_pair(read_addr, read_bytes));
+ScratchpadMemory::ScratchpadMemory(Wrapper_nvdla* const wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num) :
+    wrapper(wrap), spm_latency(_lat), spm_line_size(_line_size), spm_line_num(_line_num) {
+
 }

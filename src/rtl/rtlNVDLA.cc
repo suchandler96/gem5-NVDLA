@@ -278,7 +278,7 @@ rtlNVDLA::runIterationNVDLA() {
         if (wr->csb->done()) {
             // write back dirty data in spm to main memory
             if (!flushing_spm) {
-                wr->write_back_dirty();
+                wr->spm.write_back_dirty();
                 flushing_spm = 1;
             }
             if (flushing_spm && output.dma_write_buffer.empty()) {   // all items have been flushed to dma write engine
