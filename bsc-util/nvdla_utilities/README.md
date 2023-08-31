@@ -17,6 +17,7 @@ This is a preprocessing program to convert the debugging log of running [NVDLA V
 3. The verilator verification flow and VP may have different interrupt handling mechanisms. For the former one, one example can be these [lines of codes from line 323 to 334](https://github.com/nvdla/hw/blob/nvdlav1/verif/traces/traceplayer/googlenet_conv2_3x3_int16/input.txn#L323), where 4 interrupts are captured and cleared in a **one-by-one** fashion. Whereas for VP, one will see multiple bits of ones in the interrupt status register (NVDLA `0x000c`) detected and cleared **as a whole** in the cropped NVDLA traces in the LeNet example provided with this utility. To handle this discrepancy, a special NVDLA register transaction command other than `read_reg`, `write_reg`, or `wait` is added, which is named `until`. `until $reg $val` means the simulation flow will continuously read register `$reg` until it gives a read result of `$val`. The command is added to replace the original `wait` command to handle interrupts, because NVDLA interrupts can be raised by multiple hardware components, and each component is responsible for a certain bit in NVDLA register `0x000c`. So the `until` command is designed to match the interrupt handling mechanism of VP. To interpret this new command in the original NVDLA verilator verification flow, patch files of [`nvdla/hw/verif/verilator/input_txn_to_verilator.pl`](https://github.com/nvdla/hw/blob/nvdlav1/verif/verilator/input_txn_to_verilator.pl) and [`nvdla.cpp`](https://github.com/nvdla/hw/blob/nvdlav1/verif/verilator/nvdla.cpp) are provided, so that users can apply the patches to the files and run the converted NVDLA register traces in the original flow. The modified commands are STILL COMPATIBLE with the original interrupt handling mechanism, i.e., the `wait` command and the traces provided in `nvdla/hw/verif/` can still be run after applying the patch.
 4. For NVDLA register `0xa004`, which is a control register related to the "ping-pong register group" working mechanism, may have some read mismatches in the verilator verification process after conversion. Although not 100% sure, this may be caused by some discrepancies between NVDLA SystemC model and verilog model, because the counterpart registers for other computing components do not see such mismatches. But ignoring the mismatches will produce exactly the same memory traces in all the inference tasks that this utility has been tested against.
 5. This utility has been tested against LeNet with 1x28x28 input images (e.g., MNIST), ResNet-18 with input size 3x32x32 (e.g., CIFAR-10), ResNet-18 with input size 3x224x224 (e.g., IMAGENET), and ResNet-50 with input size 3x224x224. The converted NVDLA register traces exhibit the same memory traces with the VP counterpart.
+6. We have provided a script to automate the conversion from Caffe model to *.txn register control sequences and also memory traces. Go to section "Automated Script" for details.
 
 ## How to get VP debug info
 1. Get a sample caffe NN model. Here we provide a pretrained LeNet inference model(`example_usage/LeNet/LeNet_caffe_model/`);
@@ -28,13 +29,16 @@ This is a preprocessing program to convert the debugging log of running [NVDLA V
 ```
 The output file with a suffix of ".nvdla" (e.g., fast-math.nvdla) is the "loadable" to be loaded by NVDLA_runtime;
 
-3. Follow the instructions at [NVDLA Virtual Platform documentation](http://nvdla.org/vp.html#running-the-virtual-simulator-from-docker) to run the docker version of VP. Note the commands in NVDLA documentation let the user to mount the host machine's `/home` directory to the docker's, making it possible to transfer files between the host machine and docker container;
+3. Follow the instructions at [NVDLA Virtual Platform documentation](http://nvdla.org/vp.html#running-the-virtual-simulator-from-docker) to run the docker version of VP. Note the commands in NVDLA documentation let the user mount the host machine's `/home` directory to the docker's, making it possible to transfer files between the host machine and docker container;
 ```
-    # if run for the first time, need to pull by `docker pull nvdla/vp`
+    # if run for the first time:
+    docker pull nvdla/vp
     docker run -it -v /home:/home nvdla/vp
+
+    # if one has run before, use docker exec instead of docker run to avoid another container to be instantiated
     cd /usr/local/nvdla
     export SC_LOG="outfile:sc.log;verbosity_level:sc_debug;csb_adaptor:enable;dbb_adaptor:enable;sram_adaptor:enable"
-    mv /path/to/nvdla/sw/prebuilt/x86/fast-math.nvdla ./
+    mv /path/to/nvdla/sw/prebuilt/x86-ubuntu/fast-math.nvdla ./
     mv fast-math.nvdla lenet.nvdla      # simply a rename
     cp /path/to/gem5-NVDLA/bsc-util/nvdla_utilities/example_usage/LeNet/LeNet_caffe_model/eight_invert.pgm ./
     aarch64_toplevel -c aarch64_nvdla.lua
@@ -144,7 +148,9 @@ And an executable named `aarch64_toplevel` will appear under `vp/` directory. Us
     ```
 2. Convert the NVDLA register trace file into binary format:
     ```
-    perl /path/to/nvdla/hw/verif/traces/traceplayer/lenet/ /path/to/nvdla/hw/verif/traces/traceplayer/lenet/trace.bin
+    cd /path/to/nvdla/hw/verif/verilator/
+    git apply /path/to/gem5-NVDLA/bsc-util/nvdla_utilities/input_txn_to_verilator.pl.patch    # apply patch if haven't
+    perl input_txn_to_verilator.pl ../traces/traceplayer/lenet/ ../traceplayer/lenet/trace.bin
     ```
 3. Copy files needed by the scheduler to the disk image:
     ```
@@ -168,6 +174,19 @@ And an executable named `aarch64_toplevel` will appear under `vp/` directory. Us
     ```
     python3 get_sweep_stats.py --get-root-dir ../example_usage/experiments/logs/ --out-dir ~/ --out-prefix lenet_demo_sweep_
     ```
+
+## Automated Script
+This part provides a script to automate the process from "How to get VP debug info" to "Convert VP debug info to NVDLA trace file and memory traces with the utility". The script expects Caffe NN models as inputs, and will output the .txn file corresponding to the NN model, together with memory traces.
+
+The script, `caffe2trace.py`, should be run in a `nvdla/vp` docker container. Before running, users should:
+1. Run `apt update && apt install python3 expect` in the docker container for dependencies.
+2. If users want to build the VP on themselves (section 7 in "How to get VP debug info"), the building process should be finished before running this script.
+3. Mount the disk image to gem5-NVDLA/mnt.
+4. An example usage would be:
+    ```
+    python3 caffe2trace.py --model-name lenet --caffemodel example_usage/LeNet/LeNet_caffe_model/lenet_iter_10000.caffemodel --prototxt example_usage/LeNet/LeNet_caffe_model/Lenet.prototxt
+    ```
+please provide absolute path if possible, and make sure to go through the argparse part of the script.
 
 ## Verify the converted NVDLA register trace file with verilator verification flow and get its memory traces
 This step is to ensure the users that the NVDLA register trace file is extracted correctly, so that using the verification tools in `nvdla/hw` will lead to the same memory access behaviors. Several memory accesses very close to each other could have some minor differences in access order, but the number of times each address is accessed should preserve the same.

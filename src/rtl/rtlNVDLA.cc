@@ -59,7 +59,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     pft_threshold(params.pft_threshold),
     use_fake_mem(params.use_fake_mem) {
 
-    initNVDLA();
+    initNVDLA(params.use_shared_spm);
     startMemRegion = 0xC0000000;
     cyclesNVDLA = 0;
     std::cout << std::hex << "NVDLA " << id_nvdla
@@ -134,10 +134,10 @@ rtlNVDLA::handleRequest(PacketPtr pkt) {
 }
 
 void
-rtlNVDLA::initNVDLA() {
+rtlNVDLA::initNVDLA(bool use_shared_spm) {
     // Wrapper
     wr = new Wrapper_nvdla(id_nvdla, traceEnable, "trace.vcd", max_req_inflight,
-    dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable);
+    dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable, use_shared_spm);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
 }
@@ -278,7 +278,7 @@ rtlNVDLA::runIterationNVDLA() {
         if (wr->csb->done()) {
             // write back dirty data in spm to main memory
             if (!flushing_spm) {
-                wr->spm.write_back_dirty();
+                wr->spm->write_back_dirty();
                 flushing_spm = 1;
             }
             if (flushing_spm && output.dma_write_buffer.empty()) {   // all items have been flushed to dma write engine

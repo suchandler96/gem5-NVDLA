@@ -58,10 +58,12 @@ class rtlNVDLA(rtlObject):
 
     maxReq = Param.UInt64(4, "Max Request inflight for NVDLA")
 
-    base_addr_dram = Param.UInt64(0xA0000000,"Max Request inglight for NVDLA")
+    base_addr_dram = Param.UInt64(0xA0000000, "")
 
-    base_addr_sram = Param.UInt64(0xB0000000,"Max Request inglight for NVDLA")
+    base_addr_sram = Param.UInt64(0xB0000000, "")
 
     enableTimingAXI = Param.Bool(False, "Enable Timing mode in AXI")
-    
-    use_fake_mem = Param.Bool(False, "whether to use fake memory to simulate")
+
+    use_shared_spm = Param.Bool(False, "Whether to use shared spm among NVDLAs")
+
+    use_fake_mem = Param.Bool(False, "Whether to use fake memory to simulate")

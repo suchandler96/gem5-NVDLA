@@ -231,6 +231,8 @@ def addOptions(parser):
     parser.add_argument("--embed-spm-size", type=str, default="64kB", help="specify private SPM size for accelerators (embedded SPM)")
     # options.accel_embed_spm_lat
     parser.add_argument("--accel-embed-spm-lat", type=int, default=12, help="specify private SPM latency for accelerators (embedded SPM)")
+    # options
+    parser.add_argument("--shared-spm", action="store_true", default=False, help="change embedded SPM to shared")
 
 
     # options.add_accel_private_cache

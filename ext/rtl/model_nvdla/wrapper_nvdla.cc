@@ -52,9 +52,11 @@ double sc_time_stamp() {
   return double_t(0);
 }
 
+ScratchpadMemory* Wrapper_nvdla::shared_spm = nullptr;
+
 Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name, const unsigned int maxReq,
                              bool _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num,
-                             bool pft_enable) :
+                             bool pft_enable, bool use_shared_spm) :
         id_nvdla(id_nvdla),
         tickcount(0),
         tfp(NULL),
@@ -62,7 +64,13 @@ Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name, const
         traceOn(traceOn),
         dma_enable(_dma_enable),
         prefetch_enable(pft_enable),
-        spm(this, _spm_latency, _spm_line_size, _spm_line_num) {
+        use_shared_spm(use_shared_spm) {
+    if (use_shared_spm && shared_spm) {
+        spm = shared_spm;
+    } else {
+        spm = new ScratchpadMemory(this, _spm_latency, _spm_line_size, _spm_line_num);
+        if (use_shared_spm) shared_spm = spm;
+    }
 
     int argcc = 1;
     char* buf[] = {(char*)"aaa",(char*)"bbb"};
@@ -168,6 +176,15 @@ Wrapper_nvdla::~Wrapper_nvdla() {
     // TO CHECK
     //dla->final(); 
     delete dla;
+
+    if (use_shared_spm) {
+        if (shared_spm) {
+            delete shared_spm;
+            shared_spm = nullptr;
+        }
+    } else {
+        delete spm;
+    }
     exit(EXIT_SUCCESS);
 }
 

@@ -36,8 +36,10 @@ param_types = {
     "accel-sh-cache-clus": AccelShCacheClusParam,
     "pft-enable": PftEnableParam,
     "pft-threshold": PftThresholdParam,
-    "use-fake-mem": UseFakeMemParam
+    "use-fake-mem": UseFakeMemParam,
+    "shared-spm": SharedSPMParam
 }
+
 
 class Sweeper:
     def __init__(self, cpt_dir, output_dir, params_dir, gem5_binary, scheduler, scheduler_params):
@@ -45,7 +47,8 @@ class Sweeper:
         self._output_dir = os.path.abspath(output_dir)
         if not os.path.isdir(self._output_dir):
             os.mkdir(self._output_dir)
-        self._template_dir = os.path.abspath(".")
+
+        self._template_dir = os.path.dirname(os.path.abspath(__file__))
 
         self._gem5_binary = gem5_binary
         self._run_cmd = scheduler + " " + " ".join(scheduler_params)
@@ -101,7 +104,7 @@ class Sweeper:
         change_config_file(point_dir, "run.sh", {"output-dir": os.path.abspath(point_dir)})
         change_config_file(point_dir, "bootscript.rcS", {"run-cmd": self._run_cmd})
         change_config_file(point_dir, "run.sh", {"config-dir":
-            os.path.abspath(os.path.join(os.getcwd(), "../../../configs/example/arm/fs_bigLITTLE_RTL.py"))})
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../configs/example/arm/fs_bigLITTLE_RTL.py"))})
 
         # Apply every sweep parameter for this data point.
         for p in self._params_list[json_id][0]:

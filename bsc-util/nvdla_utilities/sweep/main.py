@@ -31,9 +31,9 @@ def main():
 
     if not args.gem5_binary:
         args.gem5_binary = os.path.abspath(
-            "../../../build/ARM/gem5.opt")
+            os.path.join(os.path.dirname(__file__), "../../../build/ARM/gem5.opt"))
 
-    sweeper = Sweeper(args.cpt_dir, args.output_dir, args.jsons_dir,
+    sweeper = Sweeper(os.path.abspath(args.cpt_dir), os.path.abspath(args.output_dir), os.path.abspath(args.jsons_dir),
         args.gem5_binary, "/home/" + args.scheduler, args.params)
 
     # Start enumerating all the data points.
@@ -42,6 +42,7 @@ def main():
     # Start running simulations for all the generated data points.
     if args.run_points:
         sweeper.run_all(threads=args.num_threads)
+
 
 if __name__ == "__main__":
     main()

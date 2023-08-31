@@ -242,7 +242,7 @@ public:
 
     ~rtlNVDLA();
     void runIterationNVDLA();
-    void initNVDLA();
+    void initNVDLA(bool use_shared_spm);
     void initRTLModel() override;
     void endRTLModel() override;
     void loadTraceNVDLA(char *ptr);

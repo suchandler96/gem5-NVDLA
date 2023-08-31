@@ -770,3 +770,29 @@ class UseFakeMemParam(BaseParam):
     @classmethod
     def default_value(cls):
         return [""]
+
+
+class SharedSPMParam(BaseParam):
+    def __init__(self, name, sweep_vals):
+        BaseParam.__init__(self, name, sweep_vals)
+
+    def apply(self, point_dir):
+        change_config_file(
+            point_dir, "run.sh", {"shared-spm": self.curr_sweep_value()})
+
+    @classmethod
+    def get(self, point_dir):
+        run_sh_path = os.path.join(point_dir, "run.sh")
+        assert os.path.exists(run_sh_path)
+        with open(run_sh_path, "r") as fp:
+            run_sh_lines = fp.readlines()
+
+        for line in run_sh_lines:
+            pos = line.find("--shared-spm")
+            if pos != -1:
+                return True
+        return False
+
+    @classmethod
+    def default_value(cls):
+        return [""]

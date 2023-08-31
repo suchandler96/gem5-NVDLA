@@ -8,7 +8,7 @@ from sweeper import param_types
 
 
 sweep_header = ["sweep_name", "sweep_id"]
-default_var_header = ["numNVDLA", "dma-enable", "embed-spm-size", "add-accel-private-cache",
+default_var_header = ["numNVDLA", "dma-enable", "shared-spm", "embed-spm-size", "add-accel-private-cache",
                       "accel-pr-cache-size", "add-accel-shared-cache", "accel-sh-cache-size",
                       "pft-enable"]
 stats_pr_header = ["nvdla_cycles"]
@@ -118,7 +118,7 @@ def get_sweep_stats(options, sweep_dir):
                 stat_val = stat_val_match.group(1)
                 sweep_stats += stat_val
                 break
-                # assume the identifier is strong enough that it only matches the regex throughout the whole stats.txt file ONCE
+                # assume the identifier only matches the regex throughout the whole stats.txt file ONCE
     return sweep_stats
 
 

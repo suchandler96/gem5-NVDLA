@@ -33,4 +33,5 @@
 %(pft-enable)s \
 --pft-threshold %(pft-threshold)s \
 %(use-fake-mem)s \
+%(shared-spm)s \
 > stdout 2> stderr
