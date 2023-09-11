@@ -40,15 +40,19 @@ def parse_args():
 
 
 def check_dependence(options):
-    if not os.path.exists(os.path.join(options.gem5_nvdla_dir, "mnt/ext/")):
-        print("This script cannot mount the disk image from docker. It should have been mounted from the host machine"
-              "by ```\ncd " + options.gem5_nvdla_dir + " && python3 util/gem5img.py mount " + options.disk_image +
-              " ./mnt\n```")
-        exit(1)
+    assert os.path.exists(options.caffemodel)
+    assert os.path.exists(options.prototxt)
+    assert os.path.exists(options.nvdla_hw)
+    assert os.path.exists(options.nvdla_compiler)
+    assert os.path.exists(options.qemu_bin)
+    assert os.path.exists(options.qemu_lua)
+    assert os.path.exists(options.gem5_nvdla_dir)
+    assert os.path.exists(options.disk_image)
 
 
 def get_loadable(options):
     compiler_path, compiler_name = os.path.split(options.nvdla_compiler)
+    assert os.path.exists(options.nvdla_compiler)
     cmd = "cd " + compiler_path + " && ./" + compiler_name + " -o " + options.model_name + \
           " --cprecision fp16 --configtarget nv_full --informat nchw --prototxt " + options.prototxt + \
           " --caffemodel " + options.caffemodel + " && mv fast-math.nvdla " + options.model_name + \
@@ -81,7 +85,7 @@ def run_qemu(options):
 set timeout -1
 
 # Assign a variable to the log file
-# set log     [lindex $argv 0]
+log_file /usr/local/nvdla/qemu_log
 
 # Start the guest VM
 spawn %(bin)s -c %(lua)s
@@ -110,6 +114,8 @@ send "shutdown -h now\\r"
     with open("/usr/local/nvdla/qemu_run.exp", "w") as f:
         f.write(qemu_run_template)
     cmd = "cd /usr/local/nvdla/ && chmod +x qemu_run.exp && ./qemu_run.exp"
+    if os.path.exists("/usr/local/nvdla/qemu_log"):
+        os.system("mv /usr/local/nvdla/qemu_log /usr/local/nvdla/qemu_log_bkp")
     qemu_proc = subprocess.Popen(cmd, shell=True)
     qemu_proc.wait()
 
@@ -117,6 +123,7 @@ send "shutdown -h now\\r"
 def process_log(options):
     os.makedirs(options.out_dir, exist_ok=True)
     os.system("cd /usr/local/nvdla && mv sc.log " + options.out_dir)
+    os.system("cd /usr/local/nvdla && mv qemu_log " + options.out_dir)
 
     nvdla_utilities_dir = os.path.join(options.gem5_nvdla_dir, "bsc-util/nvdla_utilities/")
     if not os.path.exists(os.path.join(nvdla_utilities_dir, "NVDLAUtil")):
@@ -134,7 +141,7 @@ def process_log(options):
               --src-dirs " + options.out_dir + " --output-rd-only-var-log")
 
     # the nvdla/vp docker image has perl v5.22.1 installed, ok
-    perl_script_path = os.path.join(options.nvdla_hw, "verif/verilator/input_txn_to_verilator.pl")
+    perl_script_path = os.path.join(os.path.abspath(options.nvdla_hw), "verif/verilator/input_txn_to_verilator.pl")
 
     # check contents of perl script. If it does not contain keyword `until`, abort and remind the user
     with open(perl_script_path, "r") as f:
@@ -145,33 +152,17 @@ def process_log(options):
             found = True
             break
     if not found:
-        print("Patch file " + os.path.join(options.gem5_nvdla_dir,
+        print("Patch file " + os.path.join(os.path.abspath(options.gem5_nvdla_dir),
                                            "bsc-util/nvdla_utilities/input_txn_to_verilator.pl.patch") +
               " should be applied to " + perl_script_path)
         exit(1)
     os.system("perl " + perl_script_path + " " + options.out_dir + " " + os.path.join(options.out_dir, "trace.bin"))
 
-    # move to disk image for full system simulation
-    assert os.path.exists(os.path.join(options.gem5_nvdla_dir, "mnt/home/"))
-    work_dir_in_image = os.path.join(options.gem5_nvdla_dir, "mnt/home/" + options.model_name)
-    os.makedirs(work_dir_in_image, exist_ok=True)
-    os.system("cp " + os.path.join(options.out_dir, "rd_only_var_log") + " " + work_dir_in_image)
-    os.system("cp " + os.path.join(options.out_dir, "trace.bin") + " " + work_dir_in_image)
-
-    print("""\n\n
-For the next step, one needs to:
-1. Cross-compile schedulers like `my_validation_nvdla_single_thread.cpp` and `pipeline_execute.cpp` and move the \
-binaries to """ + os.path.join(options.gem5_nvdla_dir, "mnt/home/") + """;
-2. Create a checkpoint after moving all files desired to the disk image (one can run this script again for \
-compiling other traces before creating a checkpoint) by
-```
-cd """ + options.gem5_nvdla_dir + """ && build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py \
---big-cpus 0 --little-cpus 1 --cpu-type atomic --bootscript=configs/boot/hack_back_ckpt.rcS
-```""")
-
 
 def main():
     options = parse_args()
+
+    print("\n\n")
 
     check_dependence(options)
 
@@ -186,6 +177,34 @@ def main():
 
     # process the log file
     process_log(options)
+
+    # move to disk image for full system simulation
+    # assert os.path.exists(os.path.join(options.gem5_nvdla_dir, "mnt/home/"))
+    work_dir_in_image = os.path.join(os.path.abspath(options.gem5_nvdla_dir), "mnt/home/" + options.model_name)
+    # os.makedirs(work_dir_in_image, exist_ok=True)
+    # os.system("cp " + os.path.join(options.out_dir, "rd_only_var_log") + " " + work_dir_in_image)
+    # os.system("cp " + os.path.join(options.out_dir, "trace.bin") + " " + work_dir_in_image)
+
+    print("""\n\n
+For the next steps, one needs to do the following ON THE HOST MACHINE (OUTSIDE THE DOCKER CONTAINER):\n
+1. Mount the disk image for simulation (ignore if have mounted)
+```
+cd """ + os.path.abspath(options.gem5_nvdla_dir) + " && python3 util/gem5img.py mount " + options.disk_image + """ ./mnt
+```
+2. Move files generated to the disk image for simulation by
+```
+mkdir """ + work_dir_in_image + """
+cp """ + os.path.join(os.path.abspath(options.out_dir), "rd_only_var_log") + " " + work_dir_in_image + """
+cp """ + os.path.join(os.path.abspath(options.out_dir), "trace.bin") + " " + work_dir_in_image + """
+```
+3. Cross-compile schedulers like `my_validation_nvdla_single_thread.cpp` and `pipeline_execute.cpp` and move the \
+binaries to """ + os.path.join(os.path.abspath(options.gem5_nvdla_dir), "mnt/home/") + """;
+4. Create a checkpoint after moving all files desired to the disk image (one can run this script again for \
+compiling other traces before creating a checkpoint) by
+```
+cd """ + os.path.abspath(options.gem5_nvdla_dir) + """ && build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py \
+--big-cpus 0 --little-cpus 1 --cpu-type atomic --bootscript=configs/boot/hack_back_ckpt.rcS
+```""")
 
 
 if __name__ == "__main__":

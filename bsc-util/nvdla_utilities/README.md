@@ -35,7 +35,7 @@ The output file with a suffix of ".nvdla" (e.g., fast-math.nvdla) is the "loadab
     docker pull nvdla/vp
     docker run -it -v /home:/home nvdla/vp
 
-    # if one has run before, use docker exec instead of docker run to avoid another container to be instantiated
+    # if one has run before, use `docker exec -it <container_id> /bin/bash` instead of docker run to avoid another container to be instantiated (probably need to run `docker start <container_id>` first)
     cd /usr/local/nvdla
     export SC_LOG="outfile:sc.log;verbosity_level:sc_debug;csb_adaptor:enable;dbb_adaptor:enable;sram_adaptor:enable"
     mv /path/to/nvdla/sw/prebuilt/x86-ubuntu/fast-math.nvdla ./
@@ -150,7 +150,7 @@ And an executable named `aarch64_toplevel` will appear under `vp/` directory. Us
     ```
     cd /path/to/nvdla/hw/verif/verilator/
     git apply /path/to/gem5-NVDLA/bsc-util/nvdla_utilities/input_txn_to_verilator.pl.patch    # apply patch if haven't
-    perl input_txn_to_verilator.pl ../traces/traceplayer/lenet/ ../traceplayer/lenet/trace.bin
+    perl input_txn_to_verilator.pl ../traces/traceplayer/lenet/input.txn ../traceplayer/lenet/trace.bin
     ```
 3. Copy files needed by the scheduler to the disk image:
     ```
@@ -175,18 +175,90 @@ And an executable named `aarch64_toplevel` will appear under `vp/` directory. Us
     python3 get_sweep_stats.py --get-root-dir ../example_usage/experiments/logs/ --out-dir ~/ --out-prefix lenet_demo_sweep_
     ```
 
-## Automated Script
+## Automated Script for Compiling a Single Caffe NN
 This part provides a script to automate the process from "How to get VP debug info" to "Convert VP debug info to NVDLA trace file and memory traces with the utility". The script expects Caffe NN models as inputs, and will output the .txn file corresponding to the NN model, together with memory traces.
 
 The script, `caffe2trace.py`, should be run in a `nvdla/vp` docker container. Before running, users should:
 1. Run `apt update && apt install python3 expect` in the docker container for dependencies.
 2. If users want to build the VP on themselves (section 7 in "How to get VP debug info"), the building process should be finished before running this script.
-3. Mount the disk image to gem5-NVDLA/mnt.
-4. An example usage would be:
+3. Mount the disk image for full system simulation to `gem5-NVDLA/mnt`.
+4. Modify the default values of argparse parameters according to one's own installation in the script. Please provide absolute path to the script if possible. An example usage would be (run in the docker container!):
     ```
     python3 caffe2trace.py --model-name lenet --caffemodel example_usage/LeNet/LeNet_caffe_model/lenet_iter_10000.caffemodel --prototxt example_usage/LeNet/LeNet_caffe_model/Lenet.prototxt
     ```
-please provide absolute path if possible, and make sure to go through the argparse part of the script.
+5. After compilation finishes, copy the generated files (`trace.bin`, `rd_only_var_log`) to a directory in the mounted disk image and create a checkpoint. Simulation can then be run from this checkpoint. Once a new file is to be moved to the disk image, a new checkpoint should be created.
+
+## Automated Script for Compiling Pipelined Multibatch NN Workload
+Our repo provides a scheduler that can map multiple batches of NN inference task of a single model onto multiple simulated NVDLAs. This script, `pipeline_compile.py`, is thus to work out the configuration to this scheduler, including addresses of tensors, dependency, etc. This script expects the user to manually split a Caffe NN into multiple `*.prototxt` files (the `*.caffemodel` does not need to be modified), each of which corresponds to a pipeline stage. These `.prototxt` files should be provided to the script in the order of pipeline stages. The script consists of two processes: the first is to call the `caffe2trace.py` script for each pipeline stage to convert them to `*.txn` files, while the second part is to remap tensors to a unified address space, figuring out the inputs and outputs of consecutive pipeline stages (since they are actually one tensor) while differentiating all the others. The script also reserves space for the activation tensors of multiple batches, which is made possible by reading the debug log of NVDLA compiler. See below for usage:
+
+1. Run all below in `nvdla/vp` docker environment, the `#`'s are command prompts:
+```
+    # cd /path/to/nvdla/sw
+    # git apply /path/to/gem5-NVDLA/bsc-util/nvdla_utilities/nvdla_sw.patch
+```
+
+2. Install buildroot to rebuild NVDLA compiler, runtime and driver to output debug log. Instead of downloading buildroot from its website, now need to download from its repository, and go back to branch 2017.11.
+```
+    # git clone git://git.buildroot.net/buildroot
+    # cd buildroot
+    # git branch -r list all remote branch
+    # git checkout -t the branch you want (orgin/2017.11.x)
+    
+    # make qemu_aarch64_virt_defconfig
+    # make menuconfig
+     * Target Options -> Target Architecture -> AArch64 (little endian)
+     * Target Options -> Target Architecture Variant -> cortex-A57
+     * Toolchain -> Custom kernel headers series -> 4.13.x
+     * Toolchain -> Toolchain type -> External toolchain
+     * Toolchain -> Toolchain -> Linaro AArch64 2017.08
+     * Toolchain -> Toolchain origin -> Toolchain to be downloaded and installed
+     * Kernel -> () Kernel version -> 4.13.3
+     * Kernel -> Kernel configuration -> Use the architecture default configuration
+     * System configuration -> Enable root login with password -> Y
+     * System configuration -> Root password -> nvdla
+     * Target Packages -> Show packages that are also provided by busybox -> Y
+     * Target Packages -> Networking applications -> openssh -> Y
+
+    # make -j4
+```
+
+3. Build KMD (Kernel Mode Driver)
+```
+    # git clone https://github.com/nvdla/sw.git
+    # cd sw/kmd
+    # make KDIR=(path_to)buildroot-2017.11/output/build/linux-4.13.3 ARCH=arm64 CROSS_COMPILE=(path_to_)buildroot-2017.11/output/host/bin/aarch64-linux-gnu-
+    # cp port/linux/opendla.ko /usr/local/nvdla/
+    # cd /usr/local/nvdla/
+    # mkdir backup
+    # mv opendla_1.ko driver_backup/ && mv opendla_2.ko backup/
+    # mv opendla.ko opendla_1.ko
+    
+```
+The opendla.ko is at `sw/kmd/port/linux/opendla.ko`. We do an additional backup and rename operation in the last several lines.
+
+4. Build UMD (User Mode Driver, including compiler and runtime)
+```
+    # cd sw/umd
+    # export TOP=$(pwd)
+    # make TOOLCHAIN_PREFIX=(path_to)buildroot-2017.11/output/host/opt/ext-toolchain/bin/aarch64-linux-gnu-
+    # make runtime TOOLCHAIN_PREFIX=(path_to)buildroot-2017.11/output/host/opt/ext-toolchain/bin/aarch64-linux-gnu-
+    # cd /usr/local/nvdla/
+    # mv nvdla_runtime backup/ && mv libnvdla_runtime.so backup/
+    # mkdir compiler
+    # cd /path/to/nvdla/sw/umd
+    # cp out/apps/compiler/nvdla_compiler/nvdla_compiler /usr/local/nvdla/compiler/
+    # cp out/core/src/compiler/libnvdla_compiler/libnvdla_compiler.so /usr/local/nvdla/compiler/
+    # cp out/apps/runtime/nvdla_runtime/nvdla_runtime /usr/local/nvdla/
+    # cp out/core/src/runtime/libnvdla_runtime/libnvdla_runtime.so /usr/local/nvdla/
+```
+Here we are still doing a backup and copy after building compiler and runtime.
+
+5. This guide for compiling NVDLA toolchain is modified from [this post](https://github.com/nvdla/sw/issues/51#issuecomment-404704012). Examples of generated files can be seen in `example_usage/resnet18_cifar10_auto_pipeline/`.
+
+6. Run the pipeline compilation script in the docker container. The `--out-dir` parameter is the directory to hold all the data corresponding to each stage before remapping addresses, while the `--out-dir-multibatch` parameter points to the directory to hold compilation data after remapping addresses and considering multiple batches.
+```
+    # python3 pipeline_compile.py --model-name resnet18-cf --caffemodel /home/lactose/caffe_models/resnet18-cf-pipeline/resnet-18.caffemodel --prototxts /path/to/resnet18-cf-pipeline/stage0.prototxt /path/to/resnet18-cf-pipeline/stage1.prototxt --out-dir /path/to/resnet18_cf_auto_pipeline/ --out-dir-multibatch /path/to/resnet18_cf_auto_pipeline/multibatch
+```
 
 ## Verify the converted NVDLA register trace file with verilator verification flow and get its memory traces
 This step is to ensure the users that the NVDLA register trace file is extracted correctly, so that using the verification tools in `nvdla/hw` will lead to the same memory access behaviors. Several memory accesses very close to each other could have some minor differences in access order, but the number of times each address is accessed should preserve the same.

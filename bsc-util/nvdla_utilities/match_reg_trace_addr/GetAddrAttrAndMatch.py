@@ -1,6 +1,8 @@
 import sys
 import os
 import argparse
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from TxnSegment import *
 
 

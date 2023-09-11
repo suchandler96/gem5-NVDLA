@@ -1,0 +1,529 @@
+diff --git a/kmd/firmware/cdp.c b/kmd/firmware/cdp.c
+index e839676..c4464ed 100644
+--- a/kmd/firmware/cdp.c
++++ b/kmd/firmware/cdp.c
+@@ -159,6 +159,7 @@ processor_cdp_program(struct dla_processor_group *group)
+ 	struct dla_cdp_surface_desc *cdp_surface;
+ 
+ 	dla_debug("Enter: %s\n", __func__);
++    dla_debug("\nentered processor_cdp_program():\n");
+ 
+ 	cdp_op = &group->operation_desc->cdp_op;
+ 	cdp_surface = &group->surface_desc->cdp_surface;
+@@ -182,20 +183,24 @@ processor_cdp_program(struct dla_processor_group *group)
+ 	}
+ 
+ 	/* get the addresses from task descriptor */
++    dla_debug("cdp getting input_address:\n");
+ 	ret = dla_read_input_address(&cdp_surface->src_data,
+ 						&input_address,
+ 						group->op_desc->index,
+ 						group->roi_index,
+ 						1);
++    dla_debug("cdp input_addr = %#lx\n\n", input_address);
+ 	if (ret)
+ 		goto exit;
+ 
++    dla_debug("cdp getting output_address:\n");
+ 	dla_get_dma_cube_address(engine->driver_context,
+ 				engine->task->task_data,
+ 				cdp_surface->dst_data.address,
+ 				cdp_surface->dst_data.offset,
+ 				(void *)&output_address,
+ 				DESTINATION_DMA);
++    dla_debug("cdp output_addr = %#lx\n\n", output_address);
+ 	if (cdp_op->lut_index >= 0) {
+ 		group->lut_index = cdp_op->lut_index;
+ 		dla_read_lut(engine, cdp_op->lut_index, (void *)&lut);
+diff --git a/kmd/firmware/conv.c b/kmd/firmware/conv.c
+index be62d65..6cc8904 100644
+--- a/kmd/firmware/conv.c
++++ b/kmd/firmware/conv.c
+@@ -265,6 +265,7 @@ processor_conv_program(struct dla_processor_group *group)
+ 	struct dla_conv_surface_desc *conv_surface;
+ 
+ 	dla_trace("Enter: %s", __func__);
++    dla_debug("\nentered processor_conv_program():\n");
+ 
+ 	weight_compress_support = engine->config_data->weight_compress_support;
+ 	atom_size = engine->config_data->atom_size;
+@@ -275,6 +276,8 @@ processor_conv_program(struct dla_processor_group *group)
+ 		ASSERT_GOTO((weight_compress_support), ret, ERR(INVALID_INPUT), exit);
+ 		ASSERT_GOTO((conv_surface->wmb_data.address != -1),
+ 			ret, ERR(INVALID_INPUT), exit);
++        dla_debug("conv case WEIGHT_FORMAT_COMPRESSED:\n");
++        dla_debug("conv getting wmb_address:\n");
+ 		dla_get_dma_cube_address(engine->driver_context,
+ 					engine->task->task_data,
+ 					conv_surface->wmb_data.address,
+@@ -283,9 +286,11 @@ processor_conv_program(struct dla_processor_group *group)
+ 					DESTINATION_DMA);
+ 		CHECK_ALIGN(wmb_address, atom_size);
+ 		CHECK_ALIGN(conv_surface->wmb_data.size, 128);
++        dla_debug("conv wmb_addr = %#lx\n\n", wmb_address);
+ 
+ 		ASSERT_GOTO((conv_surface->wgs_data.address != -1),
+ 			ret, ERR(INVALID_INPUT), exit);
++        dla_debug("conv getting wgs_address:\n");
+ 		dla_get_dma_cube_address(engine->driver_context,
+ 					engine->task->task_data,
+ 					conv_surface->wgs_data.address,
+@@ -294,36 +299,43 @@ processor_conv_program(struct dla_processor_group *group)
+ 					DESTINATION_DMA);
+ 		CHECK_ALIGN(wgs_address, atom_size);
+ 		CHECK_ALIGN(conv_surface->wgs_data.size, 4);
++        dla_debug("conv wgs_addr = %#lx\n\n", wgs_address);
+ 	}
+ 
+ 	if (conv_surface->weight_data.address != -1) {
++        dla_debug("conv getting weight_address:\n");
+ 		dla_get_dma_cube_address(engine->driver_context,
+ 					engine->task->task_data,
+ 					conv_surface->weight_data.address,
+ 					conv_surface->weight_data.offset,
+ 					(void *)&weight_address,
+ 					DESTINATION_DMA);
++        dla_debug("conv weight_addr = %#lx\n\n", weight_address);
+ 		CHECK_ALIGN(weight_address, atom_size);
+ 		CHECK_ALIGN(conv_surface->weight_data.size, 128);
+ 	}
+ 
+ 	if (conv_surface->dst_data.address != -1) {
++        dla_debug("conv getting output_address:\n");
+ 		dla_get_dma_cube_address(engine->driver_context,
+ 					engine->task->task_data,
+ 					conv_surface->dst_data.address,
+ 					conv_surface->dst_data.offset,
+ 					(void *)&output_address,
+ 					DESTINATION_DMA);
++        dla_debug("conv output_addr = %#lx\n\n", output_address);
+ 		CHECK_ALIGN(output_address, atom_size);
+ 		CHECK_ALIGN(conv_surface->dst_data.size, atom_size);
+ 		CHECK_ALIGN(conv_surface->dst_data.line_stride, atom_size);
+ 		CHECK_ALIGN(conv_surface->dst_data.surf_stride, atom_size);
+ 	}
+ 
++    dla_debug("conv getting input_address:\n");
+ 	ret = dla_read_input_address(&conv_surface->src_data, &input_address,
+ 					group->op_desc->index,
+ 					group->roi_index,
+ 					map_img_fmt[conv_op->data_format][1]);
++    dla_debug("conv input_addr = %#lx\n\n", input_address);
+ 	if (ret)
+ 		goto exit;
+ 
+diff --git a/kmd/firmware/engine.c b/kmd/firmware/engine.c
+index 904cca5..1f56c46 100644
+--- a/kmd/firmware/engine.c
++++ b/kmd/firmware/engine.c
+@@ -98,12 +98,14 @@ dla_get_dma_cube_address(void *driver_context, void *task_data,
+ {
+ 	int32_t ret = 0;
+ 	uint64_t *pdst = (uint64_t *)dst_ptr;
++    dla_debug("entered dla_get_dma_cube_address(index = %d, offset = %#x):\n", index, offset);
+        ret = dla_get_dma_address(driver_context, task_data, index,
+ 								dst_ptr, destination);
+ 	if (ret)
+ 		goto exit;
+ 
+ 	pdst[0] += offset;
++    dla_debug("back to dla_get_dma_cube_address: dst_ptr += %#lx\n", offset);
+ 
+ exit:
+ 	return ret;
+@@ -131,6 +133,8 @@ dla_read_input_address(struct dla_data_cube *data,
+ 	int32_t ret = ERR(INVALID_INPUT);
+ 	struct dla_engine *en = dla_get_engine();
+ 
++    dla_debug("entered dla_read_input_address():\n");
++
+ 	/**
+ 	 * If memory type is HW then no address required
+ 	 */
+@@ -149,6 +153,8 @@ dla_read_input_address(struct dla_data_cube *data,
+ 		 * But if other parameters indicate that this is input layer
+ 		 * for dynamic ROI then it is an error
+ 		 */
++        dla_debug("passed to dla_get_dma_cube_address(data->address = %d, data->offset = %u)\n",
++                  data->address, data->offset);
+ 		if (en->network->dynamic_roi &&
+ 			en->network->input_layer == op_index)
+ 			goto exit;
+@@ -186,6 +192,8 @@ dla_read_input_address(struct dla_data_cube *data,
+ 		*address = en->task->surface_addr;
+ 		*address += (roi_desc.top * data->line_stride) +
+ 						(bpp * roi_desc.left);
++        dla_debug("surface_addr = %#lx; roi_desc.top = %u, data->line_stride = %u, bpp = %u, roi_desc.left = %u\n",
++                  en->task->surface_addr, roi_desc.top, data->line_stride, bpp, roi_desc.left);
+ 	}
+ 
+ exit:
+diff --git a/kmd/firmware/engine_debug.c b/kmd/firmware/engine_debug.c
+index 7ed4f0a..d802226 100644
+--- a/kmd/firmware/engine_debug.c
++++ b/kmd/firmware/engine_debug.c
+@@ -137,6 +137,7 @@ dla_debug_data_cube(struct dla_data_cube *cube)
+ {
+ 	dla_debug("    type          = %u\n", cube->type);
+ 	dla_debug("    address       = %d\n", cube->address);
++    dla_debug("    offset        = %x\n", cube->offset);
+ 	dla_debug("    width         = %x\n", cube->width);
+ 	dla_debug("    height        = %x\n", cube->height);
+ 	dla_debug("    channel       = %x\n", cube->channel);
+@@ -253,7 +254,7 @@ dla_debug_conv_surface_desc(struct dla_conv_surface_desc *desc, int32_t roi)
+ 	dla_debug("dst_data            = [ dla_data_cube =>\n");
+ 	dla_debug_data_cube(&desc->dst_data);
+ 	dla_debug("offset_u            = %lld\n", desc->offset_u);
+-	dla_debug("in_line_uv_stride   = %u\n", desc->in_line_uv_stride);
++	dla_debug("in_line_uv_stride   = %u\n\n", desc->in_line_uv_stride);
+ }
+ 
+ void
+@@ -309,6 +310,7 @@ dla_debug_conv_op_desc(struct dla_conv_op_desc *desc, int32_t roi)
+ 	dla_debug_converter(&desc->in_cvt);
+ 	dla_debug("out_cvt            =\n");
+ 	dla_debug_converter(&desc->out_cvt);
++    dla_debug("\n");
+ }
+ 
+ void
+diff --git a/kmd/firmware/include/dla_debug.h b/kmd/firmware/include/dla_debug.h
+index bef99d6..15bf85f 100644
+--- a/kmd/firmware/include/dla_debug.h
++++ b/kmd/firmware/include/dla_debug.h
+@@ -64,7 +64,7 @@
+ /**
+  * Used to print debug network data
+  */
+-#define DEBUG_NETWORK_DATA		0
++#define DEBUG_NETWORK_DATA		1
+ 
+ #define pr_dump_stack(format, ...)
+ #define dla_trace(format, ...)
+diff --git a/kmd/firmware/scheduler.c b/kmd/firmware/scheduler.c
+index f36a5c7..f134f5e 100644
+--- a/kmd/firmware/scheduler.c
++++ b/kmd/firmware/scheduler.c
+@@ -791,10 +791,14 @@ dla_read_network_config(struct dla_engine *engine)
+ 	/**
+ 	 * Read surface descriptor list address from address list
+ 	 */
++    dla_debug("getting surface_desc_addr:\n");
++    dla_debug("before: task->surface_desc_addr = %#llx", task->surface_desc_addr);
+ 	ret = dla_get_dma_address(engine->driver_context, task->task_data,
+ 				network.surface_desc_index,
+ 				(void *)&task->surface_desc_addr,
+ 				DESTINATION_PROCESSOR);
++    dla_debug("after: task->surface_desc_addr = %#llx", task->surface_desc_addr);
++    dla_debug("\n");
+ 	if (ret) {
+ 		dla_error("Failed to read surface desc list address");
+ 		goto exit;
+@@ -1088,6 +1092,8 @@ dla_execute_task(void *engine_context, void *task_data, void *config_data)
+ 		goto complete;
+ 	}
+ 
++    // this task_data is of type `struct nvdla_task`,
++    // i.e., task_data->address_list is the one prepared in umd
+ 	engine->task->task_data = task_data;
+ 	engine->config_data = config_data;
+ 	engine->network = &network;
+diff --git a/kmd/firmware/sdp.c b/kmd/firmware/sdp.c
+index d1ca176..1790006 100644
+--- a/kmd/firmware/sdp.c
++++ b/kmd/firmware/sdp.c
+@@ -276,6 +276,7 @@ processor_sdp_program(struct dla_processor_group *group)
+ 	struct dla_sdp_surface_desc *sdp_surface;
+ 
+ 	dla_trace("Enter: %s", __func__);
++    dla_debug("\nentered processor_sdp_program():\n");
+ 	atom_size = engine->config_data->atom_size;
+ 
+ 	sdp_op = &group->operation_desc->sdp_op;
+@@ -292,17 +293,22 @@ processor_sdp_program(struct dla_processor_group *group)
+ 
+ 	/* load address */
+ 	if (!fly) {
++        dla_debug("sdp getting src_addr:\n");
+ 		ret = dla_read_input_address(&sdp_surface->src_data,
+ 						&src_addr,
+ 						group->op_desc->index,
+ 						group->roi_index,
+ 					    1);
++        dla_debug("sdp src_addr = %#lx\n\n", src_addr);
+ 		if (ret)
+ 			goto exit;
+ 		CHECK_ALIGN(src_addr, atom_size);
+-	}
++	} else {
++        dla_debug("sdp skip getting src_addr\n\n");
++    }
+ 
+ 	if (out_dma_ena) {
++        dla_debug("sdp getting dst_addr:\n");
+ 		dla_get_dma_cube_address(engine->driver_context,
+ 					engine->task->task_data,
+ 					sdp_surface->dst_data.address,
+@@ -310,7 +316,10 @@ processor_sdp_program(struct dla_processor_group *group)
+ 					(void *)&dst_addr,
+ 					DESTINATION_DMA);
+ 		CHECK_ALIGN(dst_addr, atom_size);
+-	}
++        dla_debug("sdp dst_addr = %#lx\n\n", dst_addr);
++	} else {
++        dla_debug("sdp skip getting dst_addr\n\n");
++    }
+ 
+ 	if (sdp_op->lut_index >= 0) {
+ 		group->lut_index = sdp_op->lut_index;
+@@ -324,6 +333,7 @@ processor_sdp_program(struct dla_processor_group *group)
+ 	y_rdma_ena &= (y_op->mode != SDP_OP_PER_LAYER);
+ 
+ 	if (x1_rdma_ena) {
++        dla_debug("sdp getting x1_addr:\n");
+ 		dla_get_dma_cube_address(engine->driver_context,
+ 					engine->task->task_data,
+ 					sdp_surface->x1_data.address,
+@@ -331,8 +341,12 @@ processor_sdp_program(struct dla_processor_group *group)
+ 					(void *)&x1_addr,
+ 					DESTINATION_DMA);
+ 		CHECK_ALIGN(x1_addr, atom_size);
+-	}
++        dla_debug("sdp x1_addr = %#lx\n\n", x1_addr);
++	} else {
++        dla_debug("sdp skip getting x1_addr\n\n");
++    }
+ 	if (x2_rdma_ena) {
++        dla_debug("sdp getting x2_addr:\n");
+ 		dla_get_dma_cube_address(engine->driver_context,
+ 					engine->task->task_data,
+ 					sdp_surface->x2_data.address,
+@@ -340,8 +354,12 @@ processor_sdp_program(struct dla_processor_group *group)
+ 					(void *)&x2_addr,
+ 					DESTINATION_DMA);
+ 		CHECK_ALIGN(x2_addr, atom_size);
+-	}
++        dla_debug("sdp x1_addr = %#lx\n\n", x2_addr);
++	} else {
++        dla_debug("sdp skip getting x2_addr\n\n");
++    }
+ 	if (y_rdma_ena) {
++        dla_debug("sdp getting y_addr:\n");
+ 		dla_get_dma_cube_address(engine->driver_context,
+ 					engine->task->task_data,
+ 					sdp_surface->y_data.address,
+@@ -349,7 +367,10 @@ processor_sdp_program(struct dla_processor_group *group)
+ 					(void *)&y_addr,
+ 					DESTINATION_DMA);
+ 		CHECK_ALIGN(y_addr, atom_size);
+-	}
++        dla_debug("sdp x1_addr = %#lx\n\n", y_addr);
++	} else {
++        dla_debug("sdp skip getting y_addr\n\n");
++    }
+ 
+ 	reg = (map_fly[0] << SHIFT(SDP_RDMA_D_FEATURE_MODE_CFG_0, FLYING_MODE));
+ 	sdp_rdma_reg_write(D_FEATURE_MODE_CFG, reg);
+diff --git a/kmd/port/linux/nvdla_core_callbacks.c b/kmd/port/linux/nvdla_core_callbacks.c
+index 316d8b5..ed4bd4a 100644
+--- a/kmd/port/linux/nvdla_core_callbacks.c
++++ b/kmd/port/linux/nvdla_core_callbacks.c
+@@ -173,14 +173,18 @@ static int32_t dla_read_dma_address(void *driver_context, void *task_data,
+ 			(struct nvdla_device *)driver_context;
+ 	struct nvdla_task *task = (struct nvdla_task *)task_data;
+ 
++    dla_debug("entered dla_read_dma_address(index = %d):\n", index);
++
+ 	if (index == -1 || index > task->num_addresses)
+ 		return -EINVAL;
+ 
+ 	handles = (struct nvdla_mem_handle *)task->address_list;
++    dla_debug("pass to nvdla_gem_dma_addr(fd = handles[index=%d] = %u):\n", index, handles[index].handle);
+ 	ret = nvdla_gem_dma_addr(nvdla_dev->drm, task->file,
+ 					handles[index].handle,
+ 					phys_addr);
+ 
++    dla_debug("*phys_addr = %#lx + %#lx\n", *phys_addr, handles[index].offset);
+ 	/* Add offset to IOVA address */
+ 	*phys_addr = *phys_addr + handles[index].offset;
+ 
+@@ -195,8 +199,9 @@ static int32_t dla_read_cpu_address(void *driver_context, void *task_data,
+ 
+ 	if (index == -1 || index > task->num_addresses)
+ 		return -EINVAL;
+-
++    dla_debug("before set: *temp = %#llx\n", *temp);
+ 	*temp = (uint64_t)index;
++    dla_debug("after set: *temp = %#llx\n", *temp);
+ 	return 0;
+ }
+ 
+@@ -205,17 +210,22 @@ int32_t dla_get_dma_address(void *driver_context, void *task_data,
+ 					uint32_t destination)
+ {
+ 	int32_t ret = 0;
++    dla_debug("entered dla_get_dma_address(index = %d):\n", index);
+ 
+ 	if (destination == DESTINATION_PROCESSOR) {
++        dla_debug(" in branch dla_get_dma_address(DESTINATION_PROCESSOR):\n");
++        dla_debug("before: dst_ptr = %#llx", *(uint64_t*)dst_ptr);
+ 		ret = dla_read_cpu_address(driver_context, task_data,
+ 						index, dst_ptr);
++        dla_debug("after: dst_ptr = %#llx", *(uint64_t*)dst_ptr);
+ 	} else if (destination == DESTINATION_DMA) {
++        dla_debug("in branch dla_get_dma_address(DESTINATION_DMA):\n");
+ 		ret = dla_read_dma_address(driver_context, task_data,
+ 						index, dst_ptr);
+ 	} else {
+ 		ret = -EINVAL;
+ 	}
+-
++    dla_debug("exiting dla_get_dma_address(), got dst_ptr = %llx (index = %d)\n", *(uint64_t*)dst_ptr, index);
+ 	return ret;
+ }
+ 
+@@ -287,6 +297,8 @@ int32_t dla_data_read(void *driver_context, void *task_data,
+ 		goto put_dma_buf;
+ 
+ 	ptr = dma_buf_vmap(buf);
++    dla_debug("dla_data_read(src_index = %u): mapped dma_buf(handle = %u, offset = %llu) to vaddr = %#llx\n",
++              src, handles[src].handle, handles[src].offset, (uint64_t)ptr);
+ 	if (!ptr) {
+ 		pr_err("%s: Failed to vmap dma_buf for handle=%d\n", __func__,
+ 						handles[src].handle);
+diff --git a/kmd/port/linux/nvdla_gem.c b/kmd/port/linux/nvdla_gem.c
+index 5df0bed..ec43106 100644
+--- a/kmd/port/linux/nvdla_gem.c
++++ b/kmd/port/linux/nvdla_gem.c
+@@ -93,6 +93,8 @@ static int32_t nvdla_submit(struct drm_device *drm, void *arg,
+ 		return -EINVAL;
+ 
+ 	/* IOCTL copy descriptors */
++    // local_task is a temporary object only used in nvdla_gem.c
++    // user_task is something submitted from runtime (umd)
+ 	if (copy_from_user(&local_task, (void __user *)user_task,
+ 			(sizeof(*user_task))))
+ 		return -EFAULT;
+@@ -129,6 +131,8 @@ static int32_t nvdla_gem_alloc(struct nvdla_gem_object *nobj)
+ 
+ 	nobj->kvaddr = dma_alloc_attrs(drm->dev, dobj->size, &nobj->dma_addr,
+ 						GFP_KERNEL, nobj->dma_attrs);
++    printk("DMA paddr allocated: %#llx for vaddr %#llx\n",
++           nobj->dma_addr, (uint64_t)nobj->kvaddr);
+ 
+ 	if (!nobj->kvaddr)
+ 		return -ENOMEM;
+@@ -350,6 +354,7 @@ static int32_t nvdla_gem_map_offset(struct drm_device *drm, void *data,
+ 		goto out;
+ 
+ 	args->offset = drm_vma_node_offset_addr(&dobj->vma_node);
++    printk("nvdla_gem_map_offset allocates args->offset = %#llx\n", args->offset);
+ 
+ out:
+ 	drm_gem_object_unreference_unlocked(dobj);
+diff --git a/umd/core/src/compiler/include/priv/EngineAST.h b/umd/core/src/compiler/include/priv/EngineAST.h
+index 9318aba..e6b0f19 100644
+--- a/umd/core/src/compiler/include/priv/EngineAST.h
++++ b/umd/core/src/compiler/include/priv/EngineAST.h
+@@ -967,22 +967,22 @@ public:
+     surface::TensorSurfaceDesc *nodeInputTensorSurface(const Node *, size_t i, const std::vector<surface::SurfaceCategory> &);
+     surface::TensorSurfaceDesc *nodeOutputTensorSurface(const Node *, size_t i, const std::vector<surface::SurfaceCategory> &);
+ 
+-    inline bool debugGraphDump() const { return false; }
+-    inline bool debugClone() const { return false; }
+-    inline bool debugOps() const { return false; }
+-    inline bool debugGroupOps() const { return false; }
+-    inline bool debugMathOptz() const { return false; }
+-    inline bool debugWeights() const { return false; }
+-    inline bool debugQuantization() const { return false; }
+-    inline bool debugFuseSubEngineOps() const { return false; }
+-    inline bool debugSurfaces() const { return false; }
+-    inline bool debugBuffers() const { return false; }
+-    inline bool debugCopyOutDebug() const { return false; }
+-    inline bool debugMemoryLayout() const { return false; }
+-    inline bool debugBinding() const { return false; }
+-    inline bool debugDepGraph() const { return false; }
+-    inline bool debugMemHazards() const { return false; }
+-    inline bool debugRelocs() const { return false; }
++    inline bool debugGraphDump() const { return true; }
++    inline bool debugClone() const { return true; }
++    inline bool debugOps() const { return true; }
++    inline bool debugGroupOps() const { return true; }
++    inline bool debugMathOptz() const { return true; }
++    inline bool debugWeights() const { return true; }
++    inline bool debugQuantization() const { return true; }
++    inline bool debugFuseSubEngineOps() const { return true; }
++    inline bool debugSurfaces() const { return true; }
++    inline bool debugBuffers() const { return true; }
++    inline bool debugCopyOutDebug() const { return true; }
++    inline bool debugMemoryLayout() const { return true; }
++    inline bool debugBinding() const { return true; }
++    inline bool debugDepGraph() const { return true; }
++    inline bool debugMemHazards() const { return true; }
++    inline bool debugRelocs() const { return true; }
+ 
+     class Graphlet
+     {
+diff --git a/umd/core/src/runtime/Runtime.cpp b/umd/core/src/runtime/Runtime.cpp
+index a4c21b7..1cb7823 100644
+--- a/umd/core/src/runtime/Runtime.cpp
++++ b/umd/core/src/runtime/Runtime.cpp
+@@ -520,6 +520,8 @@ bool Runtime::fillTaskAddressList(Task *task, NvDlaTask *dla_task)
+ 
+         dla_task->address_list[ali].handle = hMem;
+         dla_task->address_list[ali].offset = m_address[address_list_entry_id].mEntry.offset;
++        printf("dla_task id %lu has set addr id %lu: handle = %lx, offset = %u\n", dla_task->task_id, ali,
++               (uint64_t)dla_task->address_list[ali].handle, dla_task->address_list[ali].offset);
+     }
+ 
+     return true;
+@@ -721,10 +723,13 @@ NvDlaError Runtime::allocateSystemMemory(void **phMem, NvU64 size, void **pData)
+     NvDlaError e = NvDlaSuccess;
+     void *hDla = getDLADeviceContext(m_loaded_instance);
+ 
++    printf("entered allocateSystemMemory()\n");
++
+     /* Allocate memory for network */
+     PROPAGATE_ERROR_FAIL( NvDlaAllocMem(NULL, hDla, phMem, pData, size, NvDlaHeap_System) );
+     m_hmem_memory_map.insert(std::make_pair(*phMem, *pData));
+-
++    printf("*phMem = %#llx, *pData = %#llx\n", (uint64_t)*phMem, (uint64_t)*pData);
++    printf("exited allocateSystemMemory()\n\n");
+     return NvDlaSuccess;
+ 
+ fail:
+diff --git a/umd/port/linux/nvdla.c b/umd/port/linux/nvdla.c
+index 6f827d0..6d1358e 100644
+--- a/umd/port/linux/nvdla.c
++++ b/umd/port/linux/nvdla.c
+@@ -59,7 +59,11 @@ static int nvdla_mem_map(void **pVirtAddr, int size, NvS64 offset, int fd, NvU32
+ {
+     void *ptr;
+ 
++    printf("entered nvdla_mem_map()\n");
++
+     ptr = mmap(0, size, flags, MAP_SHARED, fd, offset);
++    printf("nvdla_mem_map: *pVirtAddr = 0x%lx, size = %d, offset = 0x%lx, fd = %d, flags = %u\n",
++           (uint64_t)ptr, size, offset, fd, flags);
+     if (ptr == MAP_FAILED) {
+         printf("Failed to map memory errno=%d\n", errno);
+         return -1;
+@@ -67,6 +71,8 @@ static int nvdla_mem_map(void **pVirtAddr, int size, NvS64 offset, int fd, NvU32
+ 
+     *pVirtAddr = ptr;
+ 
++    printf("exited nvdla_mem_map()\n\n");
++
+     return 0;
+ }
+ 
+@@ -197,6 +203,9 @@ NvDlaSubmit(void *session_handle, void *device_handle, NvDlaTask *pTasks, NvU32
+ 
+             address_list[i][j].handle = (uint32_t)mem_handle->fd;
+             address_list[i][j].offset = pTasks[i].address_list[j].offset;
++            // this address_list is copied into kmd in nvdla_fill_task_desc()
++            printf("address_list[%d][%d].handle = %u\n", i, j, address_list[i][j].handle);
++            printf("address_list[%d][%d].offset = %llu\n", i, j, address_list[i][j].offset);
+         }
+     }
+ 

@@ -1,0 +1,206 @@
+diff --git a/verif/traces/traceplayer/cc_alexnet_conv5_relu5_int16_dtest_cvsram/input.txn b/verif/traces/traceplayer/cc_alexnet_conv5_relu5_int16_dtest_cvsram/input.txn
+index a5d574b..8e704de 100644
+--- a/verif/traces/traceplayer/cc_alexnet_conv5_relu5_int16_dtest_cvsram/input.txn
++++ b/verif/traces/traceplayer/cc_alexnet_conv5_relu5_int16_dtest_cvsram/input.txn
+@@ -183,7 +183,7 @@ read_reg 0xffff1400 0x00030003 0x00000000 #NVDLA_CDMA.S_STATUS_0
+ write_reg 0xffff1416 0x0 #NVDLA_CDMA.D_BATCH_NUMBER_0
+ read_reg 0xffff1416 0x0000001f 0x00000000 #NVDLA_CDMA.D_BATCH_NUMBER_0
+ write_reg 0xffff1403 0x0 #NVDLA_CDMA.S_CBUF_FLUSH_STATUS_0
+-read_reg 0xffff1403 0x00000001 0x00000000 #NVDLA_CDMA.S_CBUF_FLUSH_STATUS_0
++read_reg 0xffff1403 0x00000001 0x00000001 #NVDLA_CDMA.S_CBUF_FLUSH_STATUS_0
+ write_reg 0xffff141a 0x0 #NVDLA_CDMA.D_WEIGHT_FORMAT_0
+ read_reg 0xffff141a 0x00000001 0x00000000 #NVDLA_CDMA.D_WEIGHT_FORMAT_0
+ write_reg 0xffff143a 0x7841af46 #NVDLA_CDMA.D_CYA_0
+diff --git a/verif/traces/traceplayer/googlenet_conv2_3x3_int16/input.txn b/verif/traces/traceplayer/googlenet_conv2_3x3_int16/input.txn
+index bf56ddf..d3f126c 100644
+--- a/verif/traces/traceplayer/googlenet_conv2_3x3_int16/input.txn
++++ b/verif/traces/traceplayer/googlenet_conv2_3x3_int16/input.txn
+@@ -132,7 +132,7 @@ read_reg 0xffff141d 0x00000001 0x00000000 #NVDLA_CDMA.D_WEIGHT_RAM_TYPE_0
+ write_reg 0xffff1439 0x0 #NVDLA_CDMA.D_PERF_WT_READ_LATENCY_0
+ read_reg 0xffff1439 0xffffffff 0x00000000 #NVDLA_CDMA.D_PERF_WT_READ_LATENCY_0
+ write_reg 0xffff1403 0x0 #NVDLA_CDMA.S_CBUF_FLUSH_STATUS_0
+-read_reg 0xffff1403 0x00000001 0x00000000 #NVDLA_CDMA.S_CBUF_FLUSH_STATUS_0
++read_reg 0xffff1403 0x00000001 0x00000001 #NVDLA_CDMA.S_CBUF_FLUSH_STATUS_0
+ write_reg 0xffff1437 0x0 #NVDLA_CDMA.D_PERF_WT_READ_STALL_0
+ read_reg 0xffff1437 0xffffffff 0x00000000 #NVDLA_CDMA.D_PERF_WT_READ_STALL_0
+ write_reg 0xffff1422 0x92eabbc0 #NVDLA_CDMA.D_WGS_ADDR_LOW_0
+diff --git a/verif/verilator/Makefile b/verif/verilator/Makefile
+index aa73fac..06a5686 100644
+--- a/verif/verilator/Makefile
++++ b/verif/verilator/Makefile
+@@ -11,14 +11,14 @@ include $(DEPTH)/tools/make/common.make
+ 
+ default: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla
+ 
+-VERILATOR_PARAMS ?= --compiler clang --output-split 250000000
++VERILATOR_PARAMS ?= --compiler clang --output-split 250000000 -CFLAGS -fPIC
+ # Perhaps you need to trace?
+ #   VERILATOR_PARAMS += --trace --trace-depth 7 --trace-max-array 8
+ 
+ # We end up hardcoding this, because the .f file applies only to nv_full,
+ # living in outdir, right now.  Otherwise, you're on your own...
+ $(DEPTH)/outdir/nv_full/verilator/VNV_nvdla.mk: verilator.f ../../outdir/nv_full/vmod # and a lot of RTL...
+-	$(VERILATOR) --cc --exe -f verilator.f --Mdir ../../outdir/nv_full/verilator/ nvdla.cpp --compiler clang --output-split 250000000
++	$(VERILATOR) --cc --exe -f verilator.f --Mdir ../../outdir/nv_full/verilator/ nvdla.cpp $(VERILATOR_PARAMS)
+ 
+ $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla.mk nvdla.cpp
+ 	rm -f $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/nvdla.cpp
+@@ -28,7 +28,7 @@ $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla: $(DEPTH)/$(OUTDIR)/$(PROJECT)
+ $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/%/trace.bin: $(DEPTH)/verif/traces/traceplayer/% input_txn_to_verilator.pl
+ 	rm -rf $@
+ 	mkdir -p $(dir $@)
+-	$(PERL) input_txn_to_verilator.pl $< $@
++	$(PERL) input_txn_to_verilator.pl $</input.txn $@
+ 
+ run: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/$(TEST)/trace.bin $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla
+ 	cd $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/$(TEST) && ../../VNV_nvdla trace.bin
+diff --git a/verif/verilator/input_txn_to_verilator.pl b/verif/verilator/input_txn_to_verilator.pl
+index 0c2f7e0..466069e 100755
+--- a/verif/verilator/input_txn_to_verilator.pl
++++ b/verif/verilator/input_txn_to_verilator.pl
+@@ -19,7 +19,7 @@ my %command_hash = (
+ );
+ 
+ 
+-my $input_file = "$test_dir/input.txn";
++my $input_file = "$test_dir";
+ my $output_file = $ARGV[1];
+ 
+ my $inf;
+@@ -82,6 +82,16 @@ while(<$inf>)
+     if ($values[0] =~ /wait/) {
+       print $ouf pack("C", 1);
+     }
++
++    if ($values[0] =~ /until/) {
++      if($size != 3) { die "\nERROR: in write_reg command: $input_line\n" };
++
++      my $addr = $values[1];
++      my $data = $values[2];
++
++      print $ouf pack("CLL", 6, hex($addr), hex($data));
++    }
++
+     elsif($values[0] =~ /write_reg/) {
+       if($size != 3) { die "\nERROR: in write_reg command: $input_line\n" };
+ 
+diff --git a/verif/verilator/nvdla.cpp b/verif/verilator/nvdla.cpp
+old mode 100644
+new mode 100755
+index e24becf..b899bea
+--- a/verif/verilator/nvdla.cpp
++++ b/verif/verilator/nvdla.cpp
+@@ -40,6 +40,7 @@ class CSBMaster {
+ 		int write;
+ 		int tries;
+ 		int reading;
++        int wait_until;
+ 		uint32_t addr;
+ 		uint32_t mask;
+ 		uint32_t data;
+@@ -69,9 +70,25 @@ public:
+ 		op.data = data;
+ 		op.tries = 10;
+ 		op.reading = 0;
++        op.wait_until = 0;
+ 	
+ 		opq.push(op);
+ 	}
++
++    void wait_until(uint32_t addr, uint32_t mask, uint32_t data) {
++        csb_op op;
++
++        op.is_ext = 0;
++        op.write = 0;
++        op.addr = addr;
++        op.mask = mask;
++        op.data = data;
++        op.tries = 10;
++        op.reading = 0;
++        op.wait_until = 1;
++
++        opq.push(op);
++    }
+ 	
+ 	void write(uint32_t addr, uint32_t data) {
+ 		csb_op op;
+@@ -80,6 +97,7 @@ public:
+ 		op.write = 1;
+ 		op.addr = addr;
+ 		op.data = data;
++        op.wait_until = 0;
+ 	
+ 		opq.push(op);
+ 	}
+@@ -109,19 +127,35 @@ public:
+ 		}
+ 		
+ 		if (!op.write && op.reading && dla->nvdla2csb_valid) {
+-			printf("(%lu) read response from nvdla: %08x\n", ticks, dla->nvdla2csb_data);
++            if(op.wait_until == 0) printf("(%lu) read response from nvdla: %08x\n", ticks, dla->nvdla2csb_data);
+ 			
+ 			if ((dla->nvdla2csb_data & op.mask) != (op.data & op.mask)) {
+ 				op.reading = 0;
+-				op.tries--;
+-				printf("(%lu) invalid response -- trying again\n", ticks);
+-				if (!op.tries) {
+-					printf("(%lu) ERROR: timed out reading response\n", ticks);
+-					_test_passed = 0;
+-					opq.pop();
+-				}
+-			} else
+-				opq.pop();
++
++                if(op.wait_until == 0) {
++                    if(op.write == 0 && op.addr == 0xffff0003 && op.data == 0x0 && dla->nvdla2csb_data != 0) {
++                        printf("new interrupts come too early, so ignore this reg txn\n");
++                        opq.pop();
++                    } else {
++                        op.tries--;
++                        printf("(%lu) invalid response -- trying again\n", ticks);
++                        if (!op.tries) {
++                            printf("(%lu) ERROR: timed out reading response\n", ticks);
++                            printf("op.write = %d, op.addr = 0x%08x, op.data = %08x, received = 0x%08x\n", op.write,
++                                   op.addr, op.data, (dla->nvdla2csb_data & op.mask));
++                            exit(1);
++                            _test_passed = 0;
++                            opq.pop();
++                        }
++                    }
++                } else if(((dla->nvdla2csb_data & op.mask) & op.data) == op.data) {
++                    printf("(%lu) Intr reg 0x%08x has the expected bit 0x%08x\n", ticks, dla->nvdla2csb_data, op.data);
++                    opq.pop();
++                }
++			} else {
++                if(op.wait_until) printf("(%lu) Intr reg got the expected response 0x%08x\n", ticks, op.data);
++                opq.pop();
++            }
+ 		}
+ 		
+ 		if (!op.write && op.reading)
+@@ -147,7 +181,7 @@ public:
+ 			dla->csb2nvdla_valid = 1;
+ 			dla->csb2nvdla_addr = op.addr;
+ 			dla->csb2nvdla_write = 0;
+-			printf("(%lu) read from nvdla: addr %08x\n", ticks, op.addr);
++            if(op.wait_until == 0) printf("(%lu) read from nvdla: addr %08x\n", ticks, op.addr);
+ 			
+ 			op.reading = 1;
+ 		}
+@@ -557,6 +591,16 @@ public:
+ 				printf("CMD: load_mem %08x bytes to %08x\n", len, addr);
+ 				break;
+ 			}
++            case 6: {
++                uint32_t addr;
++                uint32_t data;
++
++                VERILY_READ(&addr, 4);
++                VERILY_READ(&data, 4);
++                printf("CMD: until %08x %08x\n", addr, data);
++                csb->wait_until(addr, uint32_t(0xffffffff), data);
++                break;
++            }
+ 			case 0xFF:
+ 				printf("CMD: done\n");
+ 				break;
