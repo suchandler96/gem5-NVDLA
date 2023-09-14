@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import errno
+import time
 import six
 import shutil
 import subprocess
@@ -144,6 +145,8 @@ class Sweeper:
         for p in range(self._num_data_points):
             cmd = os.path.join(self.pt_dirs[p], "run.sh")
             sims.append(pool.apply_async(_run_simulation, args=(cmd, )))
+            time.sleep(0.5)     # sleep for a while before launching next to avoid a gem5 bug (socket bind() failed)
+            # see https://gem5-users.gem5.narkive.com/tvnOFKtP/panic-listensocket-listen-listen-failed
         for sim in sims:
             sim.get()
         pool.close()
