@@ -10,15 +10,15 @@ def parse_args():
         "--model-name", help="name of the NN model", required=True)
     parser.add_argument(
         "--caffemodel", help="Path to the Caffe model file", required=True)
-    # parser.add_argument(
-    #     "--prototxt", help="Path to the Caffe prototxt", required=True)
     parser.add_argument(
         "--prototxts", type=str, metavar="dir", nargs='+',
         help="a list of paths to prototxt files in pipeline stage order")
-    # parser.add_argument(
-    #     "--split-at", type=str, metavar="var", nargs='+',
-    #     help="a list of blob names in the provided prototxt so that the upstream "
-    #     "and downstream will be split into separate pipeline stages")
+    parser.add_argument(
+        "--prototxt", help="Path to the Caffe prototxt")
+    parser.add_argument(
+        "--split-at", type=str, metavar="var", nargs='+',
+        help="a list of blob names in the provided prototxt so that the upstream "
+        "and downstream will be split into separate pipeline stages")
     parser.add_argument(
         "--nvdla-hw", default="/home/lactose/nvdla/hw/",
         help="Path to NVDLA hw repo")
@@ -46,6 +46,12 @@ def parse_args():
         help="path to the disk image for full system simulation")
 
     args = parser.parse_args()
+
+    # check legal
+    if len(args.prototxts) != 0:
+        assert args.prototxt is None and args.split_at is None
+    if args.prototxt is not None or args.split_at is not None:
+        assert args.prototxt is not None and args.split_at is not None
     return args
 
 

@@ -187,15 +187,16 @@ def main():
 
     print("""\n\n
 For the next steps, one needs to do the following ON THE HOST MACHINE (OUTSIDE THE DOCKER CONTAINER):\n
-1. Mount the disk image for simulation (ignore if have mounted)
+1. Mount the disk image for simulation (ignore if have mounted, sudo may be required)
 ```
-cd """ + os.path.abspath(options.gem5_nvdla_dir) + " && python3 util/gem5img.py mount " + options.disk_image + """ ./mnt
+cd """ + os.path.abspath(options.gem5_nvdla_dir) + " && mkdir mnt && python3 util/gem5img.py mount " +
+          options.disk_image + """ ./mnt
 ```
 2. Move files generated to the disk image for simulation by
 ```
-mkdir """ + work_dir_in_image + """
-cp """ + os.path.join(os.path.abspath(options.out_dir), "rd_only_var_log") + " " + work_dir_in_image + """
-cp """ + os.path.join(os.path.abspath(options.out_dir), "trace.bin") + " " + work_dir_in_image + """
+sudo mkdir """ + work_dir_in_image + """
+sudo cp """ + os.path.join(os.path.abspath(options.out_dir), "rd_only_var_log") + " " + work_dir_in_image + """
+sudo cp """ + os.path.join(os.path.abspath(options.out_dir), "trace.bin") + " " + work_dir_in_image + """
 ```
 3. Cross-compile schedulers like `my_validation_nvdla_single_thread.cpp` and `pipeline_execute.cpp` and move the \
 binaries to """ + os.path.join(os.path.abspath(options.gem5_nvdla_dir), "mnt/home/") + """;

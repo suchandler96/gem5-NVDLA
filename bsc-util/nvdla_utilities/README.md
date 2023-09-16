@@ -93,7 +93,7 @@ The output file with a suffix of ".nvdla" (e.g., fast-math.nvdla) is the "loadab
     git checkout c54ade0
 
     # re-download everything in memory/
-    cd ../models/
+    cd ../../models/
     rm -rf memory/
     git clone git@github.com:nvdla/simple_memory.git
     mv simple_memory/ memory/
@@ -106,6 +106,7 @@ The output file with a suffix of ".nvdla" (e.g., fast-math.nvdla) is the "loadab
     cd /path/to/nvdla/hw
     git apply path/to/this/repo/bsc-util/nvdla_utilities/modify_cmod
     tools/bin/tmake -build cmod_top
+    cd /path/to/nvdla/vp
     cmake -DCMAKE_INSTALL_PREFIX=build -DSYSTEMC_PREFIX=/usr/local/systemc-2.3.0/ -DNVDLA_HW_PREFIX=/home/YOUR_USR_NAME/path/to/nvdla/hw/ -DNVDLA_HW_PROJECT=nv_full -DCMAKE_BUILD_TYPE=Debug
     make
     make install
@@ -199,6 +200,7 @@ Our repo provides a scheduler that can map multiple batches of NN inference task
 
 2. Install buildroot to rebuild NVDLA compiler, runtime and driver to output debug log. Instead of downloading buildroot from its website, now need to download from its repository, and go back to branch 2017.11.
 ```
+    # apt install cpio
     # git clone git://git.buildroot.net/buildroot
     # cd buildroot
     # git branch -r list all remote branch

@@ -30,7 +30,7 @@ Here we list the structure of codes apart from the gem5 skeleton:
 
 # Installation
 ## Step 0: Install dependencies
-Verilator v3.912, clang v3.4 (install from pre-built binary), clang v6.0.0 (through apt-get), aarch64-linux-gnu-gcc-7 (and g++) (apt-get), SystemC 2.3.0, perl (v5.10 required on NVDLA website, but v5.26.1 was tested ok, with IO-Tee, yaml packages installed), jdk 1.7 (tested with jdk 1.7.0_80) and other dependencies that this repo refers the user to other websites. The following installation process is verified on Ubuntu 18.04.6.
+Verilator v3.912, clang v3.4 (install from pre-built binary), clang v6.0.0 (through apt-get), aarch64-linux-gnu-gcc-7 (and g++) (apt-get), SystemC 2.3.0, perl (v5.10 required on NVDLA website, but v5.26.1 was tested ok, with IO-Tee, yaml packages installed (`apt install libio-tee-perl libyaml-perl`)), jdk 1.7 (tested with jdk 1.7.0_80) and other dependencies that this repo refers the user to other websites. The following installation process is verified on Ubuntu 18.04.6.
 
 ## Step 1: Clone gem5-NVDLA repo
 ```
@@ -91,7 +91,7 @@ echo "export M5_PATH=/path/to/gem5_linux_images/:/path/to/gem5_linux_images/aarc
 ```
     git clone git@github.com:nvdla/hw.git
     cd hw/
-    git apply /path/to/gem5-NVDLA/bsc-util/nvdla_utilities/nvdla_hw_bugfixes.patch
+    git apply /path/to/gem5-NVDLA/bsc-util/nvdla_utilities/nvdla_hw.patch
 ```
 3. Run some sanity tests provided in `nvdla/hw/verif/traces` as introduced at their website to ensure correct compilation.
 
