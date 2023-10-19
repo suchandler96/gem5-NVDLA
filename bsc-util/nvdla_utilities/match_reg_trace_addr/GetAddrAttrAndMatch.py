@@ -24,6 +24,9 @@ def get_output_addresses(addr_log):
     return output_addresses
 
 
+# @output addr_log = {addr: [[rw_id, 'r' or 'w'], ...]}
+# @output sorted_addr = [addr, ...]
+# @output addresses = [['r' or 'w', addr], ...]
 def parse_rd_wr_trace(file_name):
     with open(file_name) as fp:
         lines = fp.readlines()

@@ -157,7 +157,7 @@ class CpuCluster(SubSystem):
 
         self.toL2Bus.mem_side_ports = self.l2.cpu_side
 
-    def addPrivateAccelerator(self, clk_domain, membus, options):
+    def addPrivateAccelerator(self, system, clk_domain, membus, options):
         for cpu in self.cpus:
             #l2  = None if self._l2_type is None else self._l2_type()
             #CpuConfig.print_cpu_list()
@@ -170,7 +170,8 @@ class CpuCluster(SubSystem):
             # in the current phase, we only use one NVDLA accelerator, and spm cannot be used with caches
             if options.dma_enable:
                 assert not options.add_accel_private_cache and not options.add_accel_shared_cache
-                dma_ctrl_str = "dma_enable=1, spm_latency=options.accel_embed_spm_lat, spm_line_size=1024, spm_size=options.embed_spm_size, use_shared_spm=options.shared_spm"
+                dma_ctrl_str = "dma_enable=1, spm_latency=options.accel_embed_spm_lat, spm_line_size=1024, " \
+                               "spm_size=options.embed_spm_size, use_shared_spm=options.shared_spm"
             else:
                 dma_ctrl_str = "dma_enable=0"
 
@@ -185,6 +186,10 @@ class CpuCluster(SubSystem):
 
             outside_ports = ["cpu.accel_%d.dram_port" % i for i in range(4)]
 
+            if options.cvsram_enable:
+                for i in range(4):
+                    exec("self.accel_%d_cvsram = SimpleMemory(latency='2ns', latency_var='0ns', bandwidth='" % i +
+                         options.cvsram_bandwidth + "', port=cpu.accel_%d.sram_port, range=system.mem_ranges[i-4])" % i)
             if options.add_accel_private_cache:
                 for i in range(options.numNVDLA):
                     exec("self.accel_%d_pr_cache = Cache(tag_latency=options.accel_pr_cache_tag_lat,\
@@ -244,10 +249,16 @@ class CpuCluster(SubSystem):
             cpu.accel_2.base_addr_dram = 0xA0000000
             cpu.accel_3.base_addr_dram = 0xA0000000
             # SRAM base addr
-            cpu.accel_0.base_addr_sram = 0xA5000000
-            cpu.accel_1.base_addr_sram = 0xB5000000
-            cpu.accel_2.base_addr_sram = 0xC5000000
-            cpu.accel_3.base_addr_sram = 0xD5000000
+            if options.cvsram_enable:
+                cpu.accel_0.base_addr_sram = system.mem_ranges[-4].start
+                cpu.accel_1.base_addr_sram = system.mem_ranges[-3].start
+                cpu.accel_2.base_addr_sram = system.mem_ranges[-2].start
+                cpu.accel_3.base_addr_sram = system.mem_ranges[-1].start
+            else:       # give a random address base
+                cpu.accel_0.base_addr_sram = 0xA5000000
+                cpu.accel_1.base_addr_sram = 0xB5000000
+                cpu.accel_2.base_addr_sram = 0xC5000000
+                cpu.accel_3.base_addr_sram = 0xD5000000
 
     def addPMUs(self, ints, events=[]):
         """
@@ -468,6 +479,7 @@ class SimpleSystem(BaseSimpleSystem):
     Meant to be used with the classic memory model
     """
     def __init__(self, caches, mem_size, accelerators,
+                 cvsram_enable, cvsram_size,
                  platform=None, **kwargs):
         super(SimpleSystem, self).__init__(mem_size, platform, **kwargs)
 
@@ -478,6 +490,9 @@ class SimpleSystem(BaseSimpleSystem):
         self._accelerators = accelerators
 
         self._caches = caches
+        if cvsram_enable:
+            for _ in range(4):
+                self.mem_ranges.append(AddrRange(start=self.mem_ranges[-1].end, size=cvsram_size))
         if self._caches:
             self.iocache = IOCache(addr_ranges=self.mem_ranges)
         else:
@@ -505,10 +520,11 @@ class SimpleSystem(BaseSimpleSystem):
     def addAccelerators(self, options):
         # For now only add one
         for cluster in self._clusters:
-            #for cpu in cluster.cpu:
-            cluster.addPrivateAccelerator(cluster.clk_domain,
-                                            self.membus.cpu_side_ports,
-                                            options)
+            # for cpu in cluster.cpu:
+            cluster.addPrivateAccelerator(self,
+                                          cluster.clk_domain,
+                                          self.membus.cpu_side_ports,
+                                          options)
 
     def attach_pci(self, dev):
         self.realview.attachPciDevice(dev, self.iobus)

@@ -55,19 +55,34 @@ index aa73fac..06a5686 100644
  run: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/$(TEST)/trace.bin $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla
  	cd $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/$(TEST) && ../../VNV_nvdla trace.bin
 diff --git a/verif/verilator/input_txn_to_verilator.pl b/verif/verilator/input_txn_to_verilator.pl
-index 0c2f7e0..466069e 100755
+index 0c2f7e0..079a706 100755
 --- a/verif/verilator/input_txn_to_verilator.pl
 +++ b/verif/verilator/input_txn_to_verilator.pl
-@@ -19,7 +19,7 @@ my %command_hash = (
+@@ -1,11 +1,13 @@
+ #!/usr/bin/env perl
+ 
+ use strict;
++use File::Basename;
+ 
+ # Configurable parameters
+ my $read_reg_poll_retries = 50000;
+ my $test_dir = '.';
+-$test_dir = $ARGV[0];
++$test_dir = dirname($ARGV[0]);
++
+ 
+ # Creating a hash for the above - command - hex val
+ my %command_hash = (
+@@ -19,7 +21,7 @@ my %command_hash = (
  );
  
  
 -my $input_file = "$test_dir/input.txn";
-+my $input_file = "$test_dir";
++my $input_file = $ARGV[0];
  my $output_file = $ARGV[1];
  
  my $inf;
-@@ -82,6 +82,16 @@ while(<$inf>)
+@@ -82,6 +84,16 @@ while(<$inf>)
      if ($values[0] =~ /wait/) {
        print $ouf pack("C", 1);
      }
@@ -84,123 +99,3 @@ index 0c2f7e0..466069e 100755
      elsif($values[0] =~ /write_reg/) {
        if($size != 3) { die "\nERROR: in write_reg command: $input_line\n" };
  
-diff --git a/verif/verilator/nvdla.cpp b/verif/verilator/nvdla.cpp
-old mode 100644
-new mode 100755
-index e24becf..b899bea
---- a/verif/verilator/nvdla.cpp
-+++ b/verif/verilator/nvdla.cpp
-@@ -40,6 +40,7 @@ class CSBMaster {
- 		int write;
- 		int tries;
- 		int reading;
-+        int wait_until;
- 		uint32_t addr;
- 		uint32_t mask;
- 		uint32_t data;
-@@ -69,9 +70,25 @@ public:
- 		op.data = data;
- 		op.tries = 10;
- 		op.reading = 0;
-+        op.wait_until = 0;
- 	
- 		opq.push(op);
- 	}
-+
-+    void wait_until(uint32_t addr, uint32_t mask, uint32_t data) {
-+        csb_op op;
-+
-+        op.is_ext = 0;
-+        op.write = 0;
-+        op.addr = addr;
-+        op.mask = mask;
-+        op.data = data;
-+        op.tries = 10;
-+        op.reading = 0;
-+        op.wait_until = 1;
-+
-+        opq.push(op);
-+    }
- 	
- 	void write(uint32_t addr, uint32_t data) {
- 		csb_op op;
-@@ -80,6 +97,7 @@ public:
- 		op.write = 1;
- 		op.addr = addr;
- 		op.data = data;
-+        op.wait_until = 0;
- 	
- 		opq.push(op);
- 	}
-@@ -109,19 +127,35 @@ public:
- 		}
- 		
- 		if (!op.write && op.reading && dla->nvdla2csb_valid) {
--			printf("(%lu) read response from nvdla: %08x\n", ticks, dla->nvdla2csb_data);
-+            if(op.wait_until == 0) printf("(%lu) read response from nvdla: %08x\n", ticks, dla->nvdla2csb_data);
- 			
- 			if ((dla->nvdla2csb_data & op.mask) != (op.data & op.mask)) {
- 				op.reading = 0;
--				op.tries--;
--				printf("(%lu) invalid response -- trying again\n", ticks);
--				if (!op.tries) {
--					printf("(%lu) ERROR: timed out reading response\n", ticks);
--					_test_passed = 0;
--					opq.pop();
--				}
--			} else
--				opq.pop();
-+
-+                if(op.wait_until == 0) {
-+                    if(op.write == 0 && op.addr == 0xffff0003 && op.data == 0x0 && dla->nvdla2csb_data != 0) {
-+                        printf("new interrupts come too early, so ignore this reg txn\n");
-+                        opq.pop();
-+                    } else {
-+                        op.tries--;
-+                        printf("(%lu) invalid response -- trying again\n", ticks);
-+                        if (!op.tries) {
-+                            printf("(%lu) ERROR: timed out reading response\n", ticks);
-+                            printf("op.write = %d, op.addr = 0x%08x, op.data = %08x, received = 0x%08x\n", op.write,
-+                                   op.addr, op.data, (dla->nvdla2csb_data & op.mask));
-+                            exit(1);
-+                            _test_passed = 0;
-+                            opq.pop();
-+                        }
-+                    }
-+                } else if(((dla->nvdla2csb_data & op.mask) & op.data) == op.data) {
-+                    printf("(%lu) Intr reg 0x%08x has the expected bit 0x%08x\n", ticks, dla->nvdla2csb_data, op.data);
-+                    opq.pop();
-+                }
-+			} else {
-+                if(op.wait_until) printf("(%lu) Intr reg got the expected response 0x%08x\n", ticks, op.data);
-+                opq.pop();
-+            }
- 		}
- 		
- 		if (!op.write && op.reading)
-@@ -147,7 +181,7 @@ public:
- 			dla->csb2nvdla_valid = 1;
- 			dla->csb2nvdla_addr = op.addr;
- 			dla->csb2nvdla_write = 0;
--			printf("(%lu) read from nvdla: addr %08x\n", ticks, op.addr);
-+            if(op.wait_until == 0) printf("(%lu) read from nvdla: addr %08x\n", ticks, op.addr);
- 			
- 			op.reading = 1;
- 		}
-@@ -557,6 +591,16 @@ public:
- 				printf("CMD: load_mem %08x bytes to %08x\n", len, addr);
- 				break;
- 			}
-+            case 6: {
-+                uint32_t addr;
-+                uint32_t data;
-+
-+                VERILY_READ(&addr, 4);
-+                VERILY_READ(&data, 4);
-+                printf("CMD: until %08x %08x\n", addr, data);
-+                csb->wait_until(addr, uint32_t(0xffffffff), data);
-+                break;
-+            }
- 			case 0xFF:
- 				printf("CMD: done\n");
- 				break;

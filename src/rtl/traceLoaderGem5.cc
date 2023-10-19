@@ -202,15 +202,13 @@ TraceLoaderGem5::axievent(int* waiting_for_gem5_mem) {
         // here we are at the beginning of the trace, and hence
         // we don't care much about timing
         const uint8_t *buf = op.buf;
-        printf("AXI: loading (TRACE) memory at 0x%08x, length = %d\n",\
-        op.addr, op.len);
-        while (op.len) {
-            // this op we can do it atomicly
-            // don't access in timing here
-            axi->write(op.addr, *buf, false);
-            buf++;
-            op.addr++;
-            op.len--;
+        printf("AXI: loading (TRACE) memory at 0x%08x, length = %d\n", op.addr, op.len);
+        // todo: for use_fake_mem, write to / dump from fake ram
+        for (int pos = 0; pos < op.len; pos += AXI_WIDTH / 8) {
+            axi->wrapper->addLongWriteReq(axi->sram, false,
+                                          op.addr + pos,
+                                          (op.len - pos) < AXI_WIDTH / 8 ? (op.len - pos) : AXI_WIDTH / 8,
+                                          buf + pos, 0xffffffffffffffff);
         }
         break;
     }

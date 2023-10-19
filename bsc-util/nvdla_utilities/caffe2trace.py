@@ -179,11 +179,7 @@ def main():
     process_log(options)
 
     # move to disk image for full system simulation
-    # assert os.path.exists(os.path.join(options.gem5_nvdla_dir, "mnt/home/"))
     work_dir_in_image = os.path.join(os.path.abspath(options.gem5_nvdla_dir), "mnt/home/" + options.model_name)
-    # os.makedirs(work_dir_in_image, exist_ok=True)
-    # os.system("cp " + os.path.join(options.out_dir, "rd_only_var_log") + " " + work_dir_in_image)
-    # os.system("cp " + os.path.join(options.out_dir, "trace.bin") + " " + work_dir_in_image)
 
     print("""\n\n
 For the next steps, one needs to do the following ON THE HOST MACHINE (OUTSIDE THE DOCKER CONTAINER):\n

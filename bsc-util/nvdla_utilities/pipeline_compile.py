@@ -37,7 +37,7 @@ def parse_args():
         help="directory to put the generated sc.log, register txn and mem traces")
     parser.add_argument(
         "--out-dir-multibatch", default="/home/lactose/nvdla/traces/lenet_auto_pipeline/multibatch/",
-        help="directory to put the generated sc.log, register txn and mem traces")
+        help="directory to put converted input.txn and trace.bin files across all pipeline stages and batches")
     parser.add_argument(
         "--gem5-nvdla-dir", default="/home/lactose/gem5-nvdla/",
         help="directory to gem5-NVDLA repo")
@@ -122,21 +122,6 @@ def main():
             # the nvdla/vp docker image has perl v5.22.1 installed, ok
             perl_script_path = os.path.join(os.path.abspath(options.nvdla_hw),
                                             "verif/verilator/input_txn_to_verilator.pl")
-
-            # check contents of perl script. If it does not contain keyword `until`, abort and remind the user
-            with open(perl_script_path, "r") as f:
-                perl_script_lines = f.readlines()
-            found = False
-            for line in perl_script_lines:
-                if "until" in line:
-                    found = True
-                    break
-            if not found:
-                print("Patch file " + os.path.join(os.path.abspath(options.gem5_nvdla_dir),
-                                                   "bsc-util/nvdla_utilities/input_txn_to_verilator.pl.patch") +
-                      " should be applied to " + perl_script_path)
-                exit(1)
-
             os.system("perl " + perl_script_path + " " + out_txn_path + " " + out_bin_path)
 
 

@@ -136,7 +136,7 @@ rtlNVDLA::handleRequest(PacketPtr pkt) {
 void
 rtlNVDLA::initNVDLA(bool use_shared_spm) {
     // Wrapper
-    wr = new Wrapper_nvdla(id_nvdla, traceEnable, "trace.vcd", max_req_inflight,
+    wr = new Wrapper_nvdla(id_nvdla, max_req_inflight,
     dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable, use_shared_spm);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
@@ -211,10 +211,10 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
     if (!out.dma_read_buffer.empty()) {
         auto& aux = out.dma_read_buffer.front();
 
-        uint32_t real_addr = getRealAddr(aux.first, false);      // always suppose dram DMA fetch
+        uint64_t real_addr = getRealAddr(aux.first, false);      // always suppose dram DMA fetch
         if (dma_rd_engine->atEndOfBlock()) {
             dma_rd_engine->startFill(real_addr, aux.second);
-            printf("(%lu) nvdla#%d DMA read req is issued: addr 0x%08x, len %d\n", wr->tickcount, id_nvdla, aux.first, aux.second);
+            printf("(%lu) nvdla#%d DMA read req is issued: addr 0x%08lx, len %d\n", wr->tickcount, id_nvdla, aux.first, aux.second);
             // stats.num_dma_rd++;
             // after successfully calling DMA, pop aux
             out.dma_read_buffer.pop();
@@ -226,9 +226,9 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
     if(!out.dma_write_buffer.empty()) {
         auto& aux = out.dma_write_buffer.front();
         if (dma_wr_engine->atEndOfBlock()) {                    // previous DMA write has been sent
-            uint32_t real_addr = getRealAddr(aux.first, false);     // always suppose dram DMA write
+            uint64_t real_addr = getRealAddr(aux.first, false);     // always suppose dram DMA write
             dma_wr_engine->startFill(real_addr, aux.second.size(), aux.second.data());
-            printf("(%lu) nvdla#%d DMA write req is issued: addr 0x%08x, len %d\n", wr->tickcount, id_nvdla, aux.first, aux.second.size());
+            printf("(%lu) nvdla#%d DMA write req is issued: addr 0x%08lx, len %ld\n", wr->tickcount, id_nvdla, aux.first, aux.second.size());
             // stats.num_dma_wr++;
             out.dma_write_buffer.pop();
         }
@@ -264,10 +264,10 @@ rtlNVDLA::runIterationNVDLA() {
     if (!waiting_for_gem5_mem) {
         if (!use_fake_mem) {
             wr->axi_dbb->eval_timing();
-            // wr->axi_cvsram->eval_timing();
+            wr->axi_cvsram->eval_timing();
         } else {
             wr->axi_dbb->eval_ram();
-            // wr->axi_cvsram->eval_ram();
+            wr->axi_cvsram->eval_ram();
         }
     }
 
@@ -383,7 +383,7 @@ rtlNVDLA::handleResponseNVDLA(PacketPtr pkt, bool sram) {
                     "Handling response for data read Timing\n");
             // Get the data ptr and sent it
             const uint8_t* dataPtr = pkt->getConstPtr<uint8_t>();
-            uint32_t addr_nvdla = getAddrNVDLA(pkt->getAddr(), sram);
+            uint64_t addr_nvdla = getAddrNVDLA(pkt->getAddr(), sram);
             if (sram) {
                 // SRAM
                 wr->axi_cvsram->inflight_resp(addr_nvdla, dataPtr);
@@ -477,7 +477,7 @@ rtlNVDLA::MemNVDLAPort::recvRangeChange() {
 bool
 rtlNVDLA::MemNVDLAPort::recvTimingResp(PacketPtr pkt) {
     DPRINTF(rtlNVDLA, "Got response SRAM?: %d\n", sram);
-    return owner->handleResponseNVDLA(pkt,sram);
+    return owner->handleResponseNVDLA(pkt, sram);
 }
 
 void
@@ -513,9 +513,9 @@ rtlNVDLA::MemNVDLAPort::tick() {
     }
 }
 
-uint32_t
-rtlNVDLA::getRealAddr(uint32_t addr, bool sram) {
-    uint32_t real_addr;
+uint64_t
+rtlNVDLA::getRealAddr(uint64_t addr, bool sram) {
+    uint64_t real_addr;
 
     if (sram) {
         // Base addr is 0x5000_0000
@@ -527,9 +527,9 @@ rtlNVDLA::getRealAddr(uint32_t addr, bool sram) {
     return real_addr;
 }
 
-uint32_t
-rtlNVDLA::getAddrNVDLA(uint32_t addr, bool sram) {
-    uint32_t real_addr;
+uint64_t
+rtlNVDLA::getAddrNVDLA(uint64_t addr, bool sram) {
+    uint64_t real_addr;
 
     if (sram) {
         // Base addr is 0x5000_0000
@@ -544,61 +544,12 @@ rtlNVDLA::getAddrNVDLA(uint32_t addr, bool sram) {
     return real_addr;
 }
 
-
-uint8_t
-rtlNVDLA::readAXI(uint32_t addr, bool sram, bool timing) {
-    // Update stats
-    stats.nvdla_reads++;
-    // calculate the addr
-    uint32_t real_addr = getRealAddr(addr,sram);
-    // Create packet
-    RequestPtr req = std::make_shared<Request>(real_addr, 1,
-                                               Request::UNCACHEABLE, 0);
-    PacketPtr packet = nullptr;
-    // we create the real packet, write request
-    packet = Packet::createRead(req);
-    packet->allocate();
-    // send the packet in timing?
-    if (sram) {
-        sramPort.sendPacket(packet, timing);
-        return sramPort.recentData;
-    } else {
-        dramPort.sendPacket(packet, timing);
-        return dramPort.recentData;
-    }
-    return 1;
-}
-
-uint32_t
-rtlNVDLA::readAXI32(uint32_t addr, bool sram, bool timing) {
-
-    // Update stats
-    stats.nvdla_reads++;
-
-    uint32_t real_addr = getRealAddr(addr,sram);
-
-    RequestPtr req = std::make_shared<Request>(real_addr, 4, Request::UNCACHEABLE, 0);
-    PacketPtr packet = nullptr;
-    // we create the real packet, write request
-    packet = Packet::createRead(req);
-    packet->allocate();
-    // send the packet in timing?
-    if (sram) {
-        sramPort.sendPacket(packet, timing);
-        return sramPort.recentData32;
-    } else {
-        dramPort.sendPacket(packet, timing);
-        return dramPort.recentData32;
-    }
-    return 1;
-}
-
 const uint8_t *
-rtlNVDLA::readAXIVariable(uint32_t addr, bool sram, bool timing, unsigned int size) {
+rtlNVDLA::readAXIVariable(uint64_t addr, bool sram, bool timing, unsigned int size) {
     // Update stats
     stats.nvdla_reads++;
 
-    uint32_t real_addr = getRealAddr(addr,sram);
+    uint64_t real_addr = getRealAddr(addr, sram);
 
     DPRINTF(rtlNVDLA,
             "Read AXI Variable addr: %#x, real_addr %#x, size %d\n",
@@ -621,11 +572,11 @@ rtlNVDLA::readAXIVariable(uint32_t addr, bool sram, bool timing, unsigned int si
 }
 
 void
-rtlNVDLA::writeAXI(uint32_t addr, uint8_t data, bool sram, bool timing) {
+rtlNVDLA::writeAXI(uint64_t addr, uint8_t data, bool sram, bool timing) {
     // Update stats
     stats.nvdla_writes++;
 
-    uint32_t real_addr = getRealAddr(addr,sram);
+    uint64_t real_addr = getRealAddr(addr, sram);
 
     DPRINTF(rtlNVDLA,
             "Write AXI Variable addr: %#x, real_addr %#x, data_to_write 0x%02x\n",
@@ -653,10 +604,10 @@ rtlNVDLA::writeAXI(uint32_t addr, uint8_t data, bool sram, bool timing) {
 }
 
 void
-rtlNVDLA::writeAXILong(uint32_t addr, uint32_t length, uint8_t* data, uint64_t mask, bool sram, bool timing) {
+rtlNVDLA::writeAXILong(uint64_t addr, uint32_t length, uint8_t* data, uint64_t mask, bool sram, bool timing) {
     stats.nvdla_writes++;
 
-    uint32_t real_addr = getRealAddr(addr,sram);
+    uint64_t real_addr = getRealAddr(addr,sram);
     RequestPtr req = std::make_shared<Request>(real_addr, length, 0, 0);
     std::vector<bool> byte_enable_vec(length);
 
@@ -688,7 +639,7 @@ rtlNVDLA::try_get_dma_read_data(uint32_t size) {
     uint8_t dma_temp_buffer[size];
     bool get_success = dma_rd_engine->tryGet(dma_temp_buffer, size);
     if (get_success) {
-        // todo: remember whether this DMA request comes from CVSRAM or DBBIF
+        // we assume only DBB involves DMA. SRAM should not be accessed with DMA
         wr->axi_dbb->inflight_dma_resp(dma_temp_buffer, size);
     }
 }

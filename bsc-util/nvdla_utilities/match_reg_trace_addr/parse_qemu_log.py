@@ -12,11 +12,12 @@ class Data:
         self.attr = None        # weight, activation, unknown
         self.addr_id = None
         self.offset = None
-        self.addr = None
+        self.addr = None        # offset 0x80000000 by default
         self.size = None
+        self.liveness = None    # (rw_id of first access of first element, rw_id of last access pf last element)
 
     def valid(self):
-        if self.addr_id == 0 and self.offset == 0 and self.size == 0:
+        if self.addr_id <= 0 or (self.addr_id == 0 and self.offset == 0 and self.size == 0):
             return False
         return True
 
@@ -29,35 +30,41 @@ class Surface:
 
 
 class Workload:
-    def __init__(self):
-        self.data = {}
-        self.surfaces = []
-        self.inputs = []    # once got, the inputs and outputs are sorted in reverse order of size
-        self.outputs = []
+    def __init__(self, in_dir):
+        self.in_dir = in_dir        # each workload corresponds to a directory of log files
+        self.data = {}              # {(addr_id, offset): class Data}
+        self.surfaces = []          # [class Surface, ...]
+        self.inputs = []            # once got, the inputs and outputs are sorted in reverse order of size
+        self.outputs = []           # [(addr_id, offset), ...]
         self.activations = []
+        self.intermediate_act = []  # [(addr_id, offset), ...]
         self.weights = []
 
-        self.addr_base_map = {}
+        self.addr_base_map = {}     # {addr_base_id, addr_base_val}; addr_base_val starts from 0xc0000000
 
-    def get_workload_info(self, in_dir):
-        with open(os.path.join(in_dir, "qemu_log")) as fp:
+        self.addr_log = None        # = {addr: [[rw_id, 'r' or 'w'], ...]}
+        self.sorted_addr = None     # = [addr, ...]
+        self.raw_addr_log = None    # = [['r' or 'w', addr], ...]
+        self.rd_only_vars = []      # = [[addr, len], ...]
+
+        with open(os.path.join(self.in_dir, "qemu_log")) as fp:
             lines = fp.readlines()
 
         self.surfaces, self.data = construct_surfaces(lines)
         self.addr_base_map = get_addr_mapping(lines)
 
         # figure out the attributes of "unknown"
-        mem_trace_path = os.path.join(in_dir, "VP_mem_rd_wr")
+        mem_trace_path = os.path.join(self.in_dir, "VP_mem_rd_wr")
         assert os.path.exists(mem_trace_path)
 
-        addr_log, sorted_addr, raw_addr_log = GetAddrAttrAndMatch.parse_rd_wr_trace(mem_trace_path)
+        self.addr_log, self.sorted_addr, self.raw_addr_log = GetAddrAttrAndMatch.parse_rd_wr_trace(mem_trace_path)
 
         # set data_blk.addr and determine "unknown"
         for _, data_blk in self.data.items():
             if data_blk.addr_id != -1:
                 data_blk.addr = ((self.addr_base_map[data_blk.addr_id] + data_blk.offset) & 0x0fffffff) | 0x80000000
                 if data_blk.attr == "unknown":
-                    addr_log_entry = addr_log[data_blk.addr]
+                    addr_log_entry = self.addr_log[data_blk.addr]
                     read_only = True
                     for visit_pair in addr_log_entry:
                         if visit_pair[1] == 'w':
@@ -89,8 +96,28 @@ class Workload:
                     assert False
             surface.unknowns = []
 
-        self.inputs, self.outputs = get_inout_data_blks(self.data, addr_log)
+        self.inputs, self.outputs = get_inout_data_blks(self.data, self.addr_log)
 
+        rd_only_addr2desc = {}
+        for i in self.inputs:
+            rd_only_addr2desc[self.data[i].addr] = i
+        for w in self.weights:
+            rd_only_addr2desc[self.data[w].addr] = w
+
+        for rw_and_addr in self.raw_addr_log:
+            # rw_and_addr[0] is 'r' or 'w', while rw_and_addr[1] is the raw address
+            if 'r' in rw_and_addr[0] and rw_and_addr[1] in rd_only_addr2desc.keys():
+                self.rd_only_vars.append(rd_only_addr2desc[rw_and_addr[1]])
+
+        # do liveness analysis for each Data object
+        for _, data_blk in self.data.items():
+            first = data_blk.addr
+            last = ((data_blk.addr + data_blk.size - 0x1) // 0x40) * 0x40
+            assert first in self.addr_log
+            assert last in self.addr_log
+            data_blk.liveness = (self.addr_log[first][0][0], self.addr_log[last][-1][0])
+
+    def print_workload_info(self):
         for key, val in self.data.items():
             print(val.attr, val.addr_id, hex(val.offset), hex(val.addr) if val.addr is not None else None, hex(val.size))
         print("-----------------------")
@@ -109,16 +136,6 @@ class Workload:
             print("activations = ", surface.activations)
             print("unknowns = ", surface.unknowns)
             print("\n")
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--work-dir", default="/home/lactose/nvdla/traces/lenet_auto/",
-        help="directory to put the generated sc.log, register txn and mem traces")
-
-    args = parser.parse_args()
-    return args
 
 
 # @output0: a list of surfaces, each is an object of Surface class
@@ -213,10 +230,20 @@ def get_inout_data_blks(data, addr_log):
     return inputs, outputs
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--work-dir", default="/home/lactose/nvdla/traces/lenet_auto/",
+        help="directory to put the generated sc.log, register txn and mem traces")
+
+    args = parser.parse_args()
+    return args
+
+
 def main():
     options = parse_args()
-    workload = Workload()
-    workload.get_workload_info(options.work_dir)
+    workload = Workload(options.work_dir)
+    workload.print_workload_info()
 
 
 if __name__ == "__main__":

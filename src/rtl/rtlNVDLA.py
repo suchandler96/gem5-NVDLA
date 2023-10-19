@@ -36,8 +36,8 @@ class rtlNVDLA(rtlObject):
     cxx_header = "rtl/rtlNVDLA.hh"
     cxx_class = 'gem5::rtlNVDLA'
 
-    cpu_side  = ResponsePort("CPU side port, receives requests")
-    mem_side  = RequestPort("Memory side port, sends requests")
+    cpu_side = ResponsePort("CPU side port, receives requests")
+    mem_side = RequestPort("Memory side port, sends requests")
     sram_port = RequestPort("High Speed port to SRAM, sends requests")
     dram_port = RequestPort("Regular Speed to DRAM, sends requests")
     dma_port = RequestPort("DMA port to DRAM")

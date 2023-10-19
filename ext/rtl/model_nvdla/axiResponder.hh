@@ -68,7 +68,7 @@ private:
 
     struct axi_aw_txn {
         uint8_t awid;
-        uint32_t awaddr;
+        uint64_t awaddr;
         uint8_t awlen;
     };
     std::queue<axi_aw_txn> aw_fifo;
@@ -85,20 +85,20 @@ private:
     };
     std::queue<axi_b_txn> b_fifo;
 
-    std::map<uint32_t, std::vector<uint8_t> > ram;
+    std::map<uint64_t, std::vector<uint8_t> > ram;
 
     struct connections dla;
     const char *name;
-    Wrapper_nvdla *wrapper;
 
     // gem5 memory
     // map key:addr, data:txn
-    std::map<uint32_t, std::list<axi_r_txn>> inflight_req;
-    std::list<uint32_t> inflight_req_order;
+    std::map<uint64_t, std::list<axi_r_txn>> inflight_req;
+    std::list<uint64_t> inflight_req_order;
     unsigned int max_req_inflight;
 
     // dma & spm
     // function together with inflight_req & inflight_req_order
+    bool dma_enable;
     std::map<uint64_t, uint32_t> inflight_dma_addr_size;    // record the inflight dma request sizes
     std::queue<uint64_t> inflight_dma_addr_queue;           // keep dma request order
     // todo: inflight_dma_addr_size can keep track of involved inflight_req iterators
@@ -106,32 +106,31 @@ private:
     // prefetch
     uint32_t pft_threshold;
     uint32_t dma_pft_threshold;
-    std::list<std::tuple<uint32_t, uint32_t, uint32_t>> read_var_log;  // each tuple is (addr, length, issued_len) of a read-only variable
-
-    bool sram;
+    std::list<std::tuple<uint64_t, uint32_t, uint32_t>> read_var_log;  // each tuple is (addr, length, issued_len) of a read-only variable
 
 public:
-    AXIResponder(struct connections _dla, Wrapper_nvdla *_wrapper,
-                     const char *_name,
-                     bool sram, const unsigned int maxReq);
+    AXIResponder(struct connections _dla,
+                 Wrapper_nvdla *_wrapper,
+                 const char *_name,
+                 bool sram,
+                 const unsigned int maxReq,
+                 bool _dma_enable);
 
     uint32_t getRequestsOnFlight();
 
     // In this function we read from memory
-    uint8_t read_ram(uint32_t addr);
+    uint8_t read_ram(uint64_t addr);
 
     // In this function, we get read requests from traceLoaderGem5 and access memory for it
-    void read_for_traceLoaderGem5(uint32_t start_addr, uint32_t length);
+    void read_for_traceLoaderGem5(uint64_t start_addr, uint32_t length);
 
     // In this function, we check whether the read requests from traceLoaderGem5 have been responded by memory
     // If so, we forward the response to traceLoaderGem5
-    uint32_t read_response_for_traceLoaderGem5(uint32_t start_addr, uint8_t* data_buffer);
+    uint32_t read_response_for_traceLoaderGem5(uint64_t start_addr, uint8_t* data_buffer);
 
     // In this function we write to memory
-    void write(uint32_t addr, uint8_t data, bool timing);
-    void write_ram(uint32_t addr, uint8_t data);
-
-    void insertPacket(uint8_t* data, axi_r_txn* txn);
+    void write(uint64_t addr, uint8_t data, bool timing);
+    void write_ram(uint64_t addr, uint8_t data);
 
     void eval_timing();
     void eval_ram();
@@ -141,12 +140,16 @@ public:
     void process_read_resp();
 
     // callback methods, called by gem5 ports in rtlNVDLA when data is returned
-    void inflight_resp(uint32_t addr, const uint8_t* data);
+    void inflight_resp(uint64_t addr, const uint8_t* data);
     void inflight_dma_resp(const uint8_t* data, uint32_t len);
 
     // prefetching-related
-    void add_rd_var_log_entry(uint32_t addr, uint32_t size);
-    void log_req_issue(uint32_t addr);
+    void add_rd_var_log_entry(uint64_t addr, uint32_t size);
+    void log_req_issue(uint64_t addr);
     void generate_prefetch_request();
+
+    Wrapper_nvdla *wrapper;
+
+    const bool sram;
 };
 #endif

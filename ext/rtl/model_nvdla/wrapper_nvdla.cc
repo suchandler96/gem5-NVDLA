@@ -54,15 +54,11 @@ double sc_time_stamp() {
 
 ScratchpadMemory* Wrapper_nvdla::shared_spm = nullptr;
 
-Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name, const unsigned int maxReq,
+Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
                              bool _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num,
                              bool pft_enable, bool use_shared_spm) :
         id_nvdla(id_nvdla),
         tickcount(0),
-        tfp(NULL),
-        tfpname(name),
-        traceOn(traceOn),
-        dma_enable(_dma_enable),
         prefetch_enable(pft_enable),
         use_shared_spm(use_shared_spm) {
     if (use_shared_spm && shared_spm) {
@@ -82,15 +78,6 @@ Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name, const
     // but we will use it depending on traceOn
     // otherwise this function launch an error
     Verilated::traceEverOn(true);
-    tfp = new VerilatedVcdC;
-    // dla->trace(tfp, 99);
-    tfp->open(name.c_str());
-    if (!tfp) {
-        return;
-    }
-
-    std::cout << tfpname << std::endl;
-    //tfp->open(tfpname.c_str());
 
     // CSB Wrapper
     csb = new CSBMaster(dla, this);
@@ -126,7 +113,7 @@ Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name, const
         .r_rdata = dla->nvdla_core2dbb_r_rdata,
     };
     axi_dbb = new AXIResponder(dbbconn, this, "DBB",
-              false, maxReq);
+              false, maxReq, _dma_enable);
 
     // AXI CVSRAM
     AXIResponder::connections cvsramconn = {
@@ -159,19 +146,11 @@ Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, bool traceOn, std::string name, const
         .r_rdata = dla->nvdla_core2cvsram_r_rdata,
     };
     axi_cvsram = new AXIResponder(cvsramconn, this, "CVSRAM",
-                                      true, maxReq);
-    
-    // Clear output
-    // memset(&output,0,sizeof(outputNVDLA));
+                                      true, maxReq, false);
 }
 
 
 Wrapper_nvdla::~Wrapper_nvdla() {
-    if (tfp) {
-        tfp->dump(tickcount);
-        tfp->close();
-            delete tfp;
-    }
     // TODO: this was causing a segfault not sure
     // TO CHECK
     //dla->final(); 
@@ -186,14 +165,6 @@ Wrapper_nvdla::~Wrapper_nvdla() {
         delete spm;
     }
     exit(EXIT_SUCCESS);
-}
-
-void Wrapper_nvdla::enableTracing() {
-    traceOn = true;
-}
-
-void Wrapper_nvdla::disableTracing() {
-    traceOn = false;
 }
 
 void Wrapper_nvdla::tick() {
@@ -213,10 +184,6 @@ void Wrapper_nvdla::tick() {
 
 void Wrapper_nvdla::advanceTickCount() {
     tickcount++;
-    if (tfp and traceOn) {
-        tfp->dump(tickcount);
-    }
-    
 }
 
 uint64_t Wrapper_nvdla::getTickCount() {
@@ -236,7 +203,6 @@ void Wrapper_nvdla::reset() {
     dla->eval();
 
     advanceTickCount();
-    //top->rst = 0;
 }
 
 void Wrapper_nvdla::init() {
@@ -259,13 +225,11 @@ void Wrapper_nvdla::init() {
         dla->dla_csb_clk = 1;
         dla->eval();
         tickcount++;
-        tfp->dump(tickcount);
         
         dla->dla_core_clk = 0;
         dla->dla_csb_clk = 0;
         dla->eval();
         tickcount++;
-        tfp->dump(tickcount);
     }
 
     dla->dla_reset_rstn = 0;
@@ -277,13 +241,11 @@ void Wrapper_nvdla::init() {
         dla->dla_csb_clk = 1;
         dla->eval();
         tickcount++;
-        tfp->dump(tickcount);
         
         dla->dla_core_clk = 0;
         dla->dla_csb_clk = 0;
         dla->eval();
         tickcount++;
-        tfp->dump(tickcount);
     }
     
     dla->dla_reset_rstn = 1;
@@ -295,18 +257,16 @@ void Wrapper_nvdla::init() {
         dla->dla_csb_clk = 1;
         dla->eval();
         tickcount++;
-        tfp->dump(tickcount);
         
         dla->dla_core_clk = 0;
         dla->dla_csb_clk = 0;
         dla->eval();
         tickcount++;
-        tfp->dump(tickcount);
     }
 }
 
 void Wrapper_nvdla::addReadReq(bool read_sram, bool read_timing,
-                uint32_t read_addr, uint32_t read_bytes) {
+                uint64_t read_addr, uint32_t read_bytes) {
 
     output.read_valid = true;
     read_req_entry_t rd;
@@ -318,7 +278,7 @@ void Wrapper_nvdla::addReadReq(bool read_sram, bool read_timing,
 }
 
 void Wrapper_nvdla::addWriteReq(bool write_sram, bool write_timing,
-                 uint32_t write_addr, uint8_t write_data) {
+                 uint64_t write_addr, uint8_t write_data) {
     output.write_valid = true;
     write_req_entry_t wr;
     wr.write_sram   = write_sram;
@@ -329,7 +289,7 @@ void Wrapper_nvdla::addWriteReq(bool write_sram, bool write_timing,
 }
 
 void Wrapper_nvdla::addLongWriteReq(bool write_sram, bool write_timing,
-                uint32_t write_addr, uint32_t length, const uint8_t* const write_data, uint64_t mask) {
+                uint64_t write_addr, uint32_t length, const uint8_t* const write_data, uint64_t mask) {
     output.write_valid = true;
     long_write_req_entry_t wr;
     wr.write_sram = write_sram;

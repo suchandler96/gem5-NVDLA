@@ -201,9 +201,7 @@ class rtlNVDLA : public rtlObject
 
     const unsigned int max_req_inflight;
 
-    bool timingMode;
-
-    uint64_t id_nvdla;
+    uint32_t id_nvdla;
 
     uint64_t baseAddrDRAM;
     uint64_t baseAddrSRAM;
@@ -211,7 +209,6 @@ class rtlNVDLA : public rtlObject
     uint32_t startMemRegion;
     uint32_t startBaseTrace;
     char *ptrTrace;
-    bool traceEnable;
 
     struct nvdla_stats
     {
@@ -263,15 +260,12 @@ public:
 
     void finishTranslation(WholeTranslationState *state) override;
 
-    uint8_t readAXI(uint32_t addr, bool sram, bool timing);
-    uint32_t readAXI32(uint32_t addr, bool sram, bool timing);
-    const uint8_t * readAXIVariable(uint32_t addr, bool sram,
-                                    bool timing, unsigned int size);
-    void writeAXI(uint32_t addr, uint8_t data, bool sram, bool timing);
-    void writeAXILong(uint32_t addr, uint32_t length, uint8_t* data, uint64_t mask, bool sram, bool timing);
+    const uint8_t * readAXIVariable(uint64_t addr, bool sram, bool timing, unsigned int size);
+    void writeAXI(uint64_t addr, uint8_t data, bool sram, bool timing);
+    void writeAXILong(uint64_t addr, uint32_t length, uint8_t* data, uint64_t mask, bool sram, bool timing);
 
-    uint32_t getRealAddr(uint32_t addr, bool sram);
-    uint32_t getAddrNVDLA(uint32_t addr, bool sram);
+    uint64_t getRealAddr(uint64_t addr, bool sram);
+    uint64_t getAddrNVDLA(uint64_t addr, bool sram);
     /**
      * Register the stats
      */

@@ -34,4 +34,8 @@
 --pft-threshold %(pft-threshold)s \
 %(use-fake-mem)s \
 %(shared-spm)s \
+%(cvsram-enable)s \
+--cvsram-size %(cvsram-size)s \
+--cvsram-bandwidth %(cvsram-bandwidth)s \
+--remapper %(remapper)s \
 > stdout 2> stderr

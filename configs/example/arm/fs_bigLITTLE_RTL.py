@@ -111,19 +111,19 @@ class Ex5LittleCluster(devices.CpuCluster):
                                          cpu_voltage, *cpu_config)
 
 def createSystem(caches, kernel, accelerators, ddr_type, bootscript,
-                 machine_type="VExpress_GEM5",disks=[],
+                 machine_type="VExpress_GEM5", disks=[], cvsram_enable=False, cvsram_size="1MB",
                  mem_size=default_mem_size, bootloader=None):
     platform = ObjectList.platform_list.get(machine_type)
     m5.util.inform("Simulated platform: %s", platform.__name__)
 
-    sys = devices.SimpleSystem(caches, mem_size, accelerators, platform(),
+    sys = devices.SimpleSystem(caches, mem_size, accelerators, cvsram_enable, cvsram_size, platform(),
                                workload=ArmFsLinux(
                                    object_file=SysPaths.binary(kernel)),
                                readfile=bootscript)
 
     # sys.mem_ctrls = [ SimpleMemory(range=r, port=sys.membus.mem_side_ports) for r in sys.mem_ranges ]
-    sys.mem_ctrls = [MemCtrl(dram=eval(ddr_type + "(range=r)"), port=sys.membus.mem_side_ports) for r in sys.mem_ranges]
-
+    src_mem_ranges = sys.mem_ranges[:-4] if cvsram_enable else sys.mem_ranges
+    sys.mem_ctrls = [MemCtrl(dram=eval(ddr_type + "(range=r)"), port=sys.membus.mem_side_ports) for r in src_mem_ranges]
 
     sys.connect()
 
@@ -235,6 +235,16 @@ def addOptions(parser):
     parser.add_argument("--shared-spm", action="store_true", default=False, help="change embedded SPM to shared")
 
 
+    # options.cvsram_enable
+    parser.add_argument("--cvsram-enable", action="store_true", default=False, help="Use NVDLA CVSRAM")
+    # options.cvsram_size
+    parser.add_argument("--cvsram-size", type=str, default="1MB", help="specify NVDLA CVSRAM size")
+    # options.cvsram_bandwidth
+    parser.add_argument("--cvsram-bandwidth", type=str, default="128GB/s", help="Bandwidth of CVSRAM")
+    # options.remapper
+    parser.add_argument("--remapper", help="Prefix of the name of remapper class", default="Identity")
+
+
     # options.add_accel_private_cache
     parser.add_argument("--add-accel-private-cache", action="store_true", default=False, help="Add private cache for NVDLA")
 
@@ -332,6 +342,8 @@ def build(options):
                           options.bootscript,
                           options.machine_type,
                           disks=disks,
+                          cvsram_enable=options.cvsram_enable,
+                          cvsram_size=options.cvsram_size,
                           mem_size=options.mem_size,
                           bootloader=options.bootloader)
 

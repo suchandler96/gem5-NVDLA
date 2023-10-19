@@ -1,5 +1,7 @@
 import os
 import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
+from match_reg_trace_addr.remap import *
 import json
 import errno
 import time
@@ -38,27 +40,44 @@ param_types = {
     "pft-enable": PftEnableParam,
     "pft-threshold": PftThresholdParam,
     "use-fake-mem": UseFakeMemParam,
-    "shared-spm": SharedSPMParam
+    "shared-spm": SharedSPMParam,
+    "cvsram-enable": CVSRAMEnableParam,
+    "cvsram-size": CVSRAMSizeParam,
+    "cvsram-bandwidth": CVSRAMBandwidthParam,
+    "remapper": RemapperParam
 }
 
 
 class Sweeper:
-    def __init__(self, cpt_dir, output_dir, params_dir, gem5_binary, scheduler, scheduler_params):
-        self._cpt_dir = cpt_dir
-        self._output_dir = os.path.abspath(output_dir)
-        if not os.path.isdir(self._output_dir):
-            os.mkdir(self._output_dir)
+    def __init__(self, args):
+        self.gem5_nvdla_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
+        self.rerun_cpt = args.rerun_cpt
+        self.cpt_dir = None
+        self.vp_out_dir = args.vp_out_dir
+        self.nvdla_hw_path = args.nvdla_hw
+        self.out_dir = os.path.abspath(args.out_dir)
+        self.model_name = args.model_name
+        os.makedirs(args.out_dir, exist_ok=True)
+        # create subdirectory 'traces' in case CVSRAM Remapper changes trace.bin
 
-        self._template_dir = os.path.dirname(os.path.abspath(__file__))
+        self.template_dir = os.path.dirname(os.path.abspath(__file__))
 
-        self._gem5_binary = gem5_binary
-        self._run_cmd = scheduler + " " + " ".join(scheduler_params)
-        
-        self._num_data_points = 0
-        self._params_list = []
-        self.pt_dirs = []
-        
-        for root, dirs, files in os.walk(params_dir):
+        self.gem5_binary = args.gem5_binary
+        self.sim_dir = args.sim_dir
+        self.scheduler = args.scheduler
+
+        self.num_data_points = 0
+        self.params_list = []   # [(params_list, this_sweep_out_dir)], each tuple is for one sweeping json file
+        self.pt_dirs = []   # a list of working directories of all sweeping points
+        self.trace_id_prefixes = [""]     # keep track of all traces generated
+
+        self.mappers = {}
+
+        if not os.path.exists(os.path.join(self.gem5_nvdla_dir, "mnt/home")):
+            print("Please mount gem5 disk image first!")
+            exit(1)
+
+        for root, dirs, files in os.walk(args.jsons_dir):
             is_valid_dir = False
             for file in files:
                 if file.endswith(".json"):
@@ -67,8 +86,8 @@ class Sweeper:
             if not is_valid_dir:
                 continue
 
-            rel_path = os.path.relpath(root, params_dir)
-            sweep_output_dir = os.path.abspath(os.path.join(output_dir, rel_path))
+            rel_path = os.path.relpath(root, args.jsons_dir)
+            sweep_output_dir = os.path.abspath(os.path.join(self.out_dir, rel_path))
 
             for file in files:
                 if file.endswith(".json"):
@@ -78,7 +97,7 @@ class Sweeper:
 
                     with open(os.path.join(root, file)) as fp:
                         json_map = json.load(fp)
-                    self._params_list.append((self._init_params(json_map), this_sweep_out_dir))
+                    self.params_list.append((self._init_params(json_map), this_sweep_out_dir))
 
     def _init_params(self, params):
         params_ls = []
@@ -90,59 +109,157 @@ class Sweeper:
         return params_ls
 
     def _create_point(self, json_id):
-        point_dir = os.path.join(self._params_list[json_id][1], str(self._num_data_points))
+        point_dir = os.path.join(self.params_list[json_id][1], str(self.num_data_points))
 
         # Copy configuration files to the simulation directory of this data point.
         if not os.path.isdir(point_dir):
             os.mkdir(point_dir)
         for f in ["run.sh", "bootscript.rcS"]:
             shutil.copyfile(
-                os.path.join(self._template_dir, f),
+                os.path.join(self.template_dir, f),
                 os.path.join(point_dir, f))
 
-        change_config_file(point_dir, "run.sh", {"gem5-binary": self._gem5_binary})
-        change_config_file(point_dir, "run.sh", {"cpt-dir": self._cpt_dir})
+        trace_id = ""
+        key_params = {}     # temporarily store the values of trace-changing sweeping parameters
+        for p in self.params_list[json_id][0]:
+            if p._changes_trace_bin:
+                trace_id = "%s_%s" % (trace_id, str(p)) if trace_id != "" else str(p)
+                if isinstance(p, RemapperParam):
+                    key_params["Remapper"] = p.curr_sweep_value()
+                elif isinstance(p, CVSRAMSizeParam):
+                    size_match = re.search(r"(\d+)([kKmMgG])B", p.curr_sweep_value())
+                    prefix = size_match.group(2).lower()
+                    if "k" in prefix:
+                        size = int(size_match.group(1)) * 1024
+                    elif "m" in prefix:
+                        size = int(size_match.group(1)) * 1024 * 1024
+                    elif "g" in prefix:
+                        size = int(size_match.group(1)) * 1024 * 1024 * 1024
+                    else:
+                        assert False
+                    key_params["CVSRAMSize"] = size
+        mapper_pfx = key_params["Remapper"]
+
+        # If this is a new trace id, generate new traces.
+        if trace_id not in self.trace_id_prefixes:  # initialized with [""], so should not accept empty trace_id
+            self.trace_id_prefixes.append(trace_id)
+            if mapper_pfx not in self.mappers.keys():
+                self.mappers[mapper_pfx] = eval(mapper_pfx + "Remapper(self.vp_out_dir, self.nvdla_hw_path, "
+                                                             "self.model_name)")
+        mapper = self.mappers[mapper_pfx]
+        if mapper_pfx == "Identity":
+            remap_subdir = "."
+        elif mapper_pfx == "WeightPin":
+            remap_subdir = "cvsram"
+        elif mapper_pfx == "Pipeline":
+            remap_subdir = "multibatch"
+        elif mapper_pfx == "PipelineWeightPin":
+            remap_subdir = "multibatch_cvsram"
+        else:
+            assert False
+
+        remap_out_dir = os.path.join(self.vp_out_dir, remap_subdir)
+        new_sim_dir = os.path.join(self.sim_dir, trace_id) if mapper_pfx == "PipelineWeightPin" else self.sim_dir
+        mapper.testcase_init(remap_out_dir, new_sim_dir, trace_id)
+        if eval("issubclass(" + mapper_pfx + "Remapper, CVSRAMRemapper)"):
+            if mapper_pfx == "Identity" or mapper_pfx == "WeightPin":
+                num_cvsram = 1
+            elif mapper_pfx == "PipelineWeightPin":
+                num_cvsram = mapper.num_stages
+            else:
+                assert False
+            mapper.set_cvsram_param(num_cvsram, [0x50000000 for _ in range(num_cvsram)],
+                                    [key_params["CVSRAMSize"] for _ in range(num_cvsram)])
+        if self.rerun_cpt:
+            mapper.get_remap_decision()
+            mapper.write_to_files()
+            mapper.copy_output_to_img()
+
+        if "single_thread" in self.scheduler:
+            trace_bin = "trace.bin" if mapper_pfx == "Identity" else trace_id + "_trace.bin"
+            rd_only_var_log = "rd_only_var_log" if mapper_pfx == "Identity" else trace_id + "_rd_only_var_log"
+            run_cmd = "/home/" + self.scheduler + " " + os.path.join(new_sim_dir, trace_bin) + " " + \
+                      os.path.join(self.sim_dir, rd_only_var_log)
+        elif "pipeline" in self.scheduler:
+            if mapper_pfx == "Pipeline" or mapper_pfx == "PipelineWeightPin":
+                run_cmd = "/home/" + self.scheduler + " " + \
+                          os.path.join(new_sim_dir, self.model_name + "_" + trace_id + "_") + \
+                          " " + mapper.batch_num + " " + mapper.num_stages
+            else:
+                assert False
+        else:
+            assert False
+
+        # cpt-dir should be changed after regenerating a checkpoint
+        change_config_file(point_dir, "run.sh", {"gem5-binary": self.gem5_binary})
+
         change_config_file(point_dir, "run.sh", {"output-dir": os.path.abspath(point_dir)})
-        change_config_file(point_dir, "bootscript.rcS", {"run-cmd": self._run_cmd})
+        change_config_file(point_dir, "bootscript.rcS", {"run-cmd": run_cmd})
         change_config_file(point_dir, "run.sh", {"config-dir":
             os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../configs/example/arm/fs_bigLITTLE_RTL.py"))})
 
         # Apply every sweep parameter for this data point.
-        for p in self._params_list[json_id][0]:
+        for p in self.params_list[json_id][0]:
             p.apply(point_dir)
 
         self.pt_dirs.append(point_dir)
-        print("---Created data point: %d.---" % self._num_data_points)
+        print("---Created data point: %d.---" % self.num_data_points)
 
     def enumerate(self, param_idx, json_id):
-        if param_idx < len(self._params_list[json_id][0]) - 1:
-            while self._params_list[json_id][0][param_idx].next() == True:
+        if param_idx < len(self.params_list[json_id][0]) - 1:
+            while self.params_list[json_id][0][param_idx].next():
                 self.enumerate(param_idx + 1, json_id)
             return
         else:
-            while self._params_list[json_id][0][param_idx].next() == True:
+            # check the legality and meaningfulness of the combination of parameters
+            while self.params_list[json_id][0][param_idx].next():
+                type_val_pairs = {}
+                for p in self.params_list[json_id][0]:
+                    type_val_pairs[type(p)] = p.curr_sweep_value()
+                meaningful = True
+                for p in self.params_list[json_id][0]:
+                    meaningful = meaningful and p.is_meaningful(type_val_pairs)
+                    if not meaningful:
+                        break
+                # print("type_val_pairs: ", type_val_pairs)
+                # print("meaningful: ", meaningful)
+                if not meaningful:
+                    continue
                 self._create_point(json_id)
-                self._num_data_points += 1
+                self.num_data_points += 1
             return
 
     def enumerate_all(self):
         """Create configurations for all data points.  """
         print("Creating all data points...")
-        for json_id in range(len(self._params_list)):
+        for json_id in range(len(self.params_list)):
             self.enumerate(0, json_id)
+        if self.rerun_cpt:
+            os.system("cd " + os.path.join(self.gem5_nvdla_dir, "m5out") + " && rm -rf cpt.*")
+            os.system("cd " + self.gem5_nvdla_dir + " && build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py "
+                      "--big-cpus 0 --little-cpus 1 --cpu-type atomic --bootscript=configs/boot/hack_back_ckpt.rcS")
+        contents = os.listdir(os.path.join(self.gem5_nvdla_dir, "m5out"))
+        for cont in contents:
+            if "cpt." in cont:
+                self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cont)
 
-    def run_all(self, threads):
+        # after generating the checkpoint, we can apply it to the scripts
+        for pt_dir in self.pt_dirs:
+            change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
+
+    def run_all(self, args):
         """Run simulations for all data points.
 
         Args:
         Number of threads used to run the simulations.
         """
+
         print("Running all data points...")
         counter = mp.Value('i', 0)
         sims = []
         pool = mp.Pool(
-            initializer=_init_counter, initargs=(counter, ), processes=threads)
-        for p in range(self._num_data_points):
+            initializer=_init_counter, initargs=(counter, ), processes=args.num_threads)
+        for p in range(self.num_data_points):
             cmd = os.path.join(self.pt_dirs[p], "run.sh")
             sims.append(pool.apply_async(_run_simulation, args=(cmd, )))
             time.sleep(0.5)     # sleep for a while before launching next to avoid a gem5 bug (socket bind() failed)

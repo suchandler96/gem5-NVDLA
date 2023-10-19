@@ -2,16 +2,30 @@ import argparse
 import os
 from sweeper import Sweeper
 
+
 def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
         "--jsons-dir", help="Path to the directory including sweep parameter JSONs.", required=True)
     parser.add_argument(
-        "--output-dir", "-o", help="Output directory for generating the data points.", required=True)
+        "--out-dir", help="Output directory for storing simulation logs.", required=True)
     parser.add_argument(
-        "--cpt-dir", help="checkpoint directory as simulation starting point.",
-        required=True)
+        "--vp-out-dir", help="should be the same with '--out-dir' for caffe2trace.py "
+        "and pipeline_compile.py. This directory holds input.txn, sc.log mem trace, etc.", required=True)
+    parser.add_argument(
+        "--sim-dir", help="The directory inside gem5 disk image for the simulated system to read data from. "
+        "e.g., /home/lenet/", required=True)
+    parser.add_argument(
+        "--nvdla-hw", default="/home/lactose/nvdla/hw/",
+        help="Path to NVDLA hw repo")
+    parser.add_argument(
+        "--model-name", help="name of the NN model.", required=True)
+    parser.add_argument(
+        "--rerun-cpt", action="store_true", default=False, help="Whether to regenerate a checkpoint.")
+    parser.add_argument(
+        "--disk-image", default="/home/lactose/gem5_linux_images/ubuntu-18.04-arm64-docker.img",
+        help="path to the disk image for full system simulation")
     parser.add_argument(
         "--gem5-binary", help="Path to the gem5 binary.")
     parser.add_argument(
@@ -23,9 +37,6 @@ def main():
     parser.add_argument(
         "--scheduler", help="The name of binary to run on simulated system,"
         "scheduler=xx means path_to_scheduler_in_disk_image=/home/xx", required=True)
-    parser.add_argument(
-        "--params", type=str, metavar="param", nargs='+',
-        help="parameters to be passed to the scheduler")
 
     args = parser.parse_args()
 
@@ -33,15 +44,14 @@ def main():
         args.gem5_binary = os.path.abspath(
             os.path.join(os.path.dirname(__file__), "../../../build/ARM/gem5.opt"))
 
-    sweeper = Sweeper(os.path.abspath(args.cpt_dir), os.path.abspath(args.output_dir), os.path.abspath(args.jsons_dir),
-        args.gem5_binary, "/home/" + args.scheduler, args.params)
+    sweeper = Sweeper(args)
 
     # Start enumerating all the data points.
     sweeper.enumerate_all()
 
     # Start running simulations for all the generated data points.
     if args.run_points:
-        sweeper.run_all(threads=args.num_threads)
+        sweeper.run_all(args=args)
 
 
 if __name__ == "__main__":

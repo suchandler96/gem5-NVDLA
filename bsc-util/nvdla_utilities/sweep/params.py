@@ -1,7 +1,11 @@
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
+from match_reg_trace_addr.remap import *
 from configparser import RawConfigParser
 import fileinput
 import re
+
 
 def change_config_file(point_dir, config_file, kv_map):
     f = fileinput.input(os.path.join(point_dir, config_file), inplace=True)
@@ -12,11 +16,13 @@ def change_config_file(point_dir, config_file, kv_map):
         print(line, end="")
     f.close()
 
+
 class BaseParam:
-    def __init__(self, name, sweep_vals):
+    def __init__(self, name, sweep_vals, changes_trace_bin=False):
         self._name = name
         self._sweep_vals = sweep_vals
         self._curr_sweep_idx = -1
+        self._changes_trace_bin = changes_trace_bin
 
     def __str__(self):
         return "%s_%s" % (self._name, str(self.curr_sweep_value()))
@@ -26,6 +32,9 @@ class BaseParam:
 
     def apply(self, point_dir):
         raise NotImplementedError
+
+    def is_meaningful(self, type_val_pairs):
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -66,7 +75,7 @@ class DDRTypeParam(BaseParam):
 
     @classmethod
     def default_value(cls):
-      return ["DDR3_1600_8x8"]
+        return ["DDR3_1600_8x8"]
 
 
 class NumNVDLAParam(BaseParam):
@@ -98,10 +107,16 @@ class NumNVDLAParam(BaseParam):
 class DMAEnableParam(BaseParam):
     def __init__(self, name, sweep_vals):
         BaseParam.__init__(self, name, sweep_vals)
-        
+
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"dma-enable": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if (type_val_pairs[UseFakeMemParam] != "" or type_val_pairs[AddAccelPrivateCacheParam] != "" or
+                type_val_pairs[AddAccelSharedCacheParam] != "") and self.curr_sweep_value() != "":
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -115,7 +130,6 @@ class DMAEnableParam(BaseParam):
             if pos != -1:
                 return True
         return False
-            
 
     @classmethod
     def default_value(cls):
@@ -129,6 +143,11 @@ class EmbedSPMSizeParam(BaseParam):
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"embed-spm-size": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[DMAEnableParam] != "--dma-enable" and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -156,6 +175,11 @@ class AccelEmbedSPMLatParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"accel-embed-spm-lat": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[DMAEnableParam] != "--dma-enable" and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -177,10 +201,16 @@ class AccelEmbedSPMLatParam(BaseParam):
 class AddAccelPrivateCacheParam(BaseParam):
     def __init__(self, name, sweep_vals):
         BaseParam.__init__(self, name, sweep_vals)
-        
+
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"add-accel-private-cache": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if (type_val_pairs[DMAEnableParam] != "" or type_val_pairs[UseFakeMemParam] != "") \
+                and self.curr_sweep_value() != "":
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -208,6 +238,12 @@ class AccelPrCacheSizeParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"accel-pr-cache-size": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelPrivateCacheParam] != "--add-accel-private-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -233,6 +269,12 @@ class AccelPrCacheAssocParam(BaseParam):
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"accel-pr-cache-assoc": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelPrivateCacheParam] != "--add-accel-private-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -260,6 +302,12 @@ class AccelPrCacheTagLatParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"accel-pr-cache-tag-lat": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelPrivateCacheParam] != "--add-accel-private-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -285,6 +333,12 @@ class AccelPrCacheDatLatParam(BaseParam):
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"accel-pr-cache-dat-lat": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelPrivateCacheParam] != "--add-accel-private-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -312,6 +366,12 @@ class AccelPrCacheRespLatParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"accel-pr-cache-resp-lat": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelPrivateCacheParam] != "--add-accel-private-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -337,6 +397,12 @@ class AccelPrCacheMshrParam(BaseParam):
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"accel-pr-cache-mshr": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelPrivateCacheParam] != "--add-accel-private-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -364,6 +430,12 @@ class AccelPrCacheTgtsPerMshrParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"accel-pr-cache-tgts-per-mshr": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelPrivateCacheParam] != "--add-accel-private-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -389,6 +461,12 @@ class AccelPrCacheWrBufParam(BaseParam):
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"accel-pr-cache-wr-buf": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelPrivateCacheParam] != "--add-accel-private-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -416,6 +494,12 @@ class AccelPrCacheClusParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"accel-pr-cache-clus": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelPrivateCacheParam] != "--add-accel-private-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -437,10 +521,16 @@ class AccelPrCacheClusParam(BaseParam):
 class AddAccelSharedCacheParam(BaseParam):
     def __init__(self, name, sweep_vals):
         BaseParam.__init__(self, name, sweep_vals)
-        
+
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"add-accel-shared-cache": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if (type_val_pairs[DMAEnableParam] != "" or type_val_pairs[UseFakeMemParam] != "") \
+                and self.curr_sweep_value() != "":
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -468,6 +558,12 @@ class AccelShCacheSizeParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"accel-sh-cache-size": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelSharedCacheParam] != "--add-accel-shared-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -493,6 +589,12 @@ class AccelShCacheAssocParam(BaseParam):
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"accel-sh-cache-assoc": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelSharedCacheParam] != "--add-accel-shared-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -520,6 +622,12 @@ class AccelShCacheTagLatParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"accel-sh-cache-tag-lat": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelSharedCacheParam] != "--add-accel-shared-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -545,6 +653,12 @@ class AccelShCacheDatLatParam(BaseParam):
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"accel-sh-cache-dat-lat": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelSharedCacheParam] != "--add-accel-shared-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -572,6 +686,12 @@ class AccelShCacheRespLatParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"accel-sh-cache-resp-lat": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelSharedCacheParam] != "--add-accel-shared-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -597,6 +717,12 @@ class AccelShCacheMshrParam(BaseParam):
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"accel-sh-cache-mshr": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelSharedCacheParam] != "--add-accel-shared-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -624,6 +750,12 @@ class AccelShCacheTgtsPerMshrParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"accel-sh-cache-tgts-per-mshr": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelSharedCacheParam] != "--add-accel-shared-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -649,6 +781,12 @@ class AccelShCacheWrBufParam(BaseParam):
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"accel-sh-cache-wr-buf": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelSharedCacheParam] != "--add-accel-shared-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -676,6 +814,12 @@ class AccelShCacheClusParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"accel-sh-cache-clus": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[AddAccelSharedCacheParam] != "--add-accel-shared-cache" \
+                and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -697,7 +841,7 @@ class AccelShCacheClusParam(BaseParam):
 class PftEnableParam(BaseParam):
     def __init__(self, name, sweep_vals):
         BaseParam.__init__(self, name, sweep_vals)
-        
+
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"pft-enable": self.curr_sweep_value()})
@@ -728,6 +872,11 @@ class PftThresholdParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"pft-threshold": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[PftEnableParam] != "--pft-enable" and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -749,10 +898,16 @@ class PftThresholdParam(BaseParam):
 class UseFakeMemParam(BaseParam):
     def __init__(self, name, sweep_vals):
         BaseParam.__init__(self, name, sweep_vals)
-        
+
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"use-fake-mem": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if (type_val_pairs[DMAEnableParam] != "" or type_val_pairs[AddAccelPrivateCacheParam] != "" or
+            type_val_pairs[AddAccelSharedCacheParam] != "") and self.curr_sweep_value() != "":
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):
@@ -780,6 +935,11 @@ class SharedSPMParam(BaseParam):
         change_config_file(
             point_dir, "run.sh", {"shared-spm": self.curr_sweep_value()})
 
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[DMAEnableParam] != "--dma-enable" and self.curr_sweep_value() != "":
+            return False
+        return True
+
     @classmethod
     def get(self, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
@@ -796,3 +956,132 @@ class SharedSPMParam(BaseParam):
     @classmethod
     def default_value(cls):
         return [""]
+
+
+class CVSRAMEnableParam(BaseParam):
+    def __init__(self, name, sweep_vals):
+        BaseParam.__init__(self, name, sweep_vals)
+
+    def apply(self, point_dir):
+        change_config_file(
+            point_dir, "run.sh", {"cvsram-enable": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[UseFakeMemParam] != "" and self.curr_sweep_value() != "":
+            return False
+        return True
+
+    @classmethod
+    def get(self, point_dir):
+        run_sh_path = os.path.join(point_dir, "run.sh")
+        assert os.path.exists(run_sh_path)
+        with open(run_sh_path, "r") as fp:
+            run_sh_lines = fp.readlines()
+
+        for line in run_sh_lines:
+            pos = line.find("--cvsram-enable")
+            if pos != -1:
+                return True
+        return False
+
+    @classmethod
+    def default_value(cls):
+        return [""]
+
+
+class CVSRAMSizeParam(BaseParam):
+    def __init__(self, name, sweep_vals):
+        BaseParam.__init__(self, name, sweep_vals, changes_trace_bin=True)
+
+    def apply(self, point_dir):
+        change_config_file(
+            point_dir, "run.sh", {"cvsram-size": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[CVSRAMEnableParam] != "--cvsram-enable" and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
+    @classmethod
+    def get(self, point_dir):
+        run_sh_path = os.path.join(point_dir, "run.sh")
+        assert os.path.exists(run_sh_path)
+        with open(run_sh_path, "r") as fp:
+            run_sh_lines = fp.readlines()
+
+        for line in run_sh_lines:
+            pos = line.find("--cvsram-size")
+            if pos == -1:
+                continue
+            return re.search(r"--cvsram-size\s+([0-9a-zA-Z]+)", line).group(1)
+
+    @classmethod
+    def default_value(cls):
+        return ["1MB"]
+
+
+class CVSRAMBandwidthParam(BaseParam):
+    def __init__(self, name, sweep_vals):
+        BaseParam.__init__(self, name, sweep_vals)
+
+    def apply(self, point_dir):
+        change_config_file(
+            point_dir, "run.sh", {"cvsram-bandwidth": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[CVSRAMEnableParam] != "--cvsram-enable" and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
+    @classmethod
+    def get(self, point_dir):
+        run_sh_path = os.path.join(point_dir, "run.sh")
+        assert os.path.exists(run_sh_path)
+        with open(run_sh_path, "r") as fp:
+            run_sh_lines = fp.readlines()
+
+        for line in run_sh_lines:
+            pos = line.find("--cvsram-bandwidth")
+            if pos == -1:
+                continue
+            return re.search(r"--cvsram-bandwidth\s+([0-9a-zA-Z\/]+)", line).group(1)
+
+    @classmethod
+    def default_value(cls):
+        return ["128GB/s"]
+
+
+class RemapperParam(BaseParam):
+    def __init__(self, name, sweep_vals):
+        BaseParam.__init__(self, name, sweep_vals, changes_trace_bin=True)
+
+    def apply(self, point_dir):
+        change_config_file(
+            point_dir, "run.sh", {"remapper": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        # return True
+        if type_val_pairs[CVSRAMEnableParam] != "--cvsram-enable" and \
+                eval("issubclass(" + self.curr_sweep_value() + "Remapper, CVSRAMRemapper)"):
+            return False
+        if type_val_pairs[CVSRAMEnableParam] == "--cvsram-enable" and \
+                eval("not issubclass(" + self.curr_sweep_value() + "Remapper, CVSRAMRemapper)"):
+            return False
+        return True
+
+    @classmethod
+    def get(self, point_dir):
+        run_sh_path = os.path.join(point_dir, "run.sh")
+        assert os.path.exists(run_sh_path)
+        with open(run_sh_path, "r") as fp:
+            run_sh_lines = fp.readlines()
+
+        for line in run_sh_lines:
+            pos = line.find("--remapper")
+            if pos == -1:
+                continue
+            return re.search(r"--remapper\s+([0-9a-zA-Z]+)", line).group(1)
+
+    @classmethod
+    def default_value(cls):
+        return ["Identity"]

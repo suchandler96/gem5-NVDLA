@@ -74,8 +74,8 @@ class PipelineMultiBatch:
     def remap(self, in_dirs):
         self.pipeline_stages = []
         for pipeline_log_dir in in_dirs:
-            pipeline_stage = parse_qemu_log.Workload()
-            pipeline_stage.get_workload_info(pipeline_log_dir)
+            pipeline_stage = parse_qemu_log.Workload(pipeline_log_dir)
+            pipeline_stage.print_workload_info()
             self.pipeline_stages.append(pipeline_stage)
 
         self.remap_weights()
