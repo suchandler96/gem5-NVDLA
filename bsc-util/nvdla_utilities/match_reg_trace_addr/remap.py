@@ -3,9 +3,11 @@ import shutil
 import os
 import argparse
 import re
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 sys.path.append(os.path.dirname(__file__))
-from parse_qemu_log import Workload
+from parse_qemu_log import *
 
 
 class BaseRemapper:
@@ -34,7 +36,15 @@ class BaseRemapper:
     def aligned_ceil(self, addr):
         return ((addr - 0x1) & self.align_mask) + self.alignment
 
-    def get_remap_decision(self):
+    """
+    @output: if not None, it's the shell command to be executed to do some heavy math during remap decision.
+    """
+    def compute_remap_decision(self):
+        pass
+
+    # for more complex CVSRAM utilizing methods, heavy computation is needed. We need to let multiple testcases
+    # do the computation in parallel and then collect the results one-by-one.
+    def collect_remap_decision(self):
         pass
 
     def write_to_files(self):
@@ -55,7 +65,7 @@ class IdentityRemapper(BaseRemapper):
         assert os.path.abspath(out_dir) == os.path.abspath(self.in_dir)
         BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
 
-    def get_remap_decision(self):
+    def compute_remap_decision(self):
         pass
 
     def write_to_files(self):
@@ -152,6 +162,10 @@ class SingleAccelCVSRAMRemapper(CVSRAMRemapper):
         BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
         self.mapping.clear()
 
+    def set_cvsram_param(self, num_cvsram, cvsram_base_addrs, cvsram_sizes):
+        CVSRAMRemapper.set_cvsram_param(self, num_cvsram, cvsram_base_addrs, cvsram_sizes)
+        assert num_cvsram == 1
+
     def write_to_files(self):
         """ modify input.txn """
         with open(os.path.join(self.in_dir, "input.txn")) as fp:
@@ -193,8 +207,7 @@ class WeightPinRemapper(SingleAccelCVSRAMRemapper):
         self.weights_cp = [weight for weight in self.workload.weights]
         self.weights_cp.sort(key=lambda x: self.workload.data[x].size, reverse=True)
 
-    def get_remap_decision(self):
-        assert self.num_cvsram == 1
+    def compute_remap_decision(self):
         cvsram_size = self.cvsram_sizes[0]
         cvsram_base_addr = self.cvsram_base_addrs[0]
 
@@ -207,6 +220,133 @@ class WeightPinRemapper(SingleAccelCVSRAMRemapper):
                 space_left -= aligned_size
 
 
+class ActPinRemapper(SingleAccelCVSRAMRemapper):
+    def __init__(self, in_dir, nvdla_hw_path, model_name):
+        super(ActPinRemapper, self).__init__(in_dir, nvdla_hw_path, model_name)
+
+        """ workload-related info """
+        self.last_tick = len(self.workload.raw_addr_log) - 1
+
+    def compute_remap_decision(self):
+        itm_acts_file = os.path.join(self.in_dir, "intermediate_acts")
+        with open(itm_acts_file, "w") as fp:
+            for act in self.workload.intermediate_act:
+                data_blk = self.workload.data[act]
+                fp.write(str(data_blk.liveness[0]) + " " + str(data_blk.liveness[1]) + " " + str(data_blk.size) + " " +
+                         str(data_blk.num_access) + " " + hex(data_blk.addr) + " ")
+                last_aligned_addr = last_aligned(data_blk.addr, data_blk.size, 0x40)
+                for id_rw in self.workload.addr_log[last_aligned_addr]:
+                    fp.write(id_rw[1] + " ")
+                fp.write("\n")
+
+        # call the gurobi solver
+        gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
+        os.system("cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && make ActAlloc")
+        return ("cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && ./ActAlloc " + itm_acts_file +
+                " " + gurobi_out_path + " " + str(self.cvsram_sizes[0]) + " > " +
+                os.path.join(self.out_dir, self.testcase_str + "_gurobi_stdout"))
+
+    def collect_remap_decision(self):
+        # read results from the solver and draw the CVSRAM occupation figure
+        occ_fig = plt.figure()
+        ax1 = occ_fig.add_subplot("111")
+        plt.xlim(xmin=0, xmax=len(self.workload.raw_addr_log))
+        plt.ylim(ymin=0, ymax=self.cvsram_sizes[0])
+
+        gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
+        with open(gurobi_out_path) as fp:
+            out_lines = fp.readlines()
+        for line_id, line in enumerate(out_lines):
+            words = line.split()
+            if words[0] == '1':
+                data_blk = self.workload.data[self.workload.intermediate_act[line_id]]
+                self.mapping[data_blk.addr] = self.cvsram_base_addrs[0] + int(words[1])
+                ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
+                                                data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
+                                                linewidth=1, edgecolor='black'))
+
+        ylabels = map(lambda t: '0x%x' % int(t), ax1.get_yticks())
+        ax1.set_yticklabels(ylabels)
+        ax1.ticklabel_format(style='sci', scilimits=(-1, 2), axis='x')
+        plt.title("Buffer Allocation Result on CVSRAM size = 0x%x Bytes" % self.cvsram_sizes[0])
+        plt.xlabel("Logical Order")
+        plt.ylabel("CVSRAM Address")
+        occ_fig.savefig(gurobi_out_path + "_vis.png", dpi=300)
+
+
+class MixPinRemapper(SingleAccelCVSRAMRemapper):
+    def __init__(self, in_dir, nvdla_hw_path, model_name):
+        super(MixPinRemapper, self).__init__(in_dir, nvdla_hw_path, model_name)
+
+        """ workload-related info """
+        self.last_tick = len(self.workload.raw_addr_log) - 1
+
+    def compute_remap_decision(self):
+        w_and_acts_file = os.path.join(self.in_dir, "weight_and_im_acts")
+        with open(w_and_acts_file, "w") as fp:
+            for w in self.workload.weights:
+                data_blk = self.workload.data[w]
+                fp.write("0 " + str(self.last_tick) + " " + str(data_blk.size) + " 1 " + hex(data_blk.addr) + " r\n")
+            for act in self.workload.intermediate_act:
+                data_blk = self.workload.data[act]
+                fp.write(str(data_blk.liveness[0]) + " " + str(data_blk.liveness[1]) + " " + str(data_blk.size) + " " +
+                         str(data_blk.num_access) + " " + hex(data_blk.addr) + " ")
+                last_aligned_addr = last_aligned(data_blk.addr, data_blk.size, 0x40)
+                for id_rw in self.workload.addr_log[last_aligned_addr]:
+                    fp.write(id_rw[1] + " ")
+                fp.write("\n")
+
+        # call the gurobi solver
+        gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
+        os.system("cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && make ActAlloc")
+        return ("cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && ./ActAlloc " + w_and_acts_file +
+                " " + gurobi_out_path + " " + str(self.cvsram_sizes[0]) + " > " +
+                os.path.join(self.out_dir, self.testcase_str + "_gurobi_stdout"))
+
+    def collect_remap_decision(self):
+        # read results from the solver and draw the CVSRAM occupation figure
+        occ_fig = plt.figure()
+        ax1 = occ_fig.add_subplot("111")
+        plt.xlim(xmin=0, xmax=len(self.workload.raw_addr_log))
+        plt.ylim(ymin=0, ymax=self.cvsram_sizes[0])
+
+        collect_w_cnt, collect_a_cnt = 0, 0
+        gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
+        with open(os.path.join(self.in_dir, "weight_and_im_acts")) as fp:
+            in_lines = fp.readlines()
+
+        with open(gurobi_out_path) as fp:
+            out_lines = fp.readlines()
+        for line_id, line in enumerate(out_lines):
+            words = line.split()
+            attrs = in_lines[line_id].strip().split()
+            is_w = attrs[3] == "1"      # weights will only be used once
+            if words[0] == '1':
+                desc = self.workload.weights[collect_w_cnt] if is_w else self.workload.intermediate_act[collect_a_cnt]
+                data_blk = self.workload.data[desc]
+                self.mapping[data_blk.addr] = self.cvsram_base_addrs[0] + int(words[1])
+                if is_w:
+                    ax1.add_patch(patches.Rectangle((0, int(words[1])), self.last_tick, data_blk.size,
+                                                    linewidth=1, edgecolor='black'))
+                else:
+                    ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
+                                                    data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
+                                                    linewidth=1, edgecolor='black'))
+            if is_w:
+                collect_w_cnt += 1
+            else:
+                collect_a_cnt += 1
+
+        ylabels = map(lambda t: '0x%x' % int(t), ax1.get_yticks())
+        ax1.set_yticklabels(ylabels)
+        ax1.ticklabel_format(style='sci', scilimits=(-1, 2), axis='x')
+        plt.title("Buffer Allocation Result on CVSRAM size = 0x%x Bytes" % self.cvsram_sizes[0])
+        plt.xlabel("Logical Order")
+        plt.ylabel("CVSRAM Address")
+        plt.tight_layout()
+        occ_fig.savefig(gurobi_out_path + "_vis.png", dpi=300)
+
+
 class PipelineRemapper(BaseRemapper):
     def __init__(self, in_dir, nvdla_hw_path, model_name):
         super(PipelineRemapper, self).__init__(in_dir, nvdla_hw_path, model_name)
@@ -217,7 +357,7 @@ class PipelineRemapper(BaseRemapper):
         found_any = False
         for subdir in compile_out_subdirs:
             if "stage_" in subdir:
-                self.in_dirs.append(subdir)
+                self.in_dirs.append(os.path.join(self.in_dir, subdir))
                 found_any = True
         self.num_stages = len(self.in_dirs)
         assert found_any
@@ -225,13 +365,13 @@ class PipelineRemapper(BaseRemapper):
         """ mapping parameters """
         self.weight_base_addr = 0x80000000
         self.activation_base_addr = None
-        self.batch_num = 4
+        self.batch_num = None
 
         """ workload-related info """
         self.pipeline_stages = []
         for pipeline_log_dir in self.in_dirs:
             pipeline_stage = Workload(pipeline_log_dir)
-            pipeline_stage.print_workload_info()
+            # pipeline_stage.print_workload_info()
             self.pipeline_stages.append(pipeline_stage)
 
         # weights
@@ -243,8 +383,20 @@ class PipelineRemapper(BaseRemapper):
         self.all_weights.sort(key=lambda x: self.pipeline_stages[x[0]].data[(x[1], x[2])].size, reverse=True)
 
         # activations
-        self.all_activations = []
-        # all_activations = [(batch_id, stage_id, addr_id, offset)]
+        self.all_activations = []   # = [(batch_id, stage_id, addr_id, offset)]
+
+        """ testcase-related decisions """
+        self.weight_map = {}        # {(stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
+        self.activation_map = {}    # {(batch_id, stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
+
+    def testcase_init(self, out_dir, sim_dir, testcase_str):
+        BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
+        self.weight_map.clear()
+        self.activation_map.clear()
+
+    def set_pipeline_params(self, num_batches):
+        self.batch_num = num_batches
+        # self.all_activations = [(batch_id, stage_id, addr_id, offset)]
         # for the first stage, put all activations
         # for the other stages, put all activations except inputs
         for i, stage in enumerate(self.pipeline_stages):
@@ -259,15 +411,6 @@ class PipelineRemapper(BaseRemapper):
                             self.all_activations.append((batch, i, act[0], act[1]))
 
         self.all_activations.sort(key=lambda x: self.pipeline_stages[x[1]].data[(x[2], x[3])].size, reverse=True)
-
-        """ testcase-related decisions """
-        self.weight_map = {}        # {(stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
-        self.activation_map = {}    # {(batch_id, stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
-
-    def testcase_init(self, out_dir, sim_dir, testcase_str):
-        BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
-        self.weight_map.clear()
-        self.activation_map.clear()
 
     def remap_weights(self):
         next_avail_aligned = self.weight_base_addr
@@ -299,7 +442,7 @@ class PipelineRemapper(BaseRemapper):
                     assert key not in self.activation_map.keys()
                     self.activation_map[key] = self.activation_map[corr_opt_key]
 
-    def get_remap_decision(self):
+    def compute_remap_decision(self):
         self.remap_weights()
         self.remap_activations()
 
@@ -381,7 +524,7 @@ class PipelineWeightPinRemapper(CVSRAMRemapper, PipelineRemapper):
 
         self.activation_base_addr = next_avail_aligned
 
-    def get_remap_decision(self):
+    def compute_remap_decision(self):
         self.remap_weights()
         self.remap_activations()
 

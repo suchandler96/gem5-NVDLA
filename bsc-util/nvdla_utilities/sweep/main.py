@@ -6,6 +6,7 @@ from sweeper import Sweeper
 def main():
     parser = argparse.ArgumentParser()
 
+    # working directories
     parser.add_argument(
         "--jsons-dir", help="Path to the directory including sweep parameter JSONs.", required=True)
     parser.add_argument(
@@ -16,27 +17,37 @@ def main():
     parser.add_argument(
         "--sim-dir", help="The directory inside gem5 disk image for the simulated system to read data from. "
         "e.g., /home/lenet/", required=True)
+
+    # dependencies
     parser.add_argument(
         "--nvdla-hw", default="/home/lactose/nvdla/hw/",
         help="Path to NVDLA hw repo")
-    parser.add_argument(
-        "--model-name", help="name of the NN model.", required=True)
-    parser.add_argument(
-        "--rerun-cpt", action="store_true", default=False, help="Whether to regenerate a checkpoint.")
     parser.add_argument(
         "--disk-image", default="/home/lactose/gem5_linux_images/ubuntu-18.04-arm64-docker.img",
         help="path to the disk image for full system simulation")
     parser.add_argument(
         "--gem5-binary", help="Path to the gem5 binary.")
+
+    # workload-related info
+    parser.add_argument(
+        "--model-name", help="name of the NN model.", required=True)
+    parser.add_argument(
+        "--scheduler", help="The name of binary to run on simulated system,"
+                            "scheduler=xx means path_to_scheduler_in_disk_image=/home/xx", required=True)
+    parser.add_argument(
+        "--pipeline-batches", type=int, default=4,
+        help="Number of batches in pipeline scheduling.")
+
+    # run options
+    parser.add_argument(
+        "--gen-points", action="store_true", default=False,
+        help="Whether to generate all the simulation points and regenerate a gem5 checkpoint.")
     parser.add_argument(
         "--run-points", action="store_true", default=False,
         help="Option to run the generated data points.")
     parser.add_argument(
         "--num-threads", type=int, default=8,
         help="Number of threads used to run the data points.")
-    parser.add_argument(
-        "--scheduler", help="The name of binary to run on simulated system,"
-        "scheduler=xx means path_to_scheduler_in_disk_image=/home/xx", required=True)
 
     args = parser.parse_args()
 

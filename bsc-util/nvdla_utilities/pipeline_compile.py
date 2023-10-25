@@ -35,9 +35,9 @@ def parse_args():
     parser.add_argument(
         "--out-dir", default="/home/lactose/nvdla/traces/lenet_auto_pipeline/",
         help="directory to put the generated sc.log, register txn and mem traces")
-    parser.add_argument(
-        "--out-dir-multibatch", default="/home/lactose/nvdla/traces/lenet_auto_pipeline/multibatch/",
-        help="directory to put converted input.txn and trace.bin files across all pipeline stages and batches")
+    # parser.add_argument(
+    #     "--out-dir-multibatch", default="/home/lactose/nvdla/traces/lenet_auto_pipeline/multibatch/",
+    #     help="directory to put converted input.txn and trace.bin files across all pipeline stages and batches")
     parser.add_argument(
         "--gem5-nvdla-dir", default="/home/lactose/gem5-nvdla/",
         help="directory to gem5-NVDLA repo")
@@ -59,7 +59,7 @@ def main():
     options = parse_args()
     num_stages = len(options.prototxts)
     work_dirs = []
-    os.makedirs(os.path.abspath(options.out_dir_multibatch), exist_ok=True)
+    # os.makedirs(os.path.abspath(options.out_dir_multibatch), exist_ok=True)
     for i in range(num_stages):
         work_dir = os.path.join(os.path.abspath(options.out_dir), "stage_" + str(i + 1))
         work_dirs.append(work_dir)
@@ -74,8 +74,9 @@ def main():
                   " --nvdla-compiler " + os.path.abspath(options.nvdla_compiler) + " --qemu-bin " +
                   os.path.abspath(options.qemu_bin) + " --qemu-lua " + os.path.abspath(options.qemu_lua) +
                   " --out-dir " + work_dir + " --gem5-nvdla-dir " + os.path.abspath(options.gem5_nvdla_dir) +
-                  " --disk-image " + os.path.abspath(options.disk_image))
+                  " --disk-image " + os.path.abspath(options.disk_image) + " --no-print-hints")
 
+    '''
     sys.path.append(os.path.join(os.path.abspath(options.gem5_nvdla_dir), "bsc-util/nvdla_utilities"))
 
     import match_reg_trace_addr.match_pipeline as match_pipeline
@@ -123,6 +124,7 @@ def main():
             perl_script_path = os.path.join(os.path.abspath(options.nvdla_hw),
                                             "verif/verilator/input_txn_to_verilator.pl")
             os.system("perl " + perl_script_path + " " + out_txn_path + " " + out_bin_path)
+    '''
 
 
 if __name__ == "__main__":

@@ -9,12 +9,16 @@ import GetAddrAttrAndMatch
 
 class Data:
     def __init__(self):
+        """ compilation-time info """
         self.attr = None        # weight, activation, unknown
         self.addr_id = None
         self.offset = None
         self.addr = None        # offset 0x80000000 by default
         self.size = None
-        self.liveness = None    # (rw_id of first access of first element, rw_id of last access pf last element)
+
+        """runtime info"""
+        self.num_access = 0     # calculated by the number of accesses of last addr aligned to 0x40
+        self.liveness = [None, None]    # (rw_id of first access of first element, rw_id of last access pf last element)
 
     def valid(self):
         if self.addr_id <= 0 or (self.addr_id == 0 and self.offset == 0 and self.size == 0):
@@ -40,7 +44,7 @@ class Workload:
         self.intermediate_act = []  # [(addr_id, offset), ...]
         self.weights = []
 
-        self.addr_base_map = {}     # {addr_base_id, addr_base_val}; addr_base_val starts from 0xc0000000
+        self.addr_base_map = {}     # {addr_base_id: addr_base_val}; addr_base_val starts from 0xc0000000
 
         self.addr_log = None        # = {addr: [[rw_id, 'r' or 'w'], ...]}
         self.sorted_addr = None     # = [addr, ...]
@@ -98,6 +102,10 @@ class Workload:
 
         self.inputs, self.outputs = get_inout_data_blks(self.data, self.addr_log)
 
+        for act in self.activations:
+            if act not in self.inputs and act not in self.outputs:
+                self.intermediate_act.append(act)
+
         rd_only_addr2desc = {}
         for i in self.inputs:
             rd_only_addr2desc[self.data[i].addr] = i
@@ -112,10 +120,11 @@ class Workload:
         # do liveness analysis for each Data object
         for _, data_blk in self.data.items():
             first = data_blk.addr
-            last = ((data_blk.addr + data_blk.size - 0x1) // 0x40) * 0x40
+            last = last_aligned(data_blk.addr, data_blk.size, 0x40)
             assert first in self.addr_log
             assert last in self.addr_log
             data_blk.liveness = (self.addr_log[first][0][0], self.addr_log[last][-1][0])
+            data_blk.num_access = len(self.addr_log[last])
 
     def print_workload_info(self):
         for key, val in self.data.items():
@@ -199,10 +208,14 @@ def construct_surfaces(lines):
     return surfaces, data
 
 
+def last_aligned(start_addr, size, alignment):
+    return ((start_addr + size - 0x1) // alignment) * alignment
+
+
 def get_addr_mapping(lines):
     addr_base_map = {}
     for line in lines:
-        addr_base_match = re.search(r", got dst_ptr = (c\d+) \(index = (\d+)\)", line)
+        addr_base_match = re.search(r", got dst_ptr = (c[0-9a-f]+) \(index = (\d+)\)", line)
         if addr_base_match is not None:
             key = int(addr_base_match.group(2))
             val = int(addr_base_match.group(1), 16)

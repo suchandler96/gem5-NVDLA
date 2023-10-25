@@ -1,6 +1,6 @@
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 from match_reg_trace_addr.remap import *
 import json
 import errno
@@ -8,6 +8,7 @@ import time
 import six
 import shutil
 import subprocess
+import pickle
 import multiprocessing as mp
 from params import *
 
@@ -51,17 +52,18 @@ param_types = {
 class Sweeper:
     def __init__(self, args):
         self.gem5_nvdla_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
-        self.rerun_cpt = args.rerun_cpt
+        self.gen_points = args.gen_points
+        self.run_points = args.run_points
         self.cpt_dir = None
         self.vp_out_dir = args.vp_out_dir
         self.nvdla_hw_path = args.nvdla_hw
         self.out_dir = os.path.abspath(args.out_dir)
         self.model_name = args.model_name
+        self.num_batches = args.pipeline_batches    # only for pipeline
         os.makedirs(args.out_dir, exist_ok=True)
         # create subdirectory 'traces' in case CVSRAM Remapper changes trace.bin
 
         self.template_dir = os.path.dirname(os.path.abspath(__file__))
-
         self.gem5_binary = args.gem5_binary
         self.sim_dir = args.sim_dir
         self.scheduler = args.scheduler
@@ -72,10 +74,11 @@ class Sweeper:
         self.trace_id_prefixes = [""]     # keep track of all traces generated
 
         self.mappers = {}
+        self.mapper_comps = []  # [(point_dir, shell_cmd)]: each is a testcase that requires remapping computation
 
         if not os.path.exists(os.path.join(self.gem5_nvdla_dir, "mnt/home")):
-            print("Please mount gem5 disk image first!")
-            exit(1)
+            os.system("cd " + os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")) + " && "
+                      "sudo python3 util/gem5img.py mount " + args.disk_image + " ./mnt")
 
         for root, dirs, files in os.walk(args.jsons_dir):
             is_valid_dir = False
@@ -110,6 +113,9 @@ class Sweeper:
 
     def _create_point(self, json_id):
         point_dir = os.path.join(self.params_list[json_id][1], str(self.num_data_points))
+        self.pt_dirs.append(point_dir)
+        if not self.gen_points:
+            return
 
         # Copy configuration files to the simulation directory of this data point.
         if not os.path.isdir(point_dir):
@@ -139,41 +145,53 @@ class Sweeper:
                         assert False
                     key_params["CVSRAMSize"] = size
         mapper_pfx = key_params["Remapper"]
+        new_sim_dir = os.path.join(self.sim_dir, trace_id) if mapper_pfx == "PipelineWeightPin" else self.sim_dir
 
-        # If this is a new trace id, generate new traces.
+        # Only when this is a new trace id, do remapping
+        # Some remapping process requires parallel computation. These tasks will be stored in self.remap_comps
         if trace_id not in self.trace_id_prefixes:  # initialized with [""], so should not accept empty trace_id
             self.trace_id_prefixes.append(trace_id)
-            if mapper_pfx not in self.mappers.keys():
+            if mapper_pfx not in self.mappers.keys():   # if a new remapper, record it
+                # for a certain workload and a certain class of remapper, only one remapper instance is needed
                 self.mappers[mapper_pfx] = eval(mapper_pfx + "Remapper(self.vp_out_dir, self.nvdla_hw_path, "
                                                              "self.model_name)")
-        mapper = self.mappers[mapper_pfx]
-        if mapper_pfx == "Identity":
-            remap_subdir = "."
-        elif mapper_pfx == "WeightPin":
-            remap_subdir = "cvsram"
-        elif mapper_pfx == "Pipeline":
-            remap_subdir = "multibatch"
-        elif mapper_pfx == "PipelineWeightPin":
-            remap_subdir = "multibatch_cvsram"
-        else:
-            assert False
-
-        remap_out_dir = os.path.join(self.vp_out_dir, remap_subdir)
-        new_sim_dir = os.path.join(self.sim_dir, trace_id) if mapper_pfx == "PipelineWeightPin" else self.sim_dir
-        mapper.testcase_init(remap_out_dir, new_sim_dir, trace_id)
-        if eval("issubclass(" + mapper_pfx + "Remapper, CVSRAMRemapper)"):
-            if mapper_pfx == "Identity" or mapper_pfx == "WeightPin":
-                num_cvsram = 1
+            mapper = self.mappers[mapper_pfx]
+            if mapper_pfx == "Identity":
+                remap_subdir = "."
+            elif mapper_pfx == "WeightPin" or mapper_pfx == "ActPin" or mapper_pfx == "MixPin":
+                remap_subdir = "cvsram"
+            elif mapper_pfx == "Pipeline":
+                remap_subdir = "multibatch"
             elif mapper_pfx == "PipelineWeightPin":
-                num_cvsram = mapper.num_stages
+                remap_subdir = "multibatch_cvsram"
             else:
                 assert False
-            mapper.set_cvsram_param(num_cvsram, [0x50000000 for _ in range(num_cvsram)],
-                                    [key_params["CVSRAMSize"] for _ in range(num_cvsram)])
-        if self.rerun_cpt:
-            mapper.get_remap_decision()
-            mapper.write_to_files()
-            mapper.copy_output_to_img()
+
+            remap_out_dir = os.path.join(self.vp_out_dir, remap_subdir)
+            mapper.testcase_init(remap_out_dir, new_sim_dir, trace_id)
+            if eval("issubclass(" + mapper_pfx + "Remapper, CVSRAMRemapper)"):
+                if eval("issubclass(" + mapper_pfx + "Remapper, SingleAccelCVSRAMRemapper)"):
+                    num_cvsram = 1
+                elif mapper_pfx == "PipelineWeightPin":
+                    num_cvsram = mapper.num_stages
+                else:
+                    assert False
+                mapper.set_cvsram_param(num_cvsram, [0x50000000 for _ in range(num_cvsram)],
+                                        [key_params["CVSRAMSize"] for _ in range(num_cvsram)])
+            if eval("issubclass(" + mapper_pfx + "Remapper, PipelineRemapper)"):
+                mapper.set_pipeline_params(self.num_batches)
+
+            exe_cmd = mapper.compute_remap_decision()
+            if exe_cmd is not None:
+                dump_mapper_path = os.path.abspath(os.path.join(mapper.out_dir, trace_id + "_mapper"))
+                self.mapper_comps.append((dump_mapper_path, exe_cmd))
+                print("Data point: %d" % self.num_data_points, "needs to be remapped in parallel. "
+                      "Mapper: " + dump_mapper_path + " \ncmd: " + exe_cmd)
+                with open(dump_mapper_path, 'wb') as mapper_file:
+                    pickle.dump(mapper, mapper_file)
+
+        else:
+            mapper = self.mappers[mapper_pfx]
 
         if "single_thread" in self.scheduler:
             trace_bin = "trace.bin" if mapper_pfx == "Identity" else trace_id + "_trace.bin"
@@ -184,7 +202,7 @@ class Sweeper:
             if mapper_pfx == "Pipeline" or mapper_pfx == "PipelineWeightPin":
                 run_cmd = "/home/" + self.scheduler + " " + \
                           os.path.join(new_sim_dir, self.model_name + "_" + trace_id + "_") + \
-                          " " + mapper.batch_num + " " + mapper.num_stages
+                          " " + str(self.num_batches) + " " + str(mapper.num_stages)
             else:
                 assert False
         else:
@@ -202,8 +220,24 @@ class Sweeper:
         for p in self.params_list[json_id][0]:
             p.apply(point_dir)
 
-        self.pt_dirs.append(point_dir)
         print("---Created data point: %d.---" % self.num_data_points)
+
+    def parallel_remap_compute(self):
+        pool = mp.Pool(mp.cpu_count())
+        for _, cmd in self.mapper_comps:
+            pool.apply_async(shell_run_cmd, args=(cmd, ))
+        pool.close()
+        pool.join()
+
+    def resume_create_point(self):
+        for dump_mapper_path, exe_cmd in self.mapper_comps:
+            print("Mapper: " + dump_mapper_path + " , cmd: " + exe_cmd + " has been resumed.")
+            with open(dump_mapper_path, 'rb') as mapper_file:
+                mapper = pickle.load(mapper_file)
+            os.system("rm " + dump_mapper_path)
+            mapper.collect_remap_decision()
+            mapper.write_to_files()
+            mapper.copy_output_to_img()
 
     def enumerate(self, param_idx, json_id):
         if param_idx < len(self.params_list[json_id][0]) - 1:
@@ -221,8 +255,6 @@ class Sweeper:
                     meaningful = meaningful and p.is_meaningful(type_val_pairs)
                     if not meaningful:
                         break
-                # print("type_val_pairs: ", type_val_pairs)
-                # print("meaningful: ", meaningful)
                 if not meaningful:
                     continue
                 self._create_point(json_id)
@@ -234,18 +266,23 @@ class Sweeper:
         print("Creating all data points...")
         for json_id in range(len(self.params_list)):
             self.enumerate(0, json_id)
-        if self.rerun_cpt:
+
+        if self.gen_points:
+            # run compilation in parallel for some data points
+            self.parallel_remap_compute()
+            self.resume_create_point()
+
             os.system("cd " + os.path.join(self.gem5_nvdla_dir, "m5out") + " && rm -rf cpt.*")
             os.system("cd " + self.gem5_nvdla_dir + " && build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py "
                       "--big-cpus 0 --little-cpus 1 --cpu-type atomic --bootscript=configs/boot/hack_back_ckpt.rcS")
-        contents = os.listdir(os.path.join(self.gem5_nvdla_dir, "m5out"))
-        for cont in contents:
-            if "cpt." in cont:
-                self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cont)
+            contents = os.listdir(os.path.join(self.gem5_nvdla_dir, "m5out"))
+            for cont in contents:
+                if "cpt." in cont:
+                    self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cont)
 
-        # after generating the checkpoint, we can apply it to the scripts
-        for pt_dir in self.pt_dirs:
-            change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
+            # after generating the checkpoint, we can apply it to the scripts
+            for pt_dir in self.pt_dirs:
+                change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
 
     def run_all(self, args):
         """Run simulations for all data points.
@@ -269,11 +306,14 @@ class Sweeper:
         pool.close()
         pool.join()
 
+
 counter = 0
+
 
 def _init_counter(args):
     global counter
     counter = args
+
 
 def _run_simulation(cmd):
     global counter
@@ -282,8 +322,12 @@ def _run_simulation(cmd):
     stdout, stderr = process.communicate()
     if process.returncode != 0:
         print("Running simulation returned nonzero exit code! Contents of output:\n "
-        "%s\n%s" % (six.ensure_text(stdout), six.ensure_text(stderr)))
+              "%s\n%s" % (six.ensure_text(stdout), six.ensure_text(stderr)))
 
     with counter.get_lock():
         counter.value += 1
     print("---Finished running points: %d.---" % counter.value)
+
+
+def shell_run_cmd(cmd):
+    os.system(cmd)

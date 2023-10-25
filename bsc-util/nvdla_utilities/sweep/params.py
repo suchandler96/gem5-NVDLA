@@ -1060,7 +1060,14 @@ class RemapperParam(BaseParam):
             point_dir, "run.sh", {"remapper": self.curr_sweep_value()})
 
     def is_meaningful(self, type_val_pairs):
-        # return True
+        if type_val_pairs[NumNVDLAParam] == 1 and \
+                eval("issubclass(" + self.curr_sweep_value() + "Remapper, PipelineRemapper)"):
+            return False
+        if type_val_pairs[NumNVDLAParam] != 1 and \
+                eval("not issubclass(" + self.curr_sweep_value() + "Remapper, PipelineRemapper)"):
+            return False
+        if type_val_pairs[NumNVDLAParam] != 1 and self.curr_sweep_value() == "Identity":
+            return False
         if type_val_pairs[CVSRAMEnableParam] != "--cvsram-enable" and \
                 eval("issubclass(" + self.curr_sweep_value() + "Remapper, CVSRAMRemapper)"):
             return False

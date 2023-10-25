@@ -421,6 +421,19 @@ index 5df0bed..ec43106 100644
  
  out:
  	drm_gem_object_unreference_unlocked(dobj);
+diff --git a/umd/core/src/compiler/Profile.cpp b/umd/core/src/compiler/Profile.cpp
+index fb80a94..d4317df 100644
+--- a/umd/core/src/compiler/Profile.cpp
++++ b/umd/core/src/compiler/Profile.cpp
+@@ -281,7 +281,7 @@ void Profile::setDefaultProfile()
+     setBasicProfile();
+     setUseMemPool(true);
+     setUseReusePooledMemory(true);
+-    setUseGreedyEviction(true);
++    // setUseGreedyEviction(true);
+     setCanSDPBustNOPs(true);
+ }
+ 
 diff --git a/umd/core/src/compiler/include/priv/EngineAST.h b/umd/core/src/compiler/include/priv/EngineAST.h
 index 9318aba..e6b0f19 100644
 --- a/umd/core/src/compiler/include/priv/EngineAST.h
