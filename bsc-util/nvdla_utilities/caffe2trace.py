@@ -1,6 +1,9 @@
 import os
 import argparse
 import subprocess
+import sys
+sys.path.append(os.path.dirname(__file__))
+from match_reg_trace_addr.parse_qemu_log import *
 
 
 def parse_args():
@@ -137,8 +140,8 @@ def process_log(options):
     os.system("cd " + nvdla_utilities_dir + " && ./NVDLAUtil -i " + os.path.join(options.out_dir, "sc.log") +
               " --print-mem-rd --print-mem-wr -f parse-vp-log --change-addr > " + os.path.join(options.out_dir,
                                                                                                "VP_mem_rd_wr"))
-    os.system("cd " + os.path.join(nvdla_utilities_dir, "match_reg_trace_addr") + " && python3 GetAddrAttrAndMatch.py \
-              --src-dirs " + options.out_dir + " --output-rd-only-var-log")
+    workload = Workload(options.out_dir)
+    workload.write_rd_only_var_log(os.path.join(options.out_dir, "rd_only_var_log"))
 
     # the nvdla/vp docker image has perl v5.22.1 installed, ok
     perl_script_path = os.path.join(os.path.abspath(options.nvdla_hw), "verif/verilator/input_txn_to_verilator.pl")

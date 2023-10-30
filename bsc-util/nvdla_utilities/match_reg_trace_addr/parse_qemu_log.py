@@ -4,7 +4,6 @@ import argparse
 import re
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-import GetAddrAttrAndMatch
 
 
 class Data:
@@ -61,7 +60,7 @@ class Workload:
         mem_trace_path = os.path.join(self.in_dir, "VP_mem_rd_wr")
         assert os.path.exists(mem_trace_path)
 
-        self.addr_log, self.sorted_addr, self.raw_addr_log = GetAddrAttrAndMatch.parse_rd_wr_trace(mem_trace_path)
+        self.addr_log, self.sorted_addr, self.raw_addr_log = parse_rd_wr_trace(mem_trace_path)
 
         # set data_blk.addr and determine "unknown"
         for _, data_blk in self.data.items():
@@ -125,6 +124,13 @@ class Workload:
             assert last in self.addr_log
             data_blk.liveness = (self.addr_log[first][0][0], self.addr_log[last][-1][0])
             data_blk.num_access = len(self.addr_log[last])
+
+    def write_rd_only_var_log(self, rd_var_log_path):
+        with open(rd_var_log_path, "wb") as fp:
+            for rd_only_var in self.rd_only_vars:
+                data_blk = self.data[rd_only_var]
+                fp.write(data_blk.addr.to_bytes(4, byteorder="little", signed=False))
+                fp.write(data_blk.size.to_bytes(4, byteorder="little", signed=False))
 
     def print_workload_info(self):
         for key, val in self.data.items():
@@ -226,8 +232,7 @@ def get_addr_mapping(lines):
     return addr_base_map
 
 
-# different from get_input/output_addresses in GetAddrAttrAndMatch.py,
-# this one is based on combining compilation info and runtime info
+# based on combining compilation info and runtime info
 def get_inout_data_blks(data, addr_log):
     inputs = []
     outputs = []
@@ -241,6 +246,32 @@ def get_inout_data_blks(data, addr_log):
     inputs.sort(key=lambda x: data[x].size, reverse=True)
     outputs.sort(key=lambda x: data[x].size, reverse=True)
     return inputs, outputs
+
+
+# @output addr_log = {addr: [[rw_id, 'r' or 'w'], ...]}
+# @output sorted_addr = [addr, ...]
+# @output addresses = [['r' or 'w', addr], ...]
+def parse_rd_wr_trace(file_name):
+    with open(file_name) as fp:
+        lines = fp.readlines()
+    addresses = [line.split() for line in lines]
+    sorted_addr = []
+    for i in range(len(addresses)):
+        addr_val = int(addresses[i][1], 16)
+        addresses[i][1] = addr_val
+        sorted_addr.append(addr_val)
+    sorted_addr = list(set(sorted_addr))
+    sorted_addr.sort()
+
+    addr_log = {}
+    for i in range(len(addresses)):
+        addr = addresses[i][1]
+        if addr in addr_log:
+            addr_log[addr].append([i, addresses[i][0]])
+        else:
+            addr_log[addr] = [[i, addresses[i][0]]]
+
+    return addr_log, sorted_addr, addresses
 
 
 def parse_args():

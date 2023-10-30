@@ -92,6 +92,19 @@ echo "export M5_PATH=/path/to/gem5_linux_images/:/path/to/gem5_linux_images/aarc
     git clone git@github.com:nvdla/hw.git
     cd hw/
     git apply /path/to/gem5-NVDLA/bsc-util/nvdla_utilities/nvdla_hw.patch
+    make
+    * project name -> nv_full
+    * c pre-processor -> /usr/bin/cpp   (enter your own)
+    * g++ -> /usr/bin/g++ (enter your own)
+    * perl -> /usr/bin/perl (enter your own)
+    * java -> /path/to/jdk1.7.0_80/bin/java (enter your own)
+    * SystemC -> (keep as default)
+    * verilator -> /path/to/verilator_3.912/bin/verilator
+    * clang -> /path/to/clang_llvm_3.4/bin/clang
+    ./tools/bin/tmake -build vmod
+    export CC=/path/to/clang_llvm_3.4/bin/clang
+    export CXX=/path/to/clang_llvm_3.4/bin/clang++
+    ./tools/bin/tmake -build verilator
 ```
 3. Run some sanity tests provided in `nvdla/hw/verif/traces` as introduced at their website to ensure correct compilation.
 
@@ -107,6 +120,7 @@ echo "export M5_PATH=/path/to/gem5_linux_images/:/path/to/gem5_linux_images/aarc
 ```
 5. Move the contents in the NVDLA verilator output folder (`nvdla/hw/outdir/nv_full/verilator/*`) to `ext/rtl/model_nvdla/verilator_nvdla/`
 ```
+    mkdir ext/rtl/model_nvdla/verilator_nvdla
     cp /path/to/nvdla/hw/outdir/nv_full/verilator/* ext/rtl/model_nvdla/verilator_nvdla/
 ```
 6. To create the library one needs to use the same clang v3.4 with stdlib of gcc v6:
