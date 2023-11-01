@@ -242,9 +242,9 @@ class ActPinRemapper(SingleAccelCVSRAMRemapper):
         # call the gurobi solver
         gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
         os.system("cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && make ActAlloc")
-        return ("cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && ./ActAlloc " + itm_acts_file +
+        return ["cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && ./ActAlloc " + itm_acts_file +
                 " " + gurobi_out_path + " " + str(self.cvsram_sizes[0]) + " > " +
-                os.path.join(self.out_dir, self.testcase_str + "_gurobi_stdout"))
+                os.path.join(self.out_dir, self.testcase_str + "_gurobi_stdout")]
 
     def collect_remap_decision(self):
         # read results from the solver and draw the CVSRAM occupation figure
@@ -299,9 +299,9 @@ class MixPinRemapper(SingleAccelCVSRAMRemapper):
         # call the gurobi solver
         gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
         os.system("cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && make ActAlloc")
-        return ("cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && ./ActAlloc " + w_and_acts_file +
+        return ["cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && ./ActAlloc " + w_and_acts_file +
                 " " + gurobi_out_path + " " + str(self.cvsram_sizes[0]) + " > " +
-                os.path.join(self.out_dir, self.testcase_str + "_gurobi_stdout"))
+                os.path.join(self.out_dir, self.testcase_str + "_gurobi_stdout")]
 
     def collect_remap_decision(self):
         # read results from the solver and draw the CVSRAM occupation figure
@@ -384,39 +384,46 @@ class PipelineRemapper(BaseRemapper):
 
         # activations
         self.all_activations = []   # = [(batch_id, stage_id, addr_id, offset)]
+        self.intra_act = []         # = [(stage_id, addr_id, offset)]
+        self.inter_act = []         # = [(batch_id, stage_id, addr_id, offset)]
 
         """ testcase-related decisions """
         self.weight_map = {}        # {(stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
-        self.activation_map = {}    # {(batch_id, stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
+        self.inter_act_map = {}     # {(batch_id, stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
+        self.intra_act_map = {}     # {(stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
 
     def testcase_init(self, out_dir, sim_dir, testcase_str):
         BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
         self.weight_map.clear()
-        self.activation_map.clear()
+        self.inter_act_map.clear()
+        self.intra_act.clear()
 
     def set_pipeline_params(self, num_batches):
         self.batch_num = num_batches
         # self.all_activations = [(batch_id, stage_id, addr_id, offset)]
         # for the first stage, put all activations
         # for the other stages, put all activations except inputs
+        # for input / output activations, include their batch_id
+        # but for intermediate ones, set their batch_id to a default 0
+        # since inside a pipeline stage, the intermediate acts will not be overwritten by data from another batch
         for i, stage in enumerate(self.pipeline_stages):
-            if i == 0:
-                for act in stage.activations:
-                    for batch in range(self.batch_num):
-                        self.all_activations.append((batch, i, act[0], act[1]))
-            else:
-                for act in stage.activations:
-                    if act not in stage.inputs:
-                        for batch in range(self.batch_num):
-                            self.all_activations.append((batch, i, act[0], act[1]))
+            for act in stage.intermediate_act:
+                self.intra_act.append((i, act[0], act[1]))
+            for act in stage.outputs:
+                for batch in range(self.batch_num):
+                    self.inter_act.append((batch, i, act[0], act[1]))
+        for act in self.pipeline_stages[0].inputs:
+            for batch in range(self.batch_num):
+                self.inter_act.append((batch, 0, act[0], act[1]))
 
-        self.all_activations.sort(key=lambda x: self.pipeline_stages[x[1]].data[(x[2], x[3])].size, reverse=True)
+        self.all_activations = self.inter_act + self.intra_act
+        self.all_activations.sort(key=lambda x: self.pipeline_stages[x[-3]].data[(x[-2], x[-1])].size, reverse=True)
 
     def remap_weights(self):
         next_avail_aligned = self.weight_base_addr
         for weight_desc in self.all_weights:
             # weight_desc: (stage_id, addr_id, offset)
-            self.weight_map[weight_desc] = next_avail_aligned
+            self.weight_map[weight_desc] = (next_avail_aligned, False)
             al_sz = self.aligned_ceil(self.pipeline_stages[weight_desc[0]].data[(weight_desc[1], weight_desc[2])].size)
             next_avail_aligned += al_sz
 
@@ -425,11 +432,14 @@ class PipelineRemapper(BaseRemapper):
     def remap_activations(self):
         assert self.activation_base_addr is not None
         next_avail_aligned = self.activation_base_addr
+        activation_map = {}
+        # {(batch_id, stage_id, addr_id, offset) or (stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
         for act_desc in self.all_activations:
             # for all the activations (outputs of the previous stage and inputs of the next stage are counted ONCE)
-            # act_desc: (batch_id, stage_id, addr_id, offset)
-            self.activation_map[act_desc] = (next_avail_aligned, False)     # False means it isn't mapped to CVSRAM
-            aligned_size = self.aligned_ceil(self.pipeline_stages[act_desc[1]].data[(act_desc[2], act_desc[3])].size)
+            # act_desc: (batch_id, stage_id, addr_id, offset)   (for input / output activations)
+            #           (          stage_id, addr_id, offset)   (for intermediate activations)
+            activation_map[act_desc] = (next_avail_aligned, False)     # False means it isn't mapped to CVSRAM
+            aligned_size = self.aligned_ceil(self.pipeline_stages[act_desc[-3]].data[(act_desc[-2], act_desc[-1])].size)
             next_avail_aligned += aligned_size
 
         # match the outputs of the previous stage with the inputs of the next stage
@@ -439,8 +449,15 @@ class PipelineRemapper(BaseRemapper):
                     key = (batch_id, stage_id, ipt[0], ipt[1])
                     corr_opt = self.pipeline_stages[stage_id - 1].outputs[i]    # corresponding output
                     corr_opt_key = (batch_id, stage_id - 1, corr_opt[0], corr_opt[1])
-                    assert key not in self.activation_map.keys()
-                    self.activation_map[key] = self.activation_map[corr_opt_key]
+                    assert key not in activation_map.keys()
+                    activation_map[key] = activation_map[corr_opt_key]
+
+        for key, val in activation_map.items():
+            if len(key) == 3:   # intermediate activation
+                self.intra_act_map[key] = val
+            else:
+                assert len(key) == 4
+                self.inter_act_map[key] = val
 
     def compute_remap_decision(self):
         self.remap_weights()
@@ -452,12 +469,11 @@ class PipelineRemapper(BaseRemapper):
                 txn_lines = fp.readlines()
             for batch_id in range(self.batch_num):
                 new_lines = [str(line) for line in txn_lines]
-                modify_status = []
-                for j in range(len(txn_lines)):
-                    modify_status.append(False)     # False means not modified by remapping yet
+                modify_status = [False for _ in txn_lines]
 
                 for w_desc, w_map_info in self.weight_map.items():
                     # w_desc: pipeline_stage, addr_id, offset
+                    assert len(w_desc) == 3
                     addr_mapped, is_cvsram = w_map_info
                     if w_desc[0] == i:
                         orig_addr = self.pipeline_stages[i].data[(w_desc[1], w_desc[2])].addr
@@ -470,11 +486,29 @@ class PipelineRemapper(BaseRemapper):
                                     # only intended for PipelineWeightPinRemapper
                                     self.change_ram_type_to_cvsram(txn_lines, new_lines, line_id, modify_status)
 
-                for a_desc, a_map_info in self.activation_map.items():
-                    addr_mapped, is_cvsram = a_map_info
-                    # a_desc: batch_id, stage_id, addr_id, offset
-                    if a_desc[0] == batch_id and a_desc[1] == i:
-                        orig_addr = self.pipeline_stages[i].data[(a_desc[2], a_desc[3])].addr
+                # intermediate activation / intra_act
+                for ia_desc, ia_map_info in self.intra_act_map.items():
+                    # ia_desc: (stage_id, addr_id, offset)
+                    assert len(ia_desc) == 3
+                    addr_mapped, is_cvsram = ia_map_info
+                    if ia_desc[0] == i:
+                        orig_addr = self.pipeline_stages[i].data[(ia_desc[-2], ia_desc[-1])].addr
+                        for line_id, line in enumerate(txn_lines):
+                            if hex(orig_addr) in line and not modify_status[line_id]:
+                                new_lines[line_id] = line.replace(hex(orig_addr), hex(addr_mapped))
+                                modify_status[line_id] = True
+                                if is_cvsram:
+                                    # should not go into this branch for class PipelineRemapper
+                                    # only intended for PipelineWeightPinRemapper
+                                    self.change_ram_type_to_cvsram(txn_lines, new_lines, line_id, modify_status)
+
+                # input & output activation / inter_act
+                for io_desc, io_map_info in self.inter_act_map.items():
+                    addr_mapped, is_cvsram = io_map_info
+                    # act_desc: (batch_id, stage_id, addr_id, offset)
+                    assert len(io_desc) == 4
+                    if io_desc[0] == batch_id and io_desc[1] == i:
+                        orig_addr = self.pipeline_stages[i].data[(io_desc[2], io_desc[3])].addr
                         for line_id, line in enumerate(txn_lines):
                             if hex(orig_addr) in line and not modify_status[line_id]:
                                 new_lines[line_id] = line.replace(hex(orig_addr), hex(addr_mapped))
@@ -527,6 +561,85 @@ class PipelineWeightPinRemapper(CVSRAMRemapper, PipelineRemapper):
     def compute_remap_decision(self):
         self.remap_weights()
         self.remap_activations()
+
+    def write_to_files(self):
+        PipelineRemapper.write_to_files(self)
+
+
+class PipelineActPinRemapper(CVSRAMRemapper, PipelineRemapper):
+    def __init__(self, in_dir, nvdla_hw_path, model_name):
+        PipelineRemapper.__init__(self, in_dir, nvdla_hw_path, model_name)
+        CVSRAMRemapper.__init__(self, in_dir, nvdla_hw_path, model_name)
+
+    def testcase_init(self, out_dir, sim_dir, testcase_str):
+        BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
+
+    def remap_activations(self):
+        PipelineRemapper.remap_activations(self)
+
+        cmds = []
+        for stage_id in range(len(self.in_dirs)):
+            itm_acts_file = os.path.join(self.in_dirs[stage_id], "intermediate_acts")
+            with open(itm_acts_file, "w") as fp:
+                stage = self.pipeline_stages[stage_id]
+                for act in stage.intermediate_act:
+                    data_blk = stage.data[act]
+                    fp.write(str(data_blk.liveness[0]) + " " + str(data_blk.liveness[1]) + " " + str(data_blk.size) +
+                             " " + str(data_blk.num_access) + " " + hex(data_blk.addr) + " ")
+                    last_aligned_addr = last_aligned(data_blk.addr, data_blk.size, 0x40)
+                    for id_rw in stage.addr_log[last_aligned_addr]:
+                        fp.write(id_rw[1] + " ")
+                    fp.write("\n")
+
+            # call the gurobi solver
+            stage_out_dir = os.path.join(self.out_dir, "stage_" + str(stage_id + 1))
+            os.makedirs(stage_out_dir, exist_ok=True)
+            gurobi_out_path = os.path.join(stage_out_dir, self.testcase_str + "_alloc_result")
+            os.system("cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && make ActAlloc")
+            cmds.append("cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && ./ActAlloc " +
+                        itm_acts_file + " " + gurobi_out_path + " " + str(self.cvsram_sizes[stage_id]) + " > " +
+                        os.path.join(stage_out_dir, self.testcase_str + "_gurobi_stdout"))
+        return cmds
+
+    def compute_remap_decision(self):
+        self.remap_weights()
+        cmds = self.remap_activations()
+        return cmds
+
+    def collect_remap_decision(self):
+        # read results from the solver and draw the CVSRAM occupation figure
+        for stage_id in range(self.num_stages):
+            stage = self.pipeline_stages[stage_id]
+
+            occ_fig = plt.figure()
+            ax1 = occ_fig.add_subplot("111")
+            plt.xlim(xmin=0, xmax=len(stage.raw_addr_log))
+            plt.ylim(ymin=0, ymax=self.cvsram_sizes[stage_id])
+
+            stage_out_dir = os.path.join(self.out_dir, "stage_" + str(stage_id + 1))
+            gurobi_out_path = os.path.join(stage_out_dir, self.testcase_str + "_alloc_result")
+            with open(gurobi_out_path) as fp:
+                out_lines = fp.readlines()
+            for line_id, line in enumerate(out_lines):
+                words = line.split()
+                if words[0] == '1':
+                    in_stage_key = stage.intermediate_act[line_id]
+                    assert len(in_stage_key) == 2
+                    global_key = (stage_id, in_stage_key[0], in_stage_key[1])
+                    data_blk = stage.data[in_stage_key]
+                    self.intra_act_map[global_key] = (self.cvsram_base_addrs[stage_id] + int(words[1]), True)
+
+                    ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
+                                                    data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
+                                                    linewidth=1, edgecolor='black'))
+
+            ylabels = map(lambda t: '0x%x' % int(t), ax1.get_yticks())
+            ax1.set_yticklabels(ylabels)
+            ax1.ticklabel_format(style='sci', scilimits=(-1, 2), axis='x')
+            plt.title("Buffer Allocation Result on CVSRAM size = 0x%x Bytes" % self.cvsram_sizes[0])
+            plt.xlabel("Logical Order")
+            plt.ylabel("CVSRAM Address")
+            occ_fig.savefig(gurobi_out_path + "_vis.png", dpi=300)
 
     def write_to_files(self):
         PipelineRemapper.write_to_files(self)

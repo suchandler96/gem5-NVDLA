@@ -53,7 +53,6 @@ class Sweeper:
     def __init__(self, args):
         self.gem5_nvdla_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
         self.gen_points = args.gen_points
-        self.run_points = args.run_points
         self.cpt_dir = None
         self.vp_out_dir = args.vp_out_dir
         self.nvdla_hw_path = args.nvdla_hw
@@ -74,7 +73,7 @@ class Sweeper:
         self.trace_id_prefixes = [""]     # keep track of all traces generated
 
         self.mappers = {}
-        self.mapper_comps = []  # [(point_dir, shell_cmd)]: each is a testcase that requires remapping computation
+        self.mapper_comps = []  # [(mapper_path, [shell_cmd])]: each is a testcase that requires remapping computation
 
         if not os.path.exists(os.path.join(self.gem5_nvdla_dir, "mnt/home")):
             os.system("cd " + os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")) + " && "
@@ -145,7 +144,10 @@ class Sweeper:
                         assert False
                     key_params["CVSRAMSize"] = size
         mapper_pfx = key_params["Remapper"]
-        new_sim_dir = os.path.join(self.sim_dir, trace_id) if mapper_pfx == "PipelineWeightPin" else self.sim_dir
+        if eval("issubclass(" + mapper_pfx + "Remapper, PipelineRemapper)") and mapper_pfx != "Pipeline":
+            new_sim_dir = os.path.join(self.sim_dir, trace_id)
+        else:
+            new_sim_dir = self.sim_dir
 
         # Only when this is a new trace id, do remapping
         # Some remapping process requires parallel computation. These tasks will be stored in self.remap_comps
@@ -162,7 +164,7 @@ class Sweeper:
                 remap_subdir = "cvsram"
             elif mapper_pfx == "Pipeline":
                 remap_subdir = "multibatch"
-            elif mapper_pfx == "PipelineWeightPin":
+            elif mapper_pfx == "PipelineWeightPin" or mapper_pfx == "PipelineActPin":
                 remap_subdir = "multibatch_cvsram"
             else:
                 assert False
@@ -172,7 +174,7 @@ class Sweeper:
             if eval("issubclass(" + mapper_pfx + "Remapper, CVSRAMRemapper)"):
                 if eval("issubclass(" + mapper_pfx + "Remapper, SingleAccelCVSRAMRemapper)"):
                     num_cvsram = 1
-                elif mapper_pfx == "PipelineWeightPin":
+                elif eval("issubclass(" + mapper_pfx + "Remapper, PipelineRemapper)") and mapper_pfx != "Pipeline":
                     num_cvsram = mapper.num_stages
                 else:
                     assert False
@@ -181,12 +183,10 @@ class Sweeper:
             if eval("issubclass(" + mapper_pfx + "Remapper, PipelineRemapper)"):
                 mapper.set_pipeline_params(self.num_batches)
 
-            exe_cmd = mapper.compute_remap_decision()
-            if exe_cmd is not None:
+            exe_cmds = mapper.compute_remap_decision()
+            if exe_cmds is not None and exe_cmds != []:
                 dump_mapper_path = os.path.abspath(os.path.join(mapper.out_dir, trace_id + "_mapper"))
-                self.mapper_comps.append((dump_mapper_path, exe_cmd))
-                print("Data point: %d" % self.num_data_points, "needs to be remapped in parallel. "
-                      "Mapper: " + dump_mapper_path + " \ncmd: " + exe_cmd)
+                self.mapper_comps.append((dump_mapper_path, exe_cmds))
                 with open(dump_mapper_path, 'wb') as mapper_file:
                     pickle.dump(mapper, mapper_file)
 
@@ -199,7 +199,7 @@ class Sweeper:
             run_cmd = "/home/" + self.scheduler + " " + os.path.join(new_sim_dir, trace_bin) + " " + \
                       os.path.join(self.sim_dir, rd_only_var_log)
         elif "pipeline" in self.scheduler:
-            if mapper_pfx == "Pipeline" or mapper_pfx == "PipelineWeightPin":
+            if mapper_pfx == "Pipeline" or mapper_pfx == "PipelineWeightPin" or mapper_pfx == "PipelineActPin":
                 run_cmd = "/home/" + self.scheduler + " " + \
                           os.path.join(new_sim_dir, self.model_name + "_" + trace_id + "_") + \
                           " " + str(self.num_batches) + " " + str(mapper.num_stages)
@@ -224,14 +224,14 @@ class Sweeper:
 
     def parallel_remap_compute(self):
         pool = mp.Pool(mp.cpu_count())
-        for _, cmd in self.mapper_comps:
-            pool.apply_async(shell_run_cmd, args=(cmd, ))
+        for _, cmds in self.mapper_comps:
+            for cmd in cmds:
+                pool.apply_async(shell_run_cmd, args=(cmd, ))
         pool.close()
         pool.join()
 
     def resume_create_point(self):
         for dump_mapper_path, exe_cmd in self.mapper_comps:
-            print("Mapper: " + dump_mapper_path + " , cmd: " + exe_cmd + " has been resumed.")
             with open(dump_mapper_path, 'rb') as mapper_file:
                 mapper = pickle.load(mapper_file)
             os.system("rm " + dump_mapper_path)

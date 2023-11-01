@@ -132,6 +132,57 @@ class Workload:
                 fp.write(data_blk.addr.to_bytes(4, byteorder="little", signed=False))
                 fp.write(data_blk.size.to_bytes(4, byteorder="little", signed=False))
 
+    # read compile_log and read ALLOC and DEALLOC info
+    def read_compile_log(self):
+        with open(os.path.join(self.in_dir, "compile_log")) as fp:
+            lines = fp.readlines()
+
+        desc2uid = {}   # {(addr_id, offset, size): (tsd_str, tb_str)}, to examine the mapping is a bijection
+        uid2desc = {}
+        # first build the above two mappings
+        for line_id, line in enumerate(lines):
+            if "(Surface) Address list entry for" in line:
+                name_match = re.search(r"tsd=(tsd-\d+)/(tb-\d+):\d+ -> (\d+) offset=(\d+) size=(\d+)", line)
+                uid = (name_match.group(1), name_match.group(2))
+                desc = (int(name_match.group(3)), int(name_match.group(4)))
+                if desc in self.data:
+                    print(uid, desc, hex(self.data[desc].addr))
+                    assert desc not in desc2uid
+                    desc2uid[desc] = uid
+                    uid2desc[uid] = desc
+                    if desc in self.data:
+                        data_blk = self.data[desc]
+                        assert data_blk.uid is None     # assume each tensor is reported once
+                        data_blk.uid = uid
+
+        # then get ALLOC and DEALLOC time info
+        for line_id, line in enumerate(lines):
+            if "[MEMTOOL]" in line:
+                time_match = re.search(r"t = (\d)+", line)
+                time_stamp = int(time_match.group(1))
+                tb_match = re.search(r"tb-\d+", line)
+                if "DEALLOC" in line:
+                    assert "deallocating " in lines[line_id - 1]
+                    assert tb_match.group(0) in lines[line_id - 1]
+                    uid_match = re.search(r"(tsd-\d+)/(tb-\d+)", lines[line_id - 1])
+                    assert uid_match.group(2) == tb_match.group(0)
+                    uid = (uid_match.group(1), uid_match.group(2))
+                    desc = uid2desc[uid]
+                    if desc in self.data:
+                        self.data[desc].liveness[1] = time_stamp
+                elif "ALLOC" in line:
+                    assert "resolve placement/alloc for" in lines[line_id - 1]
+                    assert tb_match.group(0) in lines[line_id - 1]
+                    uid_match = re.search(r"(tsd-\d+)/(tb-\d+)", lines[line_id - 1])
+                    # hw_match = re.search(r"\s+[a-z-]+-\d+'s", line)
+                    assert uid_match.group(2) == tb_match.group(0)
+                    uid = (uid_match.group(1), uid_match.group(2))
+                    desc = uid2desc[uid]
+                    if desc in self.data:
+                        self.data[desc].liveness[0] = time_stamp
+                else:
+                    assert False
+
     def print_workload_info(self):
         for key, val in self.data.items():
             print(val.attr, val.addr_id, hex(val.offset), hex(val.addr) if val.addr is not None else None, hex(val.size))
