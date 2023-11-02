@@ -16,6 +16,7 @@ param_types = {
     "ddr-type": DDRTypeParam,
     "numNVDLA": NumNVDLAParam,
     "dma-enable": DMAEnableParam,
+    "shared-spm": SharedSPMParam,
     "embed-spm-size": EmbedSPMSizeParam,
     "accel-embed-spm-lat": AccelEmbedSPMLatParam,
     "add-accel-private-cache": AddAccelPrivateCacheParam,
@@ -41,7 +42,6 @@ param_types = {
     "pft-enable": PftEnableParam,
     "pft-threshold": PftThresholdParam,
     "use-fake-mem": UseFakeMemParam,
-    "shared-spm": SharedSPMParam,
     "cvsram-enable": CVSRAMEnableParam,
     "cvsram-size": CVSRAMSizeParam,
     "cvsram-bandwidth": CVSRAMBandwidthParam,
@@ -169,7 +169,7 @@ class Sweeper:
             else:
                 assert False
 
-            remap_out_dir = os.path.join(self.vp_out_dir, remap_subdir)
+            remap_out_dir = os.path.abspath(os.path.join(self.vp_out_dir, remap_subdir))
             mapper.testcase_init(remap_out_dir, new_sim_dir, trace_id)
             if eval("issubclass(" + mapper_pfx + "Remapper, CVSRAMRemapper)"):
                 if eval("issubclass(" + mapper_pfx + "Remapper, SingleAccelCVSRAMRemapper)"):
@@ -184,11 +184,10 @@ class Sweeper:
                 mapper.set_pipeline_params(self.num_batches)
 
             exe_cmds = mapper.compute_remap_decision()
-            if exe_cmds is not None and exe_cmds != []:
-                dump_mapper_path = os.path.abspath(os.path.join(mapper.out_dir, trace_id + "_mapper"))
-                self.mapper_comps.append((dump_mapper_path, exe_cmds))
-                with open(dump_mapper_path, 'wb') as mapper_file:
-                    pickle.dump(mapper, mapper_file)
+            dump_mapper_path = os.path.abspath(os.path.join(mapper.out_dir, trace_id + "_mapper"))
+            self.mapper_comps.append((dump_mapper_path, exe_cmds if exe_cmds is not None and exe_cmds != [] else []))
+            with open(dump_mapper_path, 'wb') as mapper_file:
+                pickle.dump(mapper, mapper_file)
 
         else:
             mapper = self.mappers[mapper_pfx]
@@ -231,7 +230,7 @@ class Sweeper:
         pool.join()
 
     def resume_create_point(self):
-        for dump_mapper_path, exe_cmd in self.mapper_comps:
+        for dump_mapper_path, _ in self.mapper_comps:
             with open(dump_mapper_path, 'rb') as mapper_file:
                 mapper = pickle.load(mapper_file)
             os.system("rm " + dump_mapper_path)

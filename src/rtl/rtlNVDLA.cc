@@ -44,7 +44,6 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     bytesReaded(0),
     blocked(false),
     max_req_inflight(params.maxReq),
-    timingMode(params.enableTimingAXI),
     id_nvdla(params.id_nvdla),
     baseAddrDRAM(params.base_addr_dram),
     baseAddrSRAM(params.base_addr_sram),

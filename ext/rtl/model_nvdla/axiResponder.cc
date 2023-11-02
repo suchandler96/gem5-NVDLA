@@ -716,11 +716,13 @@ AXIResponder::log_req_issue(uint64_t addr) {
                 // that's the normal case
                 log_entry_issued_len += (AXI_WIDTH / 8);
 
-                if (log_entry_issued_len == log_entry_length)
+                if (log_entry_issued_len >= log_entry_length)
                     read_var_log.erase(it);
             } else {
                 // printf("read req for %#x has been covered by a previous pft / fetch.\n", addr);
             }
+            // since requests are either solely DMA or solely cache-line-sized,
+            // it is not possible that log_entry_issued_len is not aligned with spm_line_size
             break;
         }
     }
@@ -760,7 +762,7 @@ AXIResponder::generate_prefetch_request() {
             inflight_dma_addr_queue.push(spm_line_addr);
             wrapper->addDMAReadReq(spm_line_addr, wrapper->spm->spm_line_size);
 
-            log_entry_issued_len += wrapper->spm->spm_line_size;
+            log_entry_issued_len += spm_line_addr + wrapper->spm->spm_line_size - to_issue_addr;
             // here we don't add dma prefetch to inflight_req and inflight_order
             // because as long as spm can get the prefetched data, we don't bother axi responder to check it
 
