@@ -224,15 +224,19 @@ def addOptions(parser):
 
     # options.numNVDLA
     parser.add_argument("--numNVDLA", type=int, default=1, help="number of NVDLAs")
+    # options.freq_ratio
+    parser.add_argument("--freq-ratio", type=int, default=1, help="=(frequency of LITTLE CPU) / (frequency of NVDLA)")
 
+    # options.buffer_mode
+    parser.add_argument("--buffer-mode", type=str, default="all", help="How to use pr/sh cache/embedded-SPM. all: cache all; pft: prefetch-buffer-only")
     # options.dma_enable
     parser.add_argument("--dma-enable", action="store_true", default=False, help="Use scratchpad embedded in NVDLA wrapper, aided with DMA")
+    # options.shared_spm
+    parser.add_argument("--shared-spm", action="store_true", default=False, help="change embedded SPM to shared")
     # options.embed_spm_size
     parser.add_argument("--embed-spm-size", type=str, default="64kB", help="specify private SPM size for accelerators (embedded SPM)")
     # options.accel_embed_spm_lat
     parser.add_argument("--accel-embed-spm-lat", type=int, default=12, help="specify private SPM latency for accelerators (embedded SPM)")
-    # options
-    parser.add_argument("--shared-spm", action="store_true", default=False, help="change embedded SPM to shared")
 
 
     # options.cvsram_enable

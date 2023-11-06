@@ -52,6 +52,58 @@ class BaseParam:
         return True
 
 
+class LittleCPUClockParam(BaseParam):
+    def __init__(self, name, sweep_vals):
+        BaseParam.__init__(self, name, sweep_vals)
+
+    def apply(self, point_dir):
+        change_config_file(
+            point_dir, "run.sh", {"little-cpu-clock": self.curr_sweep_value()})
+
+    @classmethod
+    def get(self, point_dir):
+        run_sh_path = os.path.join(point_dir, "run.sh")
+        assert os.path.exists(run_sh_path)
+        with open(run_sh_path, "r") as fp:
+            run_sh_lines = fp.readlines()
+
+        for line in run_sh_lines:
+            pos = line.find("--little-cpu-clock")
+            if pos == -1:
+                continue
+            return re.search(r"--little-cpu-clock\s+([0-9a-zA-Z\_]+)", line).group(1)
+
+    @classmethod
+    def default_value(cls):
+        return ["1GHz"]
+
+
+class FreqRatioParam(BaseParam):
+    def __init__(self, name, sweep_vals):
+        BaseParam.__init__(self, name, sweep_vals)
+
+    def apply(self, point_dir):
+        change_config_file(
+            point_dir, "run.sh", {"freq-ratio": self.curr_sweep_value()})
+
+    @classmethod
+    def get(self, point_dir):
+        run_sh_path = os.path.join(point_dir, "run.sh")
+        assert os.path.exists(run_sh_path)
+        with open(run_sh_path, "r") as fp:
+            run_sh_lines = fp.readlines()
+
+        for line in run_sh_lines:
+            pos = line.find("--freq-ratio")
+            if pos == -1:
+                continue
+            return re.search(r"--freq-ratio\s+([0-9]+)", line).group(1)
+
+    @classmethod
+    def default_value(cls):
+        return [1]
+
+
 class DDRTypeParam(BaseParam):
     def __init__(self, name, sweep_vals):
         BaseParam.__init__(self, name, sweep_vals)
@@ -71,7 +123,7 @@ class DDRTypeParam(BaseParam):
             pos = line.find("--ddr-type")
             if pos == -1:
                 continue
-            return re.search(r"--ddr-type\s+([0-9a-zA-Z\_]+)").group(1)
+            return re.search(r"--ddr-type\s+([0-9a-zA-Z\_]+)", line).group(1)
 
     @classmethod
     def default_value(cls):
@@ -134,6 +186,44 @@ class DMAEnableParam(BaseParam):
     @classmethod
     def default_value(cls):
         return [""]
+
+
+class BufferModeParam(BaseParam):
+    def __init__(self, name, sweep_vals):
+        BaseParam.__init__(self, name, sweep_vals)
+
+    def apply(self, point_dir):
+        change_config_file(
+            point_dir, "run.sh", {"buffer-mode": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[DMAEnableParam] != "--dma-enable" and \
+            type_val_pairs[AddAccelPrivateCacheParam] != "--add-accel-private-cache" and \
+            type_val_pairs[AddAccelSharedCacheParam] != "--add-accel-shared-cache" and \
+                self.curr_sweep_value() != self._sweep_vals[0]:
+            # different modes make no difference on membus and fakemem
+            return False
+        if type_val_pairs[PftEnableParam] != "--pft-enable" and self.curr_sweep_value() == "pft":
+            # buffer mode "pft" must be used when prefetch is enabled
+            return False
+        return True
+
+    @classmethod
+    def get(self, point_dir):
+        run_sh_path = os.path.join(point_dir, "run.sh")
+        assert os.path.exists(run_sh_path)
+        with open(run_sh_path, "r") as fp:
+            run_sh_lines = fp.readlines()
+
+        for line in run_sh_lines:
+            pos = line.find("--buffer-mode")
+            if pos == -1:
+                continue
+            return re.search(r"--buffer-mode\s+([a-zA-Z]+)", line).group(1)
+
+    @classmethod
+    def default_value(cls):
+        return ["all"]
 
 
 class EmbedSPMSizeParam(BaseParam):
@@ -845,6 +935,11 @@ class PftEnableParam(BaseParam):
     def apply(self, point_dir):
         change_config_file(
             point_dir, "run.sh", {"pft-enable": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[UseFakeMemParam] == "--use-fake-mem" and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
 
     @classmethod
     def get(self, point_dir):

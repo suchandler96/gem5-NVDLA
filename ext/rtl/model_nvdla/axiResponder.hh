@@ -99,9 +99,14 @@ private:
     // dma & spm
     // function together with inflight_req & inflight_req_order
     bool dma_enable;
-    std::map<uint64_t, uint32_t> inflight_dma_addr_size;    // record the inflight dma request sizes
+
+    struct DMAAttr {
+        bool is_bypass;
+        std::vector<std::pair<uint64_t, std::list<axi_r_txn>::iterator> > deps;
+    };
+    std::map<uint64_t, DMAAttr> inflight_dma_attr;    // record the inflight dma attribute: whether to bypass DMA
     std::queue<uint64_t> inflight_dma_addr_queue;           // keep dma request order
-    // todo: inflight_dma_addr_size can keep track of involved inflight_req iterators
+    // todo: inflight_dma_attr can keep track of involved inflight_req iterators
 
     // prefetch
     uint32_t pft_threshold;

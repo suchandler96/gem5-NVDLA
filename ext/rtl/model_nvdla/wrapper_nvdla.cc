@@ -56,11 +56,13 @@ ScratchpadMemory* Wrapper_nvdla::shared_spm = nullptr;
 
 Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
                              bool _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num,
-                             bool pft_enable, bool use_shared_spm) :
+                             bool pft_enable, bool use_shared_spm, BufferMode mode, uint64_t pft_buf_size) :
         id_nvdla(id_nvdla),
         tickcount(0),
         prefetch_enable(pft_enable),
-        use_shared_spm(use_shared_spm) {
+        use_shared_spm(use_shared_spm),
+        buf_mode(mode),
+        pft_buf_size(pft_buf_size) {
     if (use_shared_spm && shared_spm) {
         spm = shared_spm;
     } else {
@@ -265,13 +267,14 @@ void Wrapper_nvdla::init() {
     }
 }
 
-void Wrapper_nvdla::addReadReq(bool read_sram, bool read_timing,
+void Wrapper_nvdla::addReadReq(bool read_sram, bool read_timing, bool cacheable,
                 uint64_t read_addr, uint32_t read_bytes) {
 
     output.read_valid = true;
     read_req_entry_t rd;
     rd.read_sram      = read_sram;
     rd.read_timing    = read_timing;
+    rd.cacheable      = cacheable;
     rd.read_addr      = read_addr;
     rd.read_bytes     = read_bytes;
     output.read_buffer.push(rd);
@@ -288,12 +291,13 @@ void Wrapper_nvdla::addWriteReq(bool write_sram, bool write_timing,
     output.write_buffer.push(wr);
 }
 
-void Wrapper_nvdla::addLongWriteReq(bool write_sram, bool write_timing,
+void Wrapper_nvdla::addLongWriteReq(bool write_sram, bool write_timing, bool cacheable,
                 uint64_t write_addr, uint32_t length, const uint8_t* const write_data, uint64_t mask) {
     output.write_valid = true;
     long_write_req_entry_t wr;
     wr.write_sram = write_sram;
     wr.write_timing = write_timing;
+    wr.cacheable = cacheable;
     wr.write_addr = write_addr;
     wr.length = length;
     wr.write_mask = mask;

@@ -171,7 +171,7 @@ TraceLoaderGem5::load_read_var_log(const char* trace) {
             break;
         }
         printf("model var addr = 0x%08x, size = 0x%08x\n", addr, size);
-        // assume we only use dram port
+        // only DRAM port needs tensor info for prefetching
         axi_dbb->add_rd_var_log_entry(addr, size);
     }
 }
@@ -205,7 +205,7 @@ TraceLoaderGem5::axievent(int* waiting_for_gem5_mem) {
         printf("AXI: loading (TRACE) memory at 0x%08x, length = %d\n", op.addr, op.len);
         // todo: for use_fake_mem, write to / dump from fake ram
         for (int pos = 0; pos < op.len; pos += AXI_WIDTH / 8) {
-            axi->wrapper->addLongWriteReq(axi->sram, false,
+            axi->wrapper->addLongWriteReq(axi->sram, false, false,
                                           op.addr + pos,
                                           (op.len - pos) < AXI_WIDTH / 8 ? (op.len - pos) : AXI_WIDTH / 8,
                                           buf + pos, 0xffffffffffffffff);

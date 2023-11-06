@@ -72,6 +72,7 @@ struct long_write_req_entry_t {
     uint64_t    write_mask;
     bool        write_sram;
     bool        write_timing;
+    bool        cacheable;
 };
 
 struct read_req_entry_t {
@@ -79,6 +80,7 @@ struct read_req_entry_t {
     uint32_t    read_bytes;
     bool        read_sram;
     bool        read_timing;
+    bool        cacheable;
 };
 
 struct outputNVDLA {

@@ -69,7 +69,9 @@ class IdentityRemapper(BaseRemapper):
         pass
 
     def write_to_files(self):
-        pass
+        script_path = os.path.join(os.path.abspath(self.nvdla_hw_path), "verif/verilator/input_txn_to_verilator.pl")
+        os.system("perl " + script_path + " " + os.path.join(self.out_dir, "input.txn") + " " +
+                  os.path.join(self.out_dir, "trace.bin"))
 
 
 class CVSRAMRemapper(BaseRemapper):

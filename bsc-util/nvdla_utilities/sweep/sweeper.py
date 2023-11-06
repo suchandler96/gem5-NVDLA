@@ -13,8 +13,11 @@ import multiprocessing as mp
 from params import *
 
 param_types = {
+    "little-cpu-clock": LittleCPUClockParam,
+    "freq-ratio": FreqRatioParam,
     "ddr-type": DDRTypeParam,
     "numNVDLA": NumNVDLAParam,
+    "buffer-mode": BufferModeParam,
     "dma-enable": DMAEnableParam,
     "shared-spm": SharedSPMParam,
     "embed-spm-size": EmbedSPMSizeParam,
@@ -51,6 +54,7 @@ param_types = {
 
 class Sweeper:
     def __init__(self, args):
+        self.home_path = os.popen("cd ~/ && pwd").readlines()[0].strip('\n')
         self.gem5_nvdla_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
         self.gen_points = args.gen_points
         self.cpt_dir = None
@@ -62,6 +66,7 @@ class Sweeper:
         os.makedirs(args.out_dir, exist_ok=True)
         # create subdirectory 'traces' in case CVSRAM Remapper changes trace.bin
 
+        self.disk_image = args.disk_image
         self.template_dir = os.path.dirname(os.path.abspath(__file__))
         self.gem5_binary = args.gem5_binary
         self.sim_dir = args.sim_dir
@@ -74,10 +79,6 @@ class Sweeper:
 
         self.mappers = {}
         self.mapper_comps = []  # [(mapper_path, [shell_cmd])]: each is a testcase that requires remapping computation
-
-        if not os.path.exists(os.path.join(self.gem5_nvdla_dir, "mnt/home")):
-            os.system("cd " + os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")) + " && "
-                      "sudo python3 util/gem5img.py mount " + args.disk_image + " ./mnt")
 
         for root, dirs, files in os.walk(args.jsons_dir):
             is_valid_dir = False
@@ -208,12 +209,13 @@ class Sweeper:
             assert False
 
         # cpt-dir should be changed after regenerating a checkpoint
-        change_config_file(point_dir, "run.sh", {"gem5-binary": self.gem5_binary})
+        change_config_file(point_dir, "run.sh", {"gem5-binary": self.gem5_binary.replace(self.home_path, "~")})
 
-        change_config_file(point_dir, "run.sh", {"output-dir": os.path.abspath(point_dir)})
+        change_config_file(point_dir, "run.sh", {"output-dir": os.path.abspath(point_dir).replace(self.home_path, "~")})
         change_config_file(point_dir, "bootscript.rcS", {"run-cmd": run_cmd})
         change_config_file(point_dir, "run.sh", {"config-dir":
-            os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../configs/example/arm/fs_bigLITTLE_RTL.py"))})
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../configs/example/arm/fs_bigLITTLE_RTL.py"))
+                                                 .replace(self.home_path, "~")})
 
         # Apply every sweep parameter for this data point.
         for p in self.params_list[json_id][0]:
@@ -230,6 +232,10 @@ class Sweeper:
         pool.join()
 
     def resume_create_point(self):
+        if not os.path.exists(os.path.join(self.gem5_nvdla_dir, "mnt/home")):
+            os.system("cd " + os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")) +
+                      " && sudo python3 util/gem5img.py mount " + self.disk_image + " ./mnt")
+
         for dump_mapper_path, _ in self.mapper_comps:
             with open(dump_mapper_path, 'rb') as mapper_file:
                 mapper = pickle.load(mapper_file)
@@ -262,7 +268,8 @@ class Sweeper:
 
     def enumerate_all(self):
         """Create configurations for all data points.  """
-        print("Creating all data points...")
+        if self.gen_points:
+            print("Creating all data points...")
         for json_id in range(len(self.params_list)):
             self.enumerate(0, json_id)
 
@@ -282,6 +289,10 @@ class Sweeper:
             # after generating the checkpoint, we can apply it to the scripts
             for pt_dir in self.pt_dirs:
                 change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
+
+            esc_home_path = self.home_path.replace('/', '\\/')
+            esc_out_dir = self.out_dir.replace('/', '\\/')
+            os.system('sed -i "s/' + esc_home_path + '/~/g" `grep "' + esc_home_path + '" -rl ' + esc_out_dir + '`')
 
     def run_all(self, args):
         """Run simulations for all data points.

@@ -164,8 +164,28 @@ class CpuCluster(SubSystem):
 
             cpu.num_accels = options.numNVDLA
 
-            sft_pft_ctrl_str = "prefetch_enable=1, pft_threshold=options.pft_threshold"\
-                if options.pft_enable else "prefetch_enable=0"
+            if options.buffer_mode == "all":
+                pft_ctrl_str = "buffer_mode=0"
+            elif options.buffer_mode == "pft":
+                pft_ctrl_str = "buffer_mode=1"
+            else:
+                assert False
+
+            if options.pft_enable:
+                pft_ctrl_str += ", prefetch_enable=1, pft_threshold=options.pft_threshold"
+                if options.dma_enable:
+                    if not options.shared_spm:          # regular private SPM
+                        pft_ctrl_str += ", pft_buf_size=options.embed_spm_size"
+                    else:
+                        pft_ctrl_str += ", pft_buf_size=options.embed_spm_size / options.numNVDLA"
+                elif options.add_accel_private_cache:   # both private cache-only and mixed private & shared cache
+                    pft_ctrl_str += ", pft_buf_size=options.accel_pr_cache_size"
+                elif options.add_accel_shared_cache:
+                    pft_ctrl_str += ", pft_buf_size=options.accel_sh_cache_size"
+                else:                                   # membus
+                    pass
+            else:
+                pft_ctrl_str += ", prefetch_enable=0"
 
             # in the current phase, we only use one NVDLA accelerator, and spm cannot be used with caches
             if options.dma_enable:
@@ -175,10 +195,10 @@ class CpuCluster(SubSystem):
             else:
                 dma_ctrl_str = "dma_enable=0"
 
-            fakemem_ctrl_str = "use_fake_mem=options.use_fake_mem"
+            fakemem_ctrl_str = "use_fake_mem=options.use_fake_mem, freq_ratio=options.freq_ratio"
 
             for i in range(4):
-                exec("cpu.accel_%d = rtlNVDLA(%s, %s, %s)" % (i, dma_ctrl_str, sft_pft_ctrl_str, fakemem_ctrl_str))
+                exec("cpu.accel_%d = rtlNVDLA(%s, %s, %s)" % (i, dma_ctrl_str, pft_ctrl_str, fakemem_ctrl_str))
 
             for i in range(4):
                 exec("cpu.accel_port_%d = cpu.accel_%d.cpu_side" % (i, i))

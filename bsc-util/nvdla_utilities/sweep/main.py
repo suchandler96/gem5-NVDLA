@@ -20,10 +20,10 @@ def main():
 
     # dependencies
     parser.add_argument(
-        "--nvdla-hw", default="/home/lactose/nvdla/hw/",
+        "--nvdla-hw", default="~/nvdla/hw/",
         help="Path to NVDLA hw repo")
     parser.add_argument(
-        "--disk-image", default="/home/lactose/gem5_linux_images/ubuntu-18.04-arm64-docker.img",
+        "--disk-image", default="~/gem5_linux_images/ubuntu-18.04-arm64-docker.img",
         help="path to the disk image for full system simulation")
     parser.add_argument(
         "--gem5-binary", help="Path to the gem5 binary.")

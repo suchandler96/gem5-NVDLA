@@ -42,7 +42,14 @@ class rtlNVDLA(rtlObject):
     dram_port = RequestPort("Regular Speed to DRAM, sends requests")
     dma_port = RequestPort("DMA port to DRAM")
 
+    freq_ratio = Param.UInt32(1, "=(frequency of LITTLE CPU) / (frequency of NVDLA)")
+
+    buffer_mode = Param.UInt32(0, "How to use pr/sh cache/embedded-SPM. all(0): cache all; "
+                                  "pft(1): prefetch-buffer-only")
+
     dma_enable = Param.UInt32(0, "Whether to use DMA in testing")
+
+    use_shared_spm = Param.Bool(False, "Whether to use shared spm among NVDLAs")
 
     spm_size = Param.MemorySize('64kB', "The size of the embedded SPM")
 
@@ -53,6 +60,9 @@ class rtlNVDLA(rtlObject):
     prefetch_enable = Param.UInt32(0, "Whether to issue software prefetch when inflight read queue is under-fed")
 
     pft_threshold = Param.UInt32(16, "the threshold of current inflight memory requests to launch software prefetch")
+
+    pft_buf_size = Param.MemorySize('1GB', "The size of the prefetch buffer. Set to 1GB if no limit on this. "
+                                           "This param is only for informing purpose.")
     
     id_nvdla = Param.UInt64(0, "id of the NVDLA")
 
@@ -64,6 +74,6 @@ class rtlNVDLA(rtlObject):
 
     enableTimingAXI = Param.Bool(False, "Enable Timing mode in AXI")
 
-    use_shared_spm = Param.Bool(False, "Whether to use shared spm among NVDLAs")
+
 
     use_fake_mem = Param.Bool(False, "Whether to use fake memory to simulate")

@@ -2,12 +2,16 @@
 %(gem5-binary)s \
 -d %(output-dir)s \
 %(config-dir)s --big-cpus 0 --little-cpus 1 --last-cache-level 2 --caches --accelerators \
+--little-cpu-clock %(little-cpu-clock)s \
+--freq-ratio %(freq-ratio)s \
 --numNVDLA %(numNVDLA)s \
 --maxReqNVDLA 1000 --enableTimingAXI \
 --restore-from %(cpt-dir)s \
 --bootscript=bootscript.rcS \
 --ddr-type %(ddr-type)s \
+--buffer-mode %(buffer-mode)s \
 %(dma-enable)s \
+%(shared-spm)s \
 --embed-spm-size %(embed-spm-size)s \
 --accel-embed-spm-lat %(accel-embed-spm-lat)s \
 %(add-accel-private-cache)s \
@@ -33,7 +37,6 @@
 %(pft-enable)s \
 --pft-threshold %(pft-threshold)s \
 %(use-fake-mem)s \
-%(shared-spm)s \
 %(cvsram-enable)s \
 --cvsram-size %(cvsram-size)s \
 --cvsram-bandwidth %(cvsram-bandwidth)s \

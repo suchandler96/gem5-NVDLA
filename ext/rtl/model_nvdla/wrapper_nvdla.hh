@@ -111,6 +111,11 @@ class CSBMaster;
 class AXIResponder;
 class Wrapper_nvdla;
 
+enum BufferMode {
+    BUF_MODE_ALL = 0,
+    BUF_MODE_PFT = 1,
+};
+
 class ScratchpadMemory {
 private:
     Wrapper_nvdla* const wrapper;
@@ -153,7 +158,7 @@ private:
 public:
     Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
                   bool _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num, bool pft_enable,
-                  bool use_shared_spm);
+                  bool use_shared_spm, BufferMode mode, uint64_t pft_buf_size);
     ~Wrapper_nvdla();
 
     void tick();
@@ -163,11 +168,11 @@ public:
     void reset();
     void init();
 
-    void addReadReq(bool read_sram, bool read_timing,
+    void addReadReq(bool read_sram, bool read_timing, bool cacheable,
                     uint64_t read_addr, uint32_t read_bytes);
     void addWriteReq(bool write_sram, bool write_timing,
                      uint64_t write_addr, uint8_t write_data);
-    void addLongWriteReq(bool write_sram, bool write_timing,
+    void addLongWriteReq(bool write_sram, bool write_timing, bool cacheable,
         uint64_t write_addr, uint32_t length, const uint8_t* const write_data, uint64_t mask);
     void addDMAReadReq(uint64_t read_addr, uint32_t read_bytes);
     void addDMAWriteReq(uint64_t addr, std::vector<uint8_t>&& write_data);
@@ -191,6 +196,8 @@ public:
 
     // software prefetching
     int prefetch_enable;
+    uint64_t pft_buf_size;
+    BufferMode buf_mode;
 };
 
 #endif 

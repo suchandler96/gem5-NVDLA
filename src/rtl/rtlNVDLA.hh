@@ -201,6 +201,8 @@ class rtlNVDLA : public rtlObject
 
     const unsigned int max_req_inflight;
 
+    const uint32_t freq_ratio;
+
     uint32_t id_nvdla;
 
     uint64_t baseAddrDRAM;
@@ -260,9 +262,9 @@ public:
 
     void finishTranslation(WholeTranslationState *state) override;
 
-    const uint8_t * readAXIVariable(uint64_t addr, bool sram, bool timing, unsigned int size);
+    const uint8_t * readAXIVariable(uint64_t addr, bool sram, bool timing, bool cacheable, unsigned int size);
     void writeAXI(uint64_t addr, uint8_t data, bool sram, bool timing);
-    void writeAXILong(uint64_t addr, uint32_t length, uint8_t* data, uint64_t mask, bool sram, bool timing);
+    void writeAXILong(uint64_t addr, uint32_t length, uint8_t* data, uint64_t mask, bool sram, bool timing, bool cacheable);
 
     uint64_t getRealAddr(uint64_t addr, bool sram);
     uint64_t getAddrNVDLA(uint64_t addr, bool sram);
@@ -272,6 +274,8 @@ public:
     void regStats() override;
 
     int prefetch_enable;
+    uint32_t pft_threshold;
+    uint64_t pft_buf_size;  // prefetch buffer size
 
     uint32_t spm_latency;
     uint32_t spm_line_size;
@@ -282,7 +286,7 @@ public:
     DmaReadFifo* dma_rd_engine;
     DmaNvdla* dma_wr_engine;
 
-    uint32_t pft_threshold;
+    BufferMode buffer_mode;    // control the mode of using embedded SPM / cache, whether as an all-in-one buffer or simply a prefetch buffer
     bool use_fake_mem;
 
     void try_get_dma_read_data(uint32_t size);

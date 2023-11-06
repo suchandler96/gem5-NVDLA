@@ -291,7 +291,7 @@ AXIResponder::eval_timing() {
         }
         txn.wstrb = *dla.w_wstrb;
         txn.wlast = *dla.w_wlast;
-        w_fifo.push(std::move(txn));
+        w_fifo.push(txn);
     }
 
     /* read request */
@@ -306,7 +306,7 @@ AXIResponder::eval_timing() {
 #endif
 
     //! generate prefetch request
-    if (wrapper->prefetch_enable && inflight_req_order.size() < pft_threshold &&
+    if ((wrapper->prefetch_enable && !sram) && inflight_req_order.size() < pft_threshold &&
         inflight_dma_addr_queue.size() < dma_pft_threshold && !issued_req_this_cycle) {
         generate_prefetch_request();
     }
@@ -330,7 +330,8 @@ AXIResponder::eval_timing() {
             // intermediate variables and outputs should be written to spm (actually, all writes belong to this type)
             wrapper->spm->write_spm_axi_line_with_mask(awtxn.awaddr, wtxn.wdata, wtxn.wstrb);
         } else {
-            wrapper->addLongWriteReq(sram, true, awtxn.awaddr, AXI_WIDTH / 8, wtxn.wdata, wtxn.wstrb);
+            bool cache_write = (wrapper->buf_mode == BUF_MODE_ALL);
+            wrapper->addLongWriteReq(sram, true, cache_write, awtxn.awaddr, AXI_WIDTH / 8, wtxn.wdata, wtxn.wstrb);
         }
 
 
@@ -443,32 +444,44 @@ AXIResponder::process_read_req() {
                 txn.rid = *dla.ar_arid;
                 txn.is_prefetch = 0;
 
-                if(wrapper->prefetch_enable) log_req_issue(start_addr);
+                if (wrapper->prefetch_enable && !sram) log_req_issue(start_addr);
+                bool to_bypass = (wrapper->buf_mode == BUF_MODE_PFT);
 
                 // check spm and write queue
                 bool data_get_in_spm = wrapper->spm->read_spm_axi_line(start_addr, txn.rdata);
+                inflight_req_order.push_back(start_addr);
+
+                std::map<uint64_t, std::list<axi_r_txn>>::iterator req_it;
+                bool req_alloc_succ;
+                std::tie(req_it, req_alloc_succ) = inflight_req.emplace(start_addr, std::list<axi_r_txn>());
+                req_it->second.push_back(txn);
+
                 if (data_get_in_spm) {
                     // need to maintain the order of issuing requests
                     printf("(%lu) this spm_line_addr exists in spm, addr 0x%08lx\n", wrapper->tickcount, start_addr);
-                    txn.rvalid = 1;
+                    req_it->second.back().rvalid = 1;
                 } else {
                     // first check whether this addr has been covered by an inflight DMA request or not
                     uint64_t spm_line_addr = start_addr & ~((uint64_t)(wrapper->spm->spm_line_size - 1));
-                    if (inflight_dma_addr_size.find(spm_line_addr) == inflight_dma_addr_size.end()) {
+                    std::map<uint64_t, DMAAttr>::iterator map_it;
+                    bool alloc_succ;
+                    std::tie(map_it, alloc_succ) = inflight_dma_attr.emplace(spm_line_addr, DMAAttr());
+
+                    if (alloc_succ) {
                         // not covered, need to initiate a new DMA
-                        printf("(%lu) DMA read req issued from NVDLA side, addr 0x%08lx\n", wrapper->tickcount, start_addr);
-                        inflight_dma_addr_size[spm_line_addr] = wrapper->spm->spm_line_size;
+                        printf("(%lu) DMA read req issued from NVDLA side, addr 0x%08lx\n", wrapper->tickcount, spm_line_addr);
+                        map_it->second.is_bypass = to_bypass;
                         inflight_dma_addr_queue.push(spm_line_addr);
                         wrapper->addDMAReadReq(spm_line_addr, wrapper->spm->spm_line_size);
                         issued_req_this_cycle = true;
                     }
-                    txn.rvalid = 0;
+                    map_it->second.deps.emplace_back(start_addr, --req_it->second.end());
+                    req_it->second.back().rvalid = 0;
                 }
-                inflight_req_order.push_back(start_addr);
-                inflight_req[start_addr].push_back(std::move(txn));
             }
         } else {
             issued_req_this_cycle = true;
+            bool cache_read = (wrapper->buf_mode == BUF_MODE_ALL);
             do {
                 axi_r_txn txn;
 
@@ -478,14 +491,14 @@ AXIResponder::process_read_req() {
                 txn.rid = *dla.ar_arid;
                 txn.is_prefetch = 0;
 
-                if(wrapper->prefetch_enable) log_req_issue(addr);
+                if(wrapper->prefetch_enable && !sram) log_req_issue(addr);
 
                 // put txn to the map
-                inflight_req[addr].push_back(std::move(txn));
+                inflight_req[addr].push_back(txn);
                 // put in req the txn
                 inflight_req_order.push_back(addr);
 
-                wrapper->addReadReq(sram, true, addr, AXI_WIDTH / 8);
+                wrapper->addReadReq(sram, true, cache_read, addr, AXI_WIDTH / 8);
 
                 addr += AXI_WIDTH / 8;
                 i++;
@@ -538,7 +551,7 @@ AXIResponder::process_read_resp() {
                 wrapper->tickcount, wrapper->id_nvdla, addr_front);
 
         // push the front one
-        r_fifo.push(std::move(txn));
+        r_fifo.push(txn);
         // todo: add some AXI_R_DELAY txns. currently we are setting AXI_R_DELAY = 0 so it is also correct
 
         // remove the front
@@ -615,8 +628,20 @@ AXIResponder::inflight_dma_resp(const uint8_t* data, uint32_t len) {
     printf("(%lu) nvdla#%d AXIResponder handling DMA return data addr 0x%08lx with length %d.\n",
            wrapper->tickcount, wrapper->id_nvdla, addr, len);
 
-    wrapper->spm->write_spm_line(addr, data, 0);
-    inflight_dma_addr_size.erase(addr);
+    auto addr_it = inflight_dma_attr.find(addr);
+    assert(addr_it != inflight_dma_attr.end());
+    if (!addr_it->second.is_bypass)     // if not bypass, then write this data
+        wrapper->spm->write_spm_line(addr, data, 0);
+
+    for (auto it : inflight_dma_attr[addr].deps) {
+        auto txn_addr = it.first;
+        auto txn_it = it.second;
+        for (uint64_t pos = 0; pos < AXI_WIDTH / 8; pos++)
+            txn_it->rdata[pos] = data[txn_addr - addr + pos];
+        txn_it->rvalid = 1;
+    }
+
+    inflight_dma_attr.erase(addr);
     inflight_dma_addr_queue.pop();
 }
 
@@ -638,14 +663,14 @@ AXIResponder::read_for_traceLoaderGem5(uint64_t start_addr, uint32_t length) {
             if(got) {
                 txn.rvalid = 1;
             } else {    // when verifying results, no need to use dma...
-                wrapper->addReadReq(sram, true, txn_addr, AXI_WIDTH / 8);
+                wrapper->addReadReq(sram, true, false, txn_addr, AXI_WIDTH / 8);
             }
         } else {
-            wrapper->addReadReq(sram, true, txn_addr, AXI_WIDTH / 8);
+            wrapper->addReadReq(sram, true, true, txn_addr, AXI_WIDTH / 8);
         }
 
         // put txn to the map
-        inflight_req[txn_addr].push_back(std::move(txn));
+        inflight_req[txn_addr].push_back(txn);
         // put in req the txn
         inflight_req_order.push_back(txn_addr);
     }
@@ -755,10 +780,14 @@ AXIResponder::generate_prefetch_request() {
 
         // first check whether this addr has been covered by an inflight DMA request or not
         uint64_t spm_line_addr = to_issue_addr & ~((uint64_t)(wrapper->spm->spm_line_size - 1));
-        if (inflight_dma_addr_size.find(spm_line_addr) == inflight_dma_addr_size.end()) {
+        std::map<uint64_t, DMAAttr>::iterator map_it;
+        bool alloc_succ;
+        std::tie(map_it, alloc_succ) = inflight_dma_attr.emplace(spm_line_addr, DMAAttr());
+        if (alloc_succ) {
             // not covered, need to initiate a new DMA
-            printf("(%lu) nvdla#%d PREFETCH (DMA) request addr 0x%08lx issued.\n", wrapper->tickcount, wrapper->id_nvdla, to_issue_addr);
-            inflight_dma_addr_size[spm_line_addr] = wrapper->spm->spm_line_size;
+            printf("(%lu) nvdla#%d PREFETCH (DMA) request addr 0x%08lx issued.\n", wrapper->tickcount, wrapper->id_nvdla, spm_line_addr);
+            map_it->second.is_bypass = false;
+
             inflight_dma_addr_queue.push(spm_line_addr);
             wrapper->addDMAReadReq(spm_line_addr, wrapper->spm->spm_line_size);
 
@@ -771,7 +800,9 @@ AXIResponder::generate_prefetch_request() {
         printf("(%lu) nvdla#%d PREFETCH request addr 0x%08lx issued.\n", wrapper->tickcount, wrapper->id_nvdla, to_issue_addr);
         inflight_req[to_issue_addr].push_back(txn);
         inflight_req_order.push_back(to_issue_addr);
-        wrapper->addReadReq(sram, true, to_issue_addr, AXI_WIDTH / 8);
+
+        // cacheable for buf_mode = BUF_MODE_ALL and BUF_MODE_PFT
+        wrapper->addReadReq(sram, true, true, to_issue_addr, AXI_WIDTH / 8);
         log_entry_issued_len += AXI_WIDTH / 8;  // todo: here the gap of issuing should be cache line size. currently cache line size == AXI_WIDTH/8
     }
 

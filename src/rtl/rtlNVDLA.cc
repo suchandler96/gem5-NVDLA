@@ -44,6 +44,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     bytesReaded(0),
     blocked(false),
     max_req_inflight(params.maxReq),
+    freq_ratio(params.freq_ratio),
     id_nvdla(params.id_nvdla),
     baseAddrDRAM(params.base_addr_dram),
     baseAddrSRAM(params.base_addr_sram),
@@ -76,6 +77,24 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
         dma_rd_engine = nullptr;
         dma_wr_engine = nullptr;
     }
+
+    pft_buf_size = params.pft_buf_size;
+
+    switch (params.buffer_mode) {
+        case 0:
+            buffer_mode = BUF_MODE_ALL;
+            break;
+        case 1:
+            buffer_mode = BUF_MODE_PFT;
+            break;
+        default:
+            assert(false);
+    }
+
+    // todo: add another parameter controlling the mode of using embedded SPM / cache, whether as an all-in-one buffer or simply a prefetch buffer
+    // this involves changing the encoding of rd_only_var_log, caching attributes of rd_wr packets, SPM handling the non-caching DMA txns
+    // and also parameter meaningful logic, as prefetch buffer makes no sense when it is not prefetching
+
 }
 
 
@@ -136,7 +155,7 @@ void
 rtlNVDLA::initNVDLA(bool use_shared_spm) {
     // Wrapper
     wr = new Wrapper_nvdla(id_nvdla, max_req_inflight,
-    dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable, use_shared_spm);
+    dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable, use_shared_spm, buffer_mode, pft_buf_size);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
 }
@@ -168,7 +187,7 @@ rtlNVDLA::loadTraceNVDLA(char *ptr) {
     quiesc_timer = 200;
     waiting = 0;
 
-    schedule(tickEvent, nextCycle());
+    schedule(tickEvent, nextCycle() + (freq_ratio - 1) * clockPeriod());
 }
 
 void
@@ -182,6 +201,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
             readAXIVariable(aux.read_addr,
                             aux.read_sram,
                             aux.read_timing,
+                            aux.cacheable,
                             aux.read_bytes);
             out.read_buffer.pop();
         }
@@ -199,7 +219,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
 
         while (!out.long_write_buffer.empty()) { // this buffer outputs in 1-64 bytes granularity
             auto& aux = out.long_write_buffer.front();
-            writeAXILong(aux.write_addr, aux.length, aux.write_data, aux.write_mask, aux.write_sram, aux.write_timing);
+            writeAXILong(aux.write_addr, aux.length, aux.write_data, aux.write_mask, aux.write_sram, aux.write_timing, aux.cacheable);
             out.long_write_buffer.pop();
         }
     }
@@ -210,7 +230,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
     if (!out.dma_read_buffer.empty()) {
         auto& aux = out.dma_read_buffer.front();
 
-        uint64_t real_addr = getRealAddr(aux.first, false);      // always suppose dram DMA fetch
+        uint64_t real_addr = getRealAddr(aux.first, false);         // only DRAM has DMA fetch
         if (dma_rd_engine->atEndOfBlock()) {
             dma_rd_engine->startFill(real_addr, aux.second);
             printf("(%lu) nvdla#%d DMA read req is issued: addr 0x%08lx, len %d\n", wr->tickcount, id_nvdla, aux.first, aux.second);
@@ -222,10 +242,10 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
 
 
     //! use dma_wr_engine to process writing requests
-    if(!out.dma_write_buffer.empty()) {
+    if (!out.dma_write_buffer.empty()) {
         auto& aux = out.dma_write_buffer.front();
         if (dma_wr_engine->atEndOfBlock()) {                    // previous DMA write has been sent
-            uint64_t real_addr = getRealAddr(aux.first, false);     // always suppose dram DMA write
+            uint64_t real_addr = getRealAddr(aux.first, false);     // only DRAM has DMA write
             dma_wr_engine->startFill(real_addr, aux.second.size(), aux.second.data());
             printf("(%lu) nvdla#%d DMA write req is issued: addr 0x%08lx, len %ld\n", wr->tickcount, id_nvdla, aux.first, aux.second.size());
             // stats.num_dma_wr++;
@@ -302,7 +322,7 @@ rtlNVDLA::tick() {
         stats.nvdla_cycles++;
         cyclesNVDLA++;
         runIterationNVDLA();
-        schedule(tickEvent, nextCycle());
+        schedule(tickEvent, nextCycle() + (freq_ratio - 1) * clockPeriod());
     } else {
         // we have finished running the trace
         printf("done at %lu ticks\n", wr->tickcount);
@@ -544,7 +564,7 @@ rtlNVDLA::getAddrNVDLA(uint64_t addr, bool sram) {
 }
 
 const uint8_t *
-rtlNVDLA::readAXIVariable(uint64_t addr, bool sram, bool timing, unsigned int size) {
+rtlNVDLA::readAXIVariable(uint64_t addr, bool sram, bool timing, bool cacheable, unsigned int size) {
     // Update stats
     stats.nvdla_reads++;
 
@@ -554,7 +574,7 @@ rtlNVDLA::readAXIVariable(uint64_t addr, bool sram, bool timing, unsigned int si
             "Read AXI Variable addr: %#x, real_addr %#x, size %d\n",
             addr, real_addr, size);
 
-    RequestPtr req = std::make_shared<Request>(real_addr, size, 0, 0);
+    RequestPtr req = std::make_shared<Request>(real_addr, size, cacheable ? 0: Request::UNCACHEABLE, 0);
     PacketPtr packet = nullptr;
     // we create the real packet, write request
     packet = Packet::createRead(req);
@@ -603,11 +623,11 @@ rtlNVDLA::writeAXI(uint64_t addr, uint8_t data, bool sram, bool timing) {
 }
 
 void
-rtlNVDLA::writeAXILong(uint64_t addr, uint32_t length, uint8_t* data, uint64_t mask, bool sram, bool timing) {
+rtlNVDLA::writeAXILong(uint64_t addr, uint32_t length, uint8_t* data, uint64_t mask, bool sram, bool timing, bool cacheable) {
     stats.nvdla_writes++;
 
     uint64_t real_addr = getRealAddr(addr,sram);
-    RequestPtr req = std::make_shared<Request>(real_addr, length, 0, 0);
+    RequestPtr req = std::make_shared<Request>(real_addr, length, cacheable ? 0: Request::UNCACHEABLE, 0);
     std::vector<bool> byte_enable_vec(length);
 
     for (int i = 0; i < length; i++)
