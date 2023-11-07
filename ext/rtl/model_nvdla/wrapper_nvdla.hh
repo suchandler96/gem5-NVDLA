@@ -82,7 +82,7 @@
 #define NVDLA_SECONDARY_MEMIF_WIDTH 512
 #define NVDLA_MEM_ADDRESS_WIDTH 64
 
-
+// #define NO_DATA
 
 
 #include <assert.h>
@@ -114,6 +114,7 @@ class Wrapper_nvdla;
 enum BufferMode {
     BUF_MODE_ALL = 0,
     BUF_MODE_PFT = 1,
+    BUF_MODE_PFT_CUTOFF = 2,
 };
 
 class ScratchpadMemory {

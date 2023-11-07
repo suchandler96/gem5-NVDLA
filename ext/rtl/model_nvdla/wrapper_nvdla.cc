@@ -302,9 +302,11 @@ void Wrapper_nvdla::addLongWriteReq(bool write_sram, bool write_timing, bool cac
     wr.length = length;
     wr.write_mask = mask;
     wr.write_data = new uint8_t[length];
+#ifndef NO_DATA
     for (int i = 0; i < length; i++) {
         wr.write_data[i] = write_data[i];
     }
+#endif
     output.long_write_buffer.push(std::move(wr));
 }
 
@@ -366,11 +368,11 @@ void ScratchpadMemory::read_spm_line(uint64_t aligned_addr, uint8_t* data_out) {
     auto spm_line_it = spm.find(aligned_addr);
 
     assert(spm_line_it != spm.end());
-
+#ifndef NO_DATA
     for (int i = 0; i < spm_line_size; i++) {
         data_out[i] = spm_line_it->second.spm_line[i];
     }
-
+#endif
     lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
 }
 
@@ -384,10 +386,12 @@ bool ScratchpadMemory::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) {
     if (spm_line_it == spm.end()) {
         return false;
     }
+#ifndef NO_DATA
     std::vector<uint8_t>& entry_vector = spm_line_it->second.spm_line;
     for (int i = 0; i < AXI_WIDTH / 8; i++) {
         data_out[i] = entry_vector[offset + i];
     }
+#endif
     lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
 
     return true;
@@ -401,7 +405,7 @@ void ScratchpadMemory::write_spm_byte(uint64_t addr, uint8_t data) {
 
     if (spm_line_it == spm.end()) {      // if the element to write is not in spm
         if (spm.size() >= spm_line_num) {
-            erase_spm_line();   // lru_order maintanence of erasing is done inside
+            erase_spm_line();   // lru_order maintenance of erasing is done inside
         }
 
         // assign space to this spm line
@@ -412,7 +416,9 @@ void ScratchpadMemory::write_spm_byte(uint64_t addr, uint8_t data) {
 
         std::vector<uint8_t>& entry_vector = entry_it->second.spm_line;
         entry_vector.resize(spm_line_size, 0);
+#ifndef NO_DATA
         entry_vector[offset] = data;
+#endif
         entry_it->second.dirty = 1;    // write bytes are always coming from NVDLA
         entry_it->second.lru_it = std::prev(lru_order.end());
     } else {
@@ -439,11 +445,15 @@ void ScratchpadMemory::write_spm_line(uint64_t aligned_addr, const uint8_t* cons
         lru_order.push_back(entry_it);
 
         auto& entry = entry_it->second;
+#ifndef NO_DATA
         entry.spm_line.assign(data, data + spm_line_size);
+#endif
         entry.dirty = dirty;
         entry.lru_it = std::prev(lru_order.end());
     } else {
+#ifndef NO_DATA
         spm_line_it->second.spm_line.assign(data, data + spm_line_size);
+#endif
         spm_line_it->second.dirty = dirty;
 
         lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
@@ -471,7 +481,9 @@ void ScratchpadMemory::write_spm_line(uint64_t aligned_addr, const std::vector<u
         entry_it->second.lru_it = std::prev(lru_order.end());
     } else {
         auto size = lru_order.size();
+#ifndef NO_DATA
         spm_line_it->second.spm_line.assign(data.begin(), data.end());
+#endif
         spm_line_it->second.dirty = dirty;
 
         lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
@@ -502,9 +514,11 @@ void ScratchpadMemory::write_spm_axi_line(uint64_t axi_addr, const uint8_t* cons
     }
     // writes at AXI_WIDTH/8-granularity is always coming from NVDLA, so we write dirty bit
     spm_line_it->second.dirty = 1;
+#ifndef NO_DATA
     for (int i = 0; i < AXI_WIDTH / 8; i++) {
         spm_line_it->second.spm_line[offset + i] = data[i];
     }
+#endif
 }
 
 void ScratchpadMemory::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* const data, const uint64_t mask) {
@@ -530,6 +544,7 @@ void ScratchpadMemory::write_spm_axi_line_with_mask(uint64_t axi_addr, const uin
     }
     // writes at AXI_WIDTH/8-granularity is always coming from NVDLA, so we write dirty bit
     spm_line_it->second.dirty = 1;
+#ifndef NO_DATA
     if (mask == 0xFFFFFFFFFFFFFFFF) {
         for (int i = 0; i < AXI_WIDTH / 8; i++) {
             spm_line_it->second.spm_line[offset + i] = data[i];
@@ -541,6 +556,7 @@ void ScratchpadMemory::write_spm_axi_line_with_mask(uint64_t axi_addr, const uin
             spm_line_it->second.spm_line[offset + i] = data[i];
         }
     }
+#endif
 }
 
 bool ScratchpadMemory::check_txn_data_in_spm(uint64_t addr) {

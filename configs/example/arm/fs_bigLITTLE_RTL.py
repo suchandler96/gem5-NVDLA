@@ -228,7 +228,8 @@ def addOptions(parser):
     parser.add_argument("--freq-ratio", type=int, default=1, help="=(frequency of LITTLE CPU) / (frequency of NVDLA)")
 
     # options.buffer_mode
-    parser.add_argument("--buffer-mode", type=str, default="all", help="How to use pr/sh cache/embedded-SPM. all: cache all; pft: prefetch-buffer-only")
+    parser.add_argument("--buffer-mode", type=str, default="all", help="How to use pr/sh cache/embedded-SPM. "
+                        "all: cache all; pft: prefetch-buffer-only; pft-cut: prefetch buffer but does not prefetch overflowed tensors")
     # options.dma_enable
     parser.add_argument("--dma-enable", action="store_true", default=False, help="Use scratchpad embedded in NVDLA wrapper, aided with DMA")
     # options.shared_spm

@@ -168,6 +168,8 @@ class CpuCluster(SubSystem):
                 pft_ctrl_str = "buffer_mode=0"
             elif options.buffer_mode == "pft":
                 pft_ctrl_str = "buffer_mode=1"
+            elif options.buffer_mode == "pft-cut":
+                pft_ctrl_str = "buffer_mode=2"
             else:
                 assert False
 
@@ -181,7 +183,7 @@ class CpuCluster(SubSystem):
                 elif options.add_accel_private_cache:   # both private cache-only and mixed private & shared cache
                     pft_ctrl_str += ", pft_buf_size=options.accel_pr_cache_size"
                 elif options.add_accel_shared_cache:
-                    pft_ctrl_str += ", pft_buf_size=options.accel_sh_cache_size"
+                    pft_ctrl_str += ", pft_buf_size=options.accel_sh_cache_size / options.numNVDLA"
                 else:                                   # membus
                     pass
             else:

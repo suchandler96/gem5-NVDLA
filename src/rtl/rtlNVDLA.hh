@@ -34,6 +34,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <ctime>
 
 #include "dev/dma_device.hh"
 #include "dev/dma_nvdla.hh"
@@ -59,6 +60,7 @@ class TraceLoaderGem5;
 class rtlNVDLA : public rtlObject
 {
   private:
+    time_t sim_time;
 
     /**
      * Port on the memory-side that receives responses.

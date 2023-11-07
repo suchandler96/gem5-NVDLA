@@ -8,9 +8,10 @@ from sweeper import param_types
 
 
 sweep_header = ["sweep_name", "sweep_id"]
-default_var_header = ["numNVDLA", "dma-enable", "shared-spm", "embed-spm-size", "add-accel-private-cache",
-                      "accel-pr-cache-size", "add-accel-shared-cache", "accel-sh-cache-size",
-                      "pft-enable"]
+default_var_header = ["numNVDLA", "buffer-mode", "dma-enable", "shared-spm", "embed-spm-size",
+                      "add-accel-private-cache", "accel-pr-cache-size", "add-accel-shared-cache",
+                      "accel-sh-cache-size", "use-fake-mem", "cvsram-enable", "cvsram-size", "cvsram-bandwidth",
+                      "remapper", "pft-enable"]
 stats_pr_header = ["nvdla_cycles"]
 stats_sh_header = []
 # `pr`(private) stuffs may have multiple instances when using multiple NVDLAs

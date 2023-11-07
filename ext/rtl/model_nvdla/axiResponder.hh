@@ -150,7 +150,7 @@ public:
 
     // prefetching-related
     void add_rd_var_log_entry(uint64_t addr, uint32_t size);
-    void log_req_issue(uint64_t addr);
+    bool log_req_issue(uint64_t addr);
     void generate_prefetch_request();
 
     Wrapper_nvdla *wrapper;

@@ -59,6 +59,20 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     pft_threshold(params.pft_threshold),
     use_fake_mem(params.use_fake_mem) {
 
+    switch (params.buffer_mode) {
+        case 0:
+            buffer_mode = BUF_MODE_ALL;
+            break;
+        case 1:
+            buffer_mode = BUF_MODE_PFT;
+            break;
+        case 2:
+            buffer_mode = BUF_MODE_PFT_CUTOFF;
+            break;
+        default:
+            assert(false);
+    }
+
     initNVDLA(params.use_shared_spm);
     startMemRegion = 0xC0000000;
     cyclesNVDLA = 0;
@@ -79,17 +93,6 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     }
 
     pft_buf_size = params.pft_buf_size;
-
-    switch (params.buffer_mode) {
-        case 0:
-            buffer_mode = BUF_MODE_ALL;
-            break;
-        case 1:
-            buffer_mode = BUF_MODE_PFT;
-            break;
-        default:
-            assert(false);
-    }
 
     // todo: add another parameter controlling the mode of using embedded SPM / cache, whether as an all-in-one buffer or simply a prefetch buffer
     // this involves changing the encoding of rd_only_var_log, caching attributes of rd_wr packets, SPM handling the non-caching DMA txns
@@ -158,6 +161,7 @@ rtlNVDLA::initNVDLA(bool use_shared_spm) {
     dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable, use_shared_spm, buffer_mode, pft_buf_size);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
+    sim_time = time(nullptr);
 }
 
 void
@@ -326,6 +330,7 @@ rtlNVDLA::tick() {
     } else {
         // we have finished running the trace
         printf("done at %lu ticks\n", wr->tickcount);
+        printf("simulation time: %lu seconds\n", time(nullptr) - sim_time);
 
         if (!trace->test_passed()) {
             printf("*** FAIL: test failed due to output mismatch\n");
@@ -611,8 +616,9 @@ rtlNVDLA::writeAXI(uint64_t addr, uint8_t data, bool sram, bool timing) {
     packet = Packet::createWrite(req);
     // always in Little Endian
     PacketDataPtr dataAux = new uint8_t[1];
+#ifndef NO_DATA
     dataAux[0] = data;
-
+#endif
     packet->dataDynamic(dataAux);
     // send the packet in timing?
     if (sram) {
@@ -626,21 +632,18 @@ void
 rtlNVDLA::writeAXILong(uint64_t addr, uint32_t length, uint8_t* data, uint64_t mask, bool sram, bool timing, bool cacheable) {
     stats.nvdla_writes++;
 
-    uint64_t real_addr = getRealAddr(addr,sram);
+    uint64_t real_addr = getRealAddr(addr, sram);
     RequestPtr req = std::make_shared<Request>(real_addr, length, cacheable ? 0: Request::UNCACHEABLE, 0);
+#ifndef NO_DATA
     std::vector<bool> byte_enable_vec(length);
 
     for (int i = 0; i < length; i++)
         byte_enable_vec[i] = ((mask >> i) & 1);
 
     req->setByteEnable(byte_enable_vec);
-
+#endif
     PacketPtr packet = nullptr;
     packet = Packet::createWrite(req);
-    // always in Little Endian
-    // PacketDataPtr dataAux = new uint8_t[length];
-    // for (int i = 0; i < length; i++)
-    //     dataAux[i] = data[i];
 
     // here we directly give the 'data' ptr to pkt.
     // This is supported by the fact that 'data' is malloced by ourselves
