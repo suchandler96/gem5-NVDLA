@@ -55,6 +55,7 @@ param_types = {
 class Sweeper:
     def __init__(self, args):
         self.home_path = os.popen("cd ~/ && pwd").readlines()[0].strip('\n')
+        self.new_home = args.home.rstrip("/")
         self.gem5_nvdla_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
         self.gen_points = args.gen_points
         self.cpt_dir = None
@@ -209,13 +210,15 @@ class Sweeper:
             assert False
 
         # cpt-dir should be changed after regenerating a checkpoint
-        change_config_file(point_dir, "run.sh", {"gem5-binary": self.gem5_binary.replace(self.home_path, "~")})
+        change_config_file(point_dir, "run.sh",
+                           {"gem5-binary": self.gem5_binary.replace(self.home_path, self.new_home)})
 
-        change_config_file(point_dir, "run.sh", {"output-dir": os.path.abspath(point_dir).replace(self.home_path, "~")})
+        change_config_file(point_dir, "run.sh",
+                           {"output-dir": os.path.abspath(point_dir).replace(self.home_path, self.new_home)})
         change_config_file(point_dir, "bootscript.rcS", {"run-cmd": run_cmd})
         change_config_file(point_dir, "run.sh", {"config-dir":
             os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../configs/example/arm/fs_bigLITTLE_RTL.py"))
-                                                 .replace(self.home_path, "~")})
+                                                 .replace(self.home_path, self.new_home)})
 
         # Apply every sweep parameter for this data point.
         for p in self.params_list[json_id][0]:
@@ -291,8 +294,10 @@ class Sweeper:
                 change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
 
             esc_home_path = self.home_path.replace('/', '\\/')
+            esc_new_home = self.new_home.replace('/', '\\/')
             esc_out_dir = self.out_dir.replace('/', '\\/')
-            os.system('sed -i "s/' + esc_home_path + '/~/g" `grep "' + esc_home_path + '" -rl ' + esc_out_dir + '`')
+            os.system('sed -i "s/' + esc_home_path + '/' + esc_new_home + '/g" `grep "' +
+                      esc_home_path + '" -rl ' + esc_out_dir + '`')
 
     def run_all(self, args):
         """Run simulations for all data points.

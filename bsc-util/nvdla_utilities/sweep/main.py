@@ -19,6 +19,8 @@ def main():
         "e.g., /home/lenet/", required=True)
 
     # dependencies
+    parser.add_argument("--home", default="~", help="Absolute path to the home directory. "
+                        "Useful when running in docker. The script will replace all ~'s with this path")
     parser.add_argument(
         "--nvdla-hw", default="~/nvdla/hw/",
         help="Path to NVDLA hw repo")
