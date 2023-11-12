@@ -314,7 +314,7 @@ class Sweeper:
         sims = []
         pool = mp.Pool(
             initializer=_init_counter, initargs=(counter, ), processes=args.num_threads)
-        for p in range(self.num_data_points):
+        for p in range(len(self.pt_dirs)):
             cmd = os.path.join(self.pt_dirs[p], "run.sh")
             sims.append(pool.apply_async(_run_simulation, args=(cmd, )))
             time.sleep(0.5)     # sleep for a while before launching next to avoid a gem5 bug (socket bind() failed)
