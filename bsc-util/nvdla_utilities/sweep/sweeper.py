@@ -235,7 +235,7 @@ class Sweeper:
         pool.join()
 
     def resume_create_point(self):
-        if not os.path.exists(os.path.join(self.gem5_nvdla_dir, "mnt/home")):
+        if not os.path.exists(os.path.join(self.gem5_nvdla_dir, "mnt/mnt")):
             os.system("cd " + os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")) +
                       " && sudo python3 util/gem5img.py mount " + self.disk_image + " ./mnt")
 
@@ -271,33 +271,31 @@ class Sweeper:
 
     def enumerate_all(self):
         """Create configurations for all data points.  """
-        if self.gen_points:
-            print("Creating all data points...")
+        print("Creating all data points...")
         for json_id in range(len(self.params_list)):
             self.enumerate(0, json_id)
 
-        if self.gen_points:
-            # run compilation in parallel for some data points
-            self.parallel_remap_compute()
-            self.resume_create_point()
+        # run compilation in parallel for some data points
+        self.parallel_remap_compute()
+        self.resume_create_point()
 
-            os.system("cd " + os.path.join(self.gem5_nvdla_dir, "m5out") + " && rm -rf cpt.*")
-            os.system("cd " + self.gem5_nvdla_dir + " && build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py "
-                      "--big-cpus 0 --little-cpus 1 --cpu-type atomic --bootscript=configs/boot/hack_back_ckpt.rcS")
-            contents = os.listdir(os.path.join(self.gem5_nvdla_dir, "m5out"))
-            for cont in contents:
-                if "cpt." in cont:
-                    self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cont)
+        os.system("cd " + os.path.join(self.gem5_nvdla_dir, "m5out") + " && rm -rf cpt.*")
+        os.system("cd " + self.gem5_nvdla_dir + " && build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py "
+                  "--big-cpus 0 --little-cpus 1 --cpu-type atomic --bootscript=configs/boot/hack_back_ckpt.rcS")
+        contents = os.listdir(os.path.join(self.gem5_nvdla_dir, "m5out"))
+        for cont in contents:
+            if "cpt." in cont:
+                self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cont)
 
-            # after generating the checkpoint, we can apply it to the scripts
-            for pt_dir in self.pt_dirs:
-                change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
+        # after generating the checkpoint, we can apply it to the scripts
+        for pt_dir in self.pt_dirs:
+            change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
 
-            esc_home_path = self.home_path.replace('/', '\\/')
-            esc_new_home = self.new_home.replace('/', '\\/')
-            esc_out_dir = self.out_dir.replace('/', '\\/')
-            os.system('sed -i "s/' + esc_home_path + '/' + esc_new_home + '/g" `grep "' +
-                      esc_home_path + '" -rl ' + esc_out_dir + '`')
+        esc_home_path = self.home_path.replace('/', '\\/')
+        esc_new_home = self.new_home.replace('/', '\\/')
+        esc_out_dir = self.out_dir.replace('/', '\\/')
+        os.system('sed -i "s/' + esc_home_path + '/' + esc_new_home + '/g" `grep "' +
+                  esc_home_path + '" -rl ' + esc_out_dir + '`')
 
     def run_all(self, args):
         """Run simulations for all data points.
@@ -305,6 +303,11 @@ class Sweeper:
         Args:
         Number of threads used to run the simulations.
         """
+        # get self.pt_dirs if not args.gen_points
+        if not args.gen_points:
+            for root, dirs, files in os.walk(self.out_dir):
+                if "run.sh" in files:
+                    self.pt_dirs.append(root)
 
         print("Running all data points...")
         counter = mp.Value('i', 0)
