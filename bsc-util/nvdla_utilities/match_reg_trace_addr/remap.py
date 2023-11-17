@@ -30,7 +30,6 @@ class BaseRemapper:
         self.out_dir = out_dir
         os.makedirs(out_dir, exist_ok=True)
         self.sim_dir_host = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../mnt" + sim_dir))
-        os.system("sudo mkdir -p " + self.sim_dir_host)
         self.testcase_str = testcase_str
 
     def aligned_ceil(self, addr):
@@ -51,6 +50,7 @@ class BaseRemapper:
         pass
 
     def copy_output_to_img(self):
+        os.system("sudo mkdir -p " + self.sim_dir_host)
         files = os.listdir(self.out_dir)
         for file in files:
             if "rd_only_var_log" in file or ".bin" in file:

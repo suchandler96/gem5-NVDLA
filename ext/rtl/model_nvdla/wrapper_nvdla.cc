@@ -337,21 +337,51 @@ outputNVDLA& Wrapper_nvdla::tick(inputNVDLA in) {
 
     advanceTickCount();
 
-    return output;    
+    return output;
 }
 
 void Wrapper_nvdla::addDMAWriteReq(uint64_t addr, std::vector<uint8_t>&& write_data) {
-    output.dma_write_buffer.emplace(addr, write_data);
+    output.dma_write_buffer.emplace_back(addr, write_data);
+}
+
+void Wrapper_nvdla::tryMergeDMAWriteReq(uint64_t addr, uint8_t* write_data, uint32_t len) {
+    if (!output.dma_write_buffer.empty()) {
+        auto &q_end = output.dma_write_buffer.back();
+        if (q_end.first + q_end.second.size() == addr && q_end.second.size() < spm->spm_line_size) {
+            q_end.second.insert(q_end.second.end(), write_data, write_data + len);
+            return;
+        }
+    }
+    output.dma_write_buffer.emplace_back(addr, std::move(std::vector<uint8_t>(write_data, write_data + len)));
 }
 
 void Wrapper_nvdla::addDMAReadReq(uint64_t read_addr, uint32_t read_bytes) {
     output.dma_read_buffer.emplace(read_addr, read_bytes);
 }
 
+std::map<uint64_t, ScratchpadMemory::SPMLineWithTag>::iterator ScratchpadMemory::get_it(uint64_t addr_base) {
+    std::map<uint64_t, SPMLineWithTag>::iterator spm_line_it;
+    if (addr_base == last_addr[0]) {
+        spm_line_it = last_it[0];
+        last_ptr = 0;
+    } else if (addr_base == last_addr[1]) {
+        spm_line_it = last_it[1];
+        last_ptr = 1;
+    } else {
+        spm_line_it = spm.find(addr_base);
+        if (spm_line_it != spm.end()) {
+            last_it[1 - last_ptr] = spm_line_it;
+            last_addr[1 - last_ptr] = addr_base;
+            last_ptr = 1 - last_ptr;
+        }
+    }
+    return spm_line_it;
+}
+
 uint8_t ScratchpadMemory::read_spm_byte(uint64_t addr) {
     uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
 
-    auto spm_line_it = spm.find(addr_base);
+    auto spm_line_it = get_it(addr_base);
 
     assert(spm_line_it != spm.end());
 
@@ -365,7 +395,7 @@ uint8_t ScratchpadMemory::read_spm_byte(uint64_t addr) {
 void ScratchpadMemory::read_spm_line(uint64_t aligned_addr, uint8_t* data_out) {
     assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
 
-    auto spm_line_it = spm.find(aligned_addr);
+    auto spm_line_it = get_it(aligned_addr);
 
     assert(spm_line_it != spm.end());
 #ifndef NO_DATA
@@ -376,32 +406,61 @@ void ScratchpadMemory::read_spm_line(uint64_t aligned_addr, uint8_t* data_out) {
     lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
 }
 
-bool ScratchpadMemory::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) {
+bool ScratchpadMemory::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id) {
     assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
 
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
 
-    auto spm_line_it = spm.find(addr_base);
-    if (spm_line_it == spm.end()) {
-        return false;
-    }
+    // first check read buffers
+    switch (wrapper->buf_mode) {
+        case BUF_MODE_PFT:
+        case BUF_MODE_PFT_CUTOFF: {
+            if (addr_base != read_buffers[stream_id].first) {
+                printf("did not match read buffer %d\n", stream_id);
+                auto spm_line_it = spm.find(addr_base);
+                // use spm.find instead of get_it here since the only spm_line aligned
+                if (spm_line_it == spm.end()) {
+                    printf("not found in SPM\n");
+                    return false;
+                } else {
+                    printf("but found in SPM, moving to read buffer\n");
+                    read_buffers[stream_id].first = addr_base;
+                    read_buffers[stream_id].second = std::move(spm_line_it->second.spm_line);
+                    erase_spm_line_clean(spm_line_it);
+                }
+            }
+            // always in read buffer here
 #ifndef NO_DATA
-    std::vector<uint8_t>& entry_vector = spm_line_it->second.spm_line;
-    for (int i = 0; i < AXI_WIDTH / 8; i++) {
-        data_out[i] = entry_vector[offset + i];
-    }
+            std::vector<uint8_t> &entry_vector = read_buffers[stream_id].second;
+            for (int i = 0; i < AXI_WIDTH / 8; i++)
+                data_out[i] = entry_vector[offset + i];
 #endif
-    lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
-
-    return true;
+            return true;
+        }
+        case BUF_MODE_ALL: {
+            auto spm_line_it = get_it(addr_base);
+            if (spm_line_it == spm.end()) {
+                return false;
+            }
+#ifndef NO_DATA
+            std::vector<uint8_t> &entry_vector = spm_line_it->second.spm_line;
+            for (int i = 0; i < AXI_WIDTH / 8; i++)
+                data_out[i] = entry_vector[offset + i];
+#endif
+            lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
+            return true;
+        }
+        default:
+            assert(false);
+    }
 }
 
 void ScratchpadMemory::write_spm_byte(uint64_t addr, uint8_t data) {
     uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
 
-    auto spm_line_it = spm.find(addr_base);
+    auto spm_line_it = get_it(addr_base);
 
     if (spm_line_it == spm.end()) {      // if the element to write is not in spm
         if (spm.size() >= spm_line_num) {
@@ -432,7 +491,7 @@ void ScratchpadMemory::write_spm_byte(uint64_t addr, uint8_t data) {
 void ScratchpadMemory::write_spm_line(uint64_t aligned_addr, const uint8_t* const data, uint8_t dirty) {
     assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
 
-    auto spm_line_it = spm.find(aligned_addr);
+    auto spm_line_it = get_it(aligned_addr);
     if (spm_line_it == spm.end()) {
         if (spm.size() >= spm_line_num) {
             erase_spm_line();   // lru_order maintenance of erasing is done inside
@@ -463,7 +522,7 @@ void ScratchpadMemory::write_spm_line(uint64_t aligned_addr, const uint8_t* cons
 void ScratchpadMemory::write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data, uint8_t dirty) {
     assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
 
-    auto spm_line_it = spm.find(aligned_addr);
+    auto spm_line_it = get_it(aligned_addr);
     if (spm_line_it == spm.end()) {
         if (spm.size() >= spm_line_num) {
             erase_spm_line();   // lru_order maintenance of erasing is done inside
@@ -497,7 +556,7 @@ void ScratchpadMemory::write_spm_axi_line(uint64_t axi_addr, const uint8_t* cons
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
 
-    auto spm_line_it = spm.find(addr_base);
+    auto spm_line_it = get_it(addr_base);
     if (spm_line_it == spm.end()) {
         if (spm.size() >= spm_line_num) {
             erase_spm_line();   // lru_order maintenance of erasing is done inside
@@ -527,7 +586,7 @@ void ScratchpadMemory::write_spm_axi_line_with_mask(uint64_t axi_addr, const uin
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
 
-    auto spm_line_it = spm.find(addr_base);
+    auto spm_line_it = get_it(addr_base);
     if (spm_line_it == spm.end()) {
         if (spm.size() >= spm_line_num) {
             erase_spm_line();   // lru_order maintenance of erasing is done inside
@@ -583,8 +642,32 @@ void ScratchpadMemory::erase_spm_line() {
         wrapper->addDMAWriteReq(to_erase_it->first, std::move(to_erase_it->second.spm_line));
     }
     lru_order.pop_front();
+
+    if (last_addr[0] == to_erase_it->first) {
+        last_addr[0] = 0;
+        last_it[0] = spm.end();
+    } else if (last_addr[1] == to_erase_it->first) {
+        last_addr[1] = 0;
+        last_it[1] = spm.end();
+    }
     spm.erase(to_erase_it);
     printf("(%lu) SPM line addr 0x%08lx is erased, dirty: %d\n", wrapper->tickcount, to_erase_it->first, to_erase_it->second.dirty);
+}
+
+void ScratchpadMemory::erase_spm_line_clean(std::map<uint64_t, ScratchpadMemory::SPMLineWithTag>::iterator it) {
+    assert(!spm.empty());
+
+    lru_order.erase(it->second.lru_it);
+
+    if (last_addr[0] == it->first) {
+        last_addr[0] = 0;
+        last_it[0] = spm.end();
+    } else if (last_addr[1] == it->first) {
+        last_addr[1] = 0;
+        last_it[1] = spm.end();
+    }
+    spm.erase(it);
+    printf("(%lu) SPM line addr 0x%08lx CLEAN is erased\n", wrapper->tickcount, it->first);
 }
 
 void ScratchpadMemory::flush_spm() {
@@ -598,6 +681,10 @@ void ScratchpadMemory::flush_spm() {
         }
     }
     lru_order.clear();
+    last_addr[0] = 0;
+    last_addr[1] = 0;
+    last_it[0] = spm.end();
+    last_it[1] = spm.end();
 }
 
 void ScratchpadMemory::write_back_dirty() {
@@ -615,5 +702,9 @@ void ScratchpadMemory::write_back_dirty() {
 
 ScratchpadMemory::ScratchpadMemory(Wrapper_nvdla* const wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num) :
     wrapper(wrap), spm_latency(_lat), spm_line_size(_line_size), spm_line_num(_line_num) {
+    last_addr[0] = 0;
+    last_addr[1] = 0;
 
+    for (int i = 0; i < 10; i++)
+        read_buffers[0].first = 0;
 }

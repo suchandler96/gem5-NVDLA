@@ -203,8 +203,9 @@ class BufferModeParam(BaseParam):
                 self.curr_sweep_value() != self._sweep_vals[0]:
             # different modes make no difference on membus and fakemem
             return False
-        if type_val_pairs[PftEnableParam] != "--pft-enable" and self.curr_sweep_value() == "pft":
-            # buffer mode "pft" must be used when prefetch is enabled
+        if type_val_pairs[PftEnableParam] != "--pft-enable" and \
+                (self.curr_sweep_value() == "pft" or self.curr_sweep_value() == "pft-cut"):
+            # prefetch should be enabled when buffer mode is "pft" or "pft-cut"
             return False
         return True
 
@@ -219,7 +220,7 @@ class BufferModeParam(BaseParam):
             pos = line.find("--buffer-mode")
             if pos == -1:
                 continue
-            return re.search(r"--buffer-mode\s+([a-zA-Z]+)", line).group(1)
+            return re.search(r"--buffer-mode\s+([a-zA-Z\-]+)", line).group(1)
 
     @classmethod
     def default_value(cls):

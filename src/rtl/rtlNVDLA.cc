@@ -253,7 +253,7 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
             dma_wr_engine->startFill(real_addr, aux.second.size(), aux.second.data());
             printf("(%lu) nvdla#%d DMA write req is issued: addr 0x%08lx, len %ld\n", wr->tickcount, id_nvdla, aux.first, aux.second.size());
             // stats.num_dma_wr++;
-            out.dma_write_buffer.pop();
+            out.dma_write_buffer.pop_front();
         }
     }
 }

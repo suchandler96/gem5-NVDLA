@@ -104,9 +104,8 @@ private:
         bool is_bypass;
         std::vector<std::pair<uint64_t, std::list<axi_r_txn>::iterator> > deps;
     };
-    std::map<uint64_t, DMAAttr> inflight_dma_attr;    // record the inflight dma attribute: whether to bypass DMA
-    std::queue<uint64_t> inflight_dma_addr_queue;           // keep dma request order
-    // todo: inflight_dma_attr can keep track of involved inflight_req iterators
+    std::map<uint64_t, DMAAttr> inflight_dma_attr;  // record the inflight dma attribute: whether to bypass DMA
+    std::queue<uint64_t> inflight_dma_addr_queue;   // keep dma request order
 
     // prefetch
     uint32_t pft_threshold;

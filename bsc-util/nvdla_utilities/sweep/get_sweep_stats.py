@@ -2,6 +2,7 @@ import os
 import re
 import collections
 import argparse
+import json
 from os.path import exists
 from params import *
 from sweeper import param_types
@@ -34,10 +35,24 @@ def get_max_num_nvdla(options):
 
 def get_var_header(options):
     global default_var_header
-    if (options.var is None):
-        return default_var_header
-    else:
-        return options.var
+    jsons_dir = os.path.join(options.get_root_dir, "../jsons") if options.jsons_dir == "" else options.jsons_dir
+    assert os.path.exists(jsons_dir), f"path '{jsons_dir}' does not exist!\n"
+    return get_swept_vars(jsons_dir)
+
+
+def get_swept_vars(json_dir):
+    swept_vars = []
+    for root, dirs, files in os.walk(json_dir):
+        for file in files:
+            if ".json" in file:
+                with open(os.path.join(root, file), "r") as fp:
+                    data = json.load(fp)
+                for var, to_sweep_values in data.items():
+                    assert type(to_sweep_values) == list, f"weird type in json file.\n"
+                    if len(to_sweep_values) >= 2 and var not in swept_vars:
+                        swept_vars.append(var)
+    assert len(swept_vars) != 0
+    return swept_vars
 
 
 def get_sweep_var(sweep_dir, var_header):
@@ -134,9 +149,10 @@ def natural_keys(tuple_of_root_dirs_files):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="get_sweep_stats.py options")
-    parser.add_argument('--var', nargs='+', type=str, help="Variables of concern")
     parser.add_argument('--pr-stats', nargs='+', type=str, help="private (of a certain NVDLA) stat metrics of concern")
     parser.add_argument('--sh-stats', nargs='+', type=str, help="shared (among NVDLAs) stat metrics of concern")
+    parser.add_argument("--jsons-dir", "-j", default="", type=str,
+                        help="path to the directory containing json files")
     parser.add_argument("--get-root-dir", "-d", type=str, required=True,
                         help="path to the root dir containing a set of experiments")
     parser.add_argument("--out-dir", "-o", type=str, default=".",
