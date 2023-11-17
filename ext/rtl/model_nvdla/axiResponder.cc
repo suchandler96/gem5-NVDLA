@@ -331,7 +331,7 @@ AXIResponder::eval_timing() {
         if (dma_enable) {
             // intermediate variables and outputs should be written to spm (actually, all writes belong to this type)
             if (cache_write)
-                wrapper->spm->write_spm_axi_line_with_mask(awtxn.awaddr, wtxn.wdata, wtxn.wstrb);
+                wrapper->spm->write_spm_axi_line_with_mask(awtxn.awaddr, wtxn.wdata, wtxn.wstrb, awtxn.awid);
             else {  // todo: temporarily ignoring masks
                 wrapper->tryMergeDMAWriteReq(awtxn.awaddr, wtxn.wdata, AXI_WIDTH / 8);
             }
@@ -549,12 +549,15 @@ AXIResponder::process_read_resp() {
     uint64_t addr_front = *it_addr;
 
     axi_r_txn &txn = req_list_ptr->front();
-    // data just arrived in spm via DMA will not update its corresponding txn.rvalid
+
+    /*
     if (dma_enable && txn.rvalid == 0) {
+        // todo: this if block can be deleted if no assertion error after many tests
         bool got = wrapper->spm->read_spm_axi_line(addr_front, txn.rdata, txn.rid);
         assert(!got);
         if (got) txn.rvalid = 1;
     }
+    */
     if (txn.rvalid) {  // ensures the order of response
         printf("(%lu) read data used by nvdla#%d (returned by gem5 or already in spm), addr 0x%08lx\n",
                 wrapper->tickcount, wrapper->id_nvdla, addr_front);
