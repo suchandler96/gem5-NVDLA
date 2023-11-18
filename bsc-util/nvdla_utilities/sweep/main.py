@@ -51,6 +51,12 @@ def main():
     parser.add_argument(
         "--num-threads", type=int, default=8,
         help="Number of threads used to run the data points.")
+    parser.add_argument(
+        "--machine-id", type=int, default=0,
+        help="The ID of the current node. Useful when running in clusters")
+    parser.add_argument(
+        "--num-machines", type=int, default=1,
+        help="Total numbers of nodes / machines in use. Useful when running in clusters")
 
     args = parser.parse_args()
 

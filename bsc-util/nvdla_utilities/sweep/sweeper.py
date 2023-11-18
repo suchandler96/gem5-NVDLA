@@ -7,6 +7,7 @@ import errno
 import time
 import six
 import shutil
+import math
 import subprocess
 import pickle
 import multiprocessing as mp
@@ -308,14 +309,24 @@ class Sweeper:
             for root, dirs, files in os.walk(self.out_dir):
                 if "run.sh" in files:
                     self.pt_dirs.append(root)
+            self.pt_dirs.sort()
 
         print("Running all data points...")
+        assert args.num_machines > 0
+        assert 0 <= args.machine_id < args.num_machines
+        this_machine_pt_dirs = []
+        num_groups = math.ceil(len(self.pt_dirs) / args.num_threads)
+        for grp_id in range(num_groups):
+            if grp_id % args.num_machines == args.machine_id:
+                for pt_id in range(grp_id * args.num_threads, min((grp_id + 1) * args.num_threads, len(self.pt_dirs))):
+                    this_machine_pt_dirs.append(self.pt_dirs[pt_id])
+
         counter = mp.Value('i', 0)
         sims = []
         pool = mp.Pool(
             initializer=_init_counter, initargs=(counter, ), processes=args.num_threads)
-        for p in range(len(self.pt_dirs)):
-            cmd = os.path.join(self.pt_dirs[p], "run.sh")
+        for p in range(len(this_machine_pt_dirs)):
+            cmd = os.path.join(this_machine_pt_dirs[p], "run.sh")
             sims.append(pool.apply_async(_run_simulation, args=(cmd, )))
             time.sleep(0.5)     # sleep for a while before launching next to avoid a gem5 bug (socket bind() failed)
             # see https://gem5-users.gem5.narkive.com/tvnOFKtP/panic-listensocket-listen-listen-failed
