@@ -514,7 +514,8 @@ class SimpleSystem(BaseSimpleSystem):
         self._caches = caches
         if cvsram_enable:
             for _ in range(4):
-                self.mem_ranges.append(AddrRange(start=self.mem_ranges[-1].end, size=cvsram_size))
+                self.mem_ranges.append(AddrRange(start=self.mem_ranges[-1].end, size="256MB"))
+                # there are strided activation tensors. Use a fixed large memory size to avoid overflow currently
         if self._caches:
             self.iocache = IOCache(addr_ranges=self.mem_ranges)
         else:

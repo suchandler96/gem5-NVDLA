@@ -1096,6 +1096,8 @@ class CVSRAMSizeParam(BaseParam):
     def is_meaningful(self, type_val_pairs):
         if type_val_pairs[CVSRAMEnableParam] != "--cvsram-enable" and self.curr_sweep_value() != self._sweep_vals[0]:
             return False
+        if type_val_pairs[RemapperParam] == "Identity" and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
         return True
 
     @classmethod

@@ -61,6 +61,9 @@ class IdentityRemapper(BaseRemapper):
     def __init__(self, in_dir, nvdla_hw_path, model_name):
         super(IdentityRemapper, self).__init__(in_dir, nvdla_hw_path, model_name)
 
+        """ workload-related info """
+        self.workload = Workload(in_dir)
+
     def testcase_init(self, out_dir, sim_dir, testcase_str=""):
         assert os.path.abspath(out_dir) == os.path.abspath(self.in_dir)
         BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
@@ -72,6 +75,13 @@ class IdentityRemapper(BaseRemapper):
         script_path = os.path.join(os.path.abspath(self.nvdla_hw_path), "verif/verilator/input_txn_to_verilator.pl")
         os.system("perl " + script_path + " " + os.path.join(self.out_dir, "input.txn") + " " +
                   os.path.join(self.out_dir, "trace.bin"))
+        rd_var_log_path = os.path.join(self.out_dir, "rd_only_var_log")
+        """ generate rd_only_var_log """
+        with open(rd_var_log_path, "wb") as fp:
+            for rd_only_var in self.workload.rd_only_vars:
+                data_blk = self.workload.data[rd_only_var]
+                fp.write(data_blk.addr.to_bytes(4, byteorder="little", signed=False))
+                fp.write(data_blk.size.to_bytes(4, byteorder="little", signed=False))
 
 
 class CVSRAMRemapper(BaseRemapper):

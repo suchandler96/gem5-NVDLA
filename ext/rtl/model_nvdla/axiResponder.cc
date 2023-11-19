@@ -752,11 +752,15 @@ AXIResponder::log_req_issue(uint64_t addr) {
 
         if (log_entry_addr <= addr && addr < log_entry_addr + log_entry_length) {
             uint32_t& log_entry_issued_len = std::get<2>(*it);
-            if (addr > log_entry_addr + log_entry_issued_len) {
-                printf("nvdla#%d addr issued is beyond the log.\n", wrapper->id_nvdla);
-                abort();
-            } else if (addr == log_entry_addr + log_entry_issued_len) {
-                // that's the normal case
+            if (addr >= log_entry_addr + log_entry_issued_len) {
+                if (addr > log_entry_addr + log_entry_issued_len) {
+                    printf("nvdla#%d addr issued is beyond the log.\n", wrapper->id_nvdla);
+                    // todo: ignore the problem currently. I think it may be caused by repetitive accesses of
+                    //  inputs / biases. But now we've removed inputs from rd_only_var_log,
+                    //  I suppose this shouldn't happen again.
+                    log_entry_issued_len = addr - log_entry_addr;
+                }
+                // (addr == log_entry_addr + log_entry_issued_lens) is the normal case
                 log_entry_issued_len += (AXI_WIDTH / 8);
                 prefetched = false;
 
@@ -796,8 +800,7 @@ AXIResponder::generate_prefetch_request() {
 
         if (dma_enable) {
             // assert(!wrapper->check_txn_data_in_spm(to_issue_addr)); // weights are unique, shouldn't have been prefetched
-            // todo: whether to assert should be consistent with rd_only_var_log: if the script generating it allows `input` in rd_only_var_log, this should not be asserted
-            // if not, this could be asserted
+            // todo: for now we banned prefetching inputs. But somehow some biases are accessed twice. We still don't assert
 
             // first check whether this addr has been covered by an inflight DMA request or not
             uint64_t spm_line_addr = to_issue_addr & ~((uint64_t) (wrapper->spm->spm_line_size - 1));

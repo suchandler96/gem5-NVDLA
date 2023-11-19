@@ -106,8 +106,6 @@ class Workload:
                 self.intermediate_act.append(act)
 
         rd_only_addr2desc = {}
-        for i in self.inputs:
-            rd_only_addr2desc[self.data[i].addr] = i
         for w in self.weights:
             rd_only_addr2desc[self.data[w].addr] = w
 

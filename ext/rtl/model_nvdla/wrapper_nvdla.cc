@@ -635,10 +635,7 @@ void ScratchpadMemory::write_spm_axi_line_with_mask(uint64_t axi_addr, const uin
 
 bool ScratchpadMemory::check_txn_data_in_spm(uint64_t addr) {
     uint64_t spm_line_addr = addr & ~((uint64_t)(spm_line_size - 1));
-    if (spm.find(spm_line_addr) == spm.end()) {
-        return false;
-    }
-    return true;
+    return spm.find(spm_line_addr) != spm.end();
 }
 
 std::map<uint64_t, ScratchpadMemory::SPMLineWithTag>::iterator ScratchpadMemory::get_it_to_erase() {
