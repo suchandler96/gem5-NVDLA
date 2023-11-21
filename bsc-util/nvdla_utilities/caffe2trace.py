@@ -35,6 +35,10 @@ def parse_args():
         "--disk-image", default="/home/lactose/gem5_linux_images/ubuntu-18.04-arm64-docker.img",
         help="path to the disk image for full system simulation")
     parser.add_argument(
+        "--convert-only", action="store_true", default=False, help="Whether to assume the presence of sc.log "
+        "and only do processing only"
+    )
+    parser.add_argument(
         "--no-print-hints", action="store_true", default=False, help="Whether to print the steps afterwards"
     )
 
@@ -125,8 +129,9 @@ send "shutdown -h now\\r"
 
 
 def process_log(options):
-    os.system("cd /usr/local/nvdla && mv sc.log " + options.out_dir)
-    os.system("cd /usr/local/nvdla && mv qemu_log " + options.out_dir)
+    if not options.convert_only:
+        os.system("cd /usr/local/nvdla && mv sc.log " + options.out_dir)
+        os.system("cd /usr/local/nvdla && mv qemu_log " + options.out_dir)
 
     nvdla_utilities_dir = os.path.dirname(__file__)
     if not os.path.exists(os.path.join(nvdla_utilities_dir, "NVDLAUtil")):
@@ -140,6 +145,10 @@ def process_log(options):
     os.system("cd " + nvdla_utilities_dir + " && ./NVDLAUtil -i " + os.path.join(options.out_dir, "sc.log") +
               " --print-mem-rd --print-mem-wr -f parse-vp-log --change-addr > " + os.path.join(options.out_dir,
                                                                                                "VP_mem_rd_wr"))
+    os.system("cd " + nvdla_utilities_dir + " && python3 fix_txn_discontinuous.py --vp-out-dir " + options.out_dir +
+              " --name try_input")
+    os.system("cd " + options.out_dir + " mv input.txn bkp_input.txn")
+    os.system("cd " + options.out_dir + " mv try_input.txn input.txn")
     workload = Workload(options.out_dir)
     workload.write_rd_only_var_log(os.path.join(options.out_dir, "rd_only_var_log"))
 

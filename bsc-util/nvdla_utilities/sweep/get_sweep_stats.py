@@ -9,17 +9,18 @@ from sweeper import param_types
 
 
 sweep_header = ["sweep_name", "sweep_id"]
-default_var_header = ["numNVDLA", "buffer-mode", "dma-enable", "shared-spm", "embed-spm-size",
-                      "add-accel-private-cache", "accel-pr-cache-size", "add-accel-shared-cache",
-                      "accel-sh-cache-size", "use-fake-mem", "cvsram-enable", "cvsram-size", "cvsram-bandwidth",
-                      "remapper", "pft-enable"]
+compulsory_header_fields = ["ddr-type", "dma-enable", "add-accel-private-cache", "pft-enable"]
 stats_pr_header = ["nvdla_cycles"]
-stats_sh_header = []
+stats_sh_header = ["num_dma_prefetch", "num_dma", "cvsram-enable", "cvsram-size"]
 # `pr`(private) stuffs may have multiple instances when using multiple NVDLAs
 # `sh`(shared) stuffs have only one instance
 
 stat_header2identifier = {   # including both private and shared stats' headers
-    "nvdla_cycles": "nvdla_cycles"
+    "nvdla_cycles": "nvdla_cycles",
+    "num_dma_prefetch": "num_dma_prefetch",
+    "num_dma": "num_dma",
+    "cvsram-enable": "cvsram-enable",
+    "cvsram-size": "cvsram-size"
 }
 
 max_num_nvdla = 0
@@ -33,11 +34,23 @@ def get_max_num_nvdla(options):
             max_num_nvdla = max(max_num_nvdla, num_nvdla)
 
 
+def get_num_dma_prefetch(sweep_dir):
+    return os.popen("cd " + sweep_dir + ' && cat stdout | grep "PREFETCH (DMA)" -c').readlines()[0].strip('\n')
+
+
+def get_num_dma(sweep_dir):
+    return os.popen("cd " + sweep_dir + ' && cat stdout | grep "DMA read req is issued:" -c').readlines()[0].strip('\n')
+
+
 def get_var_header(options):
-    global default_var_header
+    global compulsory_header_fields
     jsons_dir = os.path.join(options.get_root_dir, "../jsons") if options.jsons_dir == "" else options.jsons_dir
     assert os.path.exists(jsons_dir), f"path '{jsons_dir}' does not exist!\n"
-    return get_swept_vars(jsons_dir)
+    header = get_swept_vars(jsons_dir)
+    for entry in compulsory_header_fields:
+        if entry not in header:
+            header.append(entry)
+    return header
 
 
 def get_swept_vars(json_dir):
@@ -106,7 +119,6 @@ def get_sweep_stats(options, sweep_dir):
         identifier = stat_header2identifier[item]
 
         for line in stat_lines:
-
             if identifier in line:
                 accel_id_match = re.search(r"accel_([0-9]+)", line)
                 if accel_id_match:
@@ -126,15 +138,7 @@ def get_sweep_stats(options, sweep_dir):
 
     for item in stats_sh_header:
         identifier = stat_header2identifier[item]
-        for line in stat_lines:
-            if identifier in line:
-                stat_val_match = re.search(r"%s\s+([0-9]+)\s+#" % identifier, line)
-                if stat_val_match is None:
-                    continue
-                stat_val = stat_val_match.group(1)
-                sweep_stats += stat_val
-                break
-                # assume the identifier only matches the regex throughout the whole stats.txt file ONCE
+        sweep_stats.append(eval("get_" + identifier + "(sweep_dir)"))
     return sweep_stats
 
 
