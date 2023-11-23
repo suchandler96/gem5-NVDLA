@@ -65,7 +65,7 @@ class Workload:
         # set data_blk.addr and determine "unknown"
         for _, data_blk in self.data.items():
             if data_blk.addr_id != -1:
-                data_blk.addr = ((self.addr_base_map[data_blk.addr_id] + data_blk.offset) & 0x0fffffff) | 0x80000000
+                data_blk.addr = (self.addr_base_map[data_blk.addr_id] + data_blk.offset) - 0xc0000000 + 0x80000000
                 if data_blk.attr == "unknown":
                     addr_log_entry = self.addr_log[data_blk.addr]
                     read_only = True
@@ -270,7 +270,7 @@ def last_aligned(start_addr, size, alignment):
 def get_addr_mapping(lines):
     addr_base_map = {}
     for line in lines:
-        addr_base_match = re.search(r", got dst_ptr = (c[0-9a-f]+) \(index = (\d+)\)", line)
+        addr_base_match = re.search(r", got dst_ptr = ([0-9a-f]+) \(index = (\d+)\)", line)
         if addr_base_match is not None:
             key = int(addr_base_match.group(2))
             val = int(addr_base_match.group(1), 16)

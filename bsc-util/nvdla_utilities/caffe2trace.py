@@ -133,7 +133,7 @@ def process_log(options):
         os.system("cd /usr/local/nvdla && mv sc.log " + options.out_dir)
         os.system("cd /usr/local/nvdla && mv qemu_log " + options.out_dir)
 
-    nvdla_utilities_dir = os.path.dirname(__file__)
+    nvdla_utilities_dir = os.path.dirname(os.path.abspath(__file__))
     if not os.path.exists(os.path.join(nvdla_utilities_dir, "NVDLAUtil")):
         os.system("cd " + nvdla_utilities_dir + " && g++ -std=c++11 NVDLAUtil.cpp -o NVDLAUtil")
     os.system("cd " + nvdla_utilities_dir + " && ./NVDLAUtil -i " + os.path.join(options.out_dir, "sc.log") +
@@ -147,8 +147,8 @@ def process_log(options):
                                                                                                "VP_mem_rd_wr"))
     os.system("cd " + nvdla_utilities_dir + " && python3 fix_txn_discontinuous.py --vp-out-dir " + options.out_dir +
               " --name try_input")
-    os.system("cd " + options.out_dir + " mv input.txn bkp_input.txn")
-    os.system("cd " + options.out_dir + " mv try_input.txn input.txn")
+    os.system("cd " + options.out_dir + " && mv input.txn bkp_input.txn")
+    os.system("cd " + options.out_dir + " && mv try_input.txn input.txn")
     workload = Workload(options.out_dir)
     workload.write_rd_only_var_log(os.path.join(options.out_dir, "rd_only_var_log"))
 
@@ -167,30 +167,30 @@ def process_log(options):
         print("Patch file " + os.path.join(os.path.dirname(__file__), "nvdla_hw.patch") +
               " should be applied to " + perl_script_path)
         exit(1)
-    os.system("perl " + perl_script_path + " " + options.out_dir + " " + os.path.join(options.out_dir, "trace.bin"))
+    os.system("perl " + perl_script_path + " " + os.path.join(options.out_dir, "input.txn") + " " +
+              os.path.join(options.out_dir, "trace.bin"))
 
 
 def main():
     options = parse_args()
 
-    print("\n\n")
+    if not options.convert_only:
+        check_dependence(options)
 
-    check_dependence(options)
+        # compile the caffe model to loadable and move to /usr/local/nvdla
+        get_loadable(options)
 
-    # compile the caffe model to loadable and move to /usr/local/nvdla
-    get_loadable(options)
+        # set environment variable
+        set_environ_var()
 
-    # set environment variable
-    set_environ_var()
-
-    # run qemu
-    run_qemu(options)
+        # run qemu
+        run_qemu(options)
 
     # process the log file
     process_log(options)
 
     # move to disk image for full system simulation
-    gem5_nvdla_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
+    gem5_nvdla_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../"))
     work_dir_in_image = os.path.join(gem5_nvdla_dir, "mnt/home/" + options.model_name)
 
     if not options.no_print_hints:
@@ -202,7 +202,7 @@ cd """ + gem5_nvdla_dir + " && mkdir mnt && sudo python3 util/gem5img.py mount "
           options.disk_image + """ ./mnt
 ```
 2. Cross-compile schedulers like `my_validation_nvdla_single_thread.cpp` and `pipeline_execute.cpp` and move the \
-binaries to """ + os.path.join(os.path.abspath(options.gem5_nvdla_dir), "mnt/home/") + """
+binaries to """ + os.path.join(os.path.abspath(gem5_nvdla_dir), "mnt/home/") + """
 
 3. Refer to """ + os.path.join(gem5_nvdla_dir, "bsc-util/nvdla_utilities/sweep/main.py") + """ for the options to \
 create simulation points and checkpoints""")

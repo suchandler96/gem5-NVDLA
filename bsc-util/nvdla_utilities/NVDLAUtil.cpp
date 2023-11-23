@@ -27,8 +27,7 @@ public:
     void print_axi_txn() const {
         uint64_t out_addr;
         if(change_addr_flag) {
-            assert((address & 0xf0000000) == 0xc0000000);
-            out_addr = (address & 0x0fffffff) | 0x80000000;
+            out_addr = address - 0xc0000000 + 0x80000000;
         } else {
             out_addr = address;
         }
@@ -83,8 +82,8 @@ public:
                     0xffff0000 + (0x0000ffff & ((addr - 0) >> 2));  // write bit will be corrected by txn2verilator
 
             if(is_write) {
-                if(change_addr_flag && ((data & 0xf0000000) == 0xc0000000)) {
-                    printf("write_reg 0x%x 0x%08x\t\t\t#0x%04x\n", out_addr, (data & 0x0fffffff) | 0x80000000, addr);
+                if(change_addr_flag && ((data & 0xf0000000) >= 0xc0000000)) {
+                    printf("write_reg 0x%x 0x%08x\t\t\t#0x%04x\n", out_addr, data - 0xc0000000 + 0x80000000, addr);
                 } else {
                     printf("write_reg 0x%x 0x%08x\t\t\t#0x%04x\n", out_addr, data, addr);
                 }

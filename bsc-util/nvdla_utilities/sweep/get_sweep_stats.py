@@ -9,9 +9,10 @@ from sweeper import param_types
 
 
 sweep_header = ["sweep_name", "sweep_id"]
-compulsory_header_fields = ["ddr-type", "dma-enable", "add-accel-private-cache", "pft-enable"]
+compulsory_header_fields = ["ddr-type", "dma-enable", "add-accel-private-cache", "pft-enable", "cvsram-enable",
+                            "cvsram-size"]
 stats_pr_header = ["nvdla_cycles"]
-stats_sh_header = ["num_dma_prefetch", "num_dma", "cvsram-enable", "cvsram-size"]
+stats_sh_header = ["num_dma_prefetch", "num_dma", "host_seconds"]
 # `pr`(private) stuffs may have multiple instances when using multiple NVDLAs
 # `sh`(shared) stuffs have only one instance
 
@@ -40,6 +41,15 @@ def get_num_dma_prefetch(sweep_dir):
 
 def get_num_dma(sweep_dir):
     return os.popen("cd " + sweep_dir + ' && cat stdout | grep "DMA read req is issued:" -c').readlines()[0].strip('\n')
+
+
+def get_host_seconds(sweep_dir):
+    lines = os.popen("cd " + sweep_dir + ' && cat stdout | grep -E "simulation time: [0-9]+ seconds"').readlines()
+    time = 0
+    for line in lines:
+        time_match = re.search(r"simulation time: ([0-9]+) seconds", line)
+        time += int(time_match.group(1))
+    return time
 
 
 def get_var_header(options):
