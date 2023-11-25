@@ -19,9 +19,7 @@ stats_sh_header = ["num_dma_prefetch", "num_dma", "host_seconds"]
 stat_header2identifier = {   # including both private and shared stats' headers
     "nvdla_cycles": "nvdla_cycles",
     "num_dma_prefetch": "num_dma_prefetch",
-    "num_dma": "num_dma",
-    "cvsram-enable": "cvsram-enable",
-    "cvsram-size": "cvsram-size"
+    "num_dma": "num_dma"
 }
 
 max_num_nvdla = 0
