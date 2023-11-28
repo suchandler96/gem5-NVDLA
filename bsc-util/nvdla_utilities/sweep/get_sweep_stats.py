@@ -12,14 +12,16 @@ sweep_header = ["sweep_name", "sweep_id"]
 compulsory_header_fields = ["ddr-type", "dma-enable", "add-accel-private-cache", "pft-enable", "cvsram-enable",
                             "cvsram-size"]
 stats_pr_header = ["nvdla_cycles"]
-stats_sh_header = ["num_dma_prefetch", "num_dma", "host_seconds"]
+stats_sh_header = ["num_dma_prefetch", "num_dma", "host_seconds", "simulated_seconds"]
 # `pr`(private) stuffs may have multiple instances when using multiple NVDLAs
 # `sh`(shared) stuffs have only one instance
 
 stat_header2identifier = {   # including both private and shared stats' headers
     "nvdla_cycles": "nvdla_cycles",
     "num_dma_prefetch": "num_dma_prefetch",
-    "num_dma": "num_dma"
+    "num_dma": "num_dma",
+    "host_seconds": "host_seconds",
+    "simulated_seconds": "simulated_seconds"
 }
 
 max_num_nvdla = 0
@@ -48,6 +50,31 @@ def get_host_seconds(sweep_dir):
         time_match = re.search(r"simulation time: ([0-9]+) seconds", line)
         time += int(time_match.group(1))
     return time
+
+
+def get_simulated_seconds(sweep_dir):
+    st_num = os.popen("cd " + sweep_dir + ' && cat system.terminal | grep "start_time =" -c').readlines()[0].strip('\n')
+    ed_num = os.popen("cd " + sweep_dir + ' && cat system.terminal | grep "end_time =" -c').readlines()[0].strip('\n')
+    pipeline_sign = os.popen("cd " + sweep_dir + ' && cat system.terminal | grep "finished all ops" -c').readlines()[0].strip('\n')
+
+    if int(st_num) != 0 and int(ed_num) != 0:   # single core pattern
+        st = os.popen("cd " + sweep_dir + ' && cat system.terminal | grep "start_time ="').readlines()[0].strip('\n')
+        st_time_match = re.search(r"start_time = ([0-9\.]+)", st)
+        start_time = float(st_time_match.group(1))
+
+        ed = os.popen("cd " + sweep_dir + ' && cat system.terminal | grep "end_time ="').readlines()[0].strip('\n')
+        ed_time_match = re.search(r"end_time = ([0-9\.]+)", ed)
+        end_time = float(ed_time_match.group(1))
+        return str(end_time - start_time)
+    elif int(pipeline_sign) != 0:               # pipeline pattern
+        time_records = os.popen("cd " + sweep_dir + ' && cat system.terminal | grep " at t = "').readlines()
+        st_time_match = re.search(r"NVDLA [0-9]+ launched batch [0-9]+ at = ([0-9\.]+)", time_records[0])
+        ed_time_match = re.search(r"NVDLA [0-9]+ finished batch [0-9]+ at = ([0-9\.]+)", time_records[-1])
+        if st_time_match is None or ed_time_match is None:
+            return "0"
+        return str(float(ed_time_match.group(1)) - float(st_time_match.group(1)))
+    else:
+        return "0"
 
 
 def get_var_header(options):
@@ -84,7 +111,7 @@ def get_sweep_var(sweep_dir, var_header):
         if var == "numNVDLA":
             max_num_nvdla = max(max_num_nvdla, int(var_value_str))
         ret.append(var_value_str)
-    
+
     return ret
 
 
@@ -115,15 +142,16 @@ def get_sweep_stats(options, sweep_dir):
     global max_num_nvdla
 
     stats_txt_path = os.path.abspath(os.path.join(sweep_dir, "stats.txt"))
-    assert exists(stats_txt_path)
 
     sweep_stats = []
-
-    with open(stats_txt_path, "r") as fp:
-        stat_lines = fp.readlines()
+    if exists(stats_txt_path):
+        with open(stats_txt_path, "r") as fp:
+            stat_lines = fp.readlines()
+    else:
+        stat_lines = []
 
     for item in stats_pr_header:
-        item_vals_of_nvdlas = [0 for _ in range(max_num_nvdla)]
+        item_vals_of_nvdlas = ["0" for _ in range(max_num_nvdla)]
         identifier = stat_header2identifier[item]
 
         for line in stat_lines:
@@ -190,7 +218,7 @@ def summary(options):
             dir_level = os.path.abspath(root).split(os.sep)
             sweep_id = dir_level[-1]
             sweep_name = os.path.relpath(os.path.abspath(os.path.join(root, "..")), options.get_root_dir)
-            
+
             this_pt_list = [sweep_name, sweep_id] + get_sweep_var(root, var_header) + get_sweep_stats(options, root)
             this_pt_list = [str(e) for e in this_pt_list]
             whole_table.append(this_pt_list)

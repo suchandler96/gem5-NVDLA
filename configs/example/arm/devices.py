@@ -179,11 +179,13 @@ class CpuCluster(SubSystem):
                     if not options.shared_spm:          # regular private SPM
                         pft_ctrl_str += ", pft_buf_size=options.embed_spm_size"
                     else:
-                        pft_ctrl_str += ", pft_buf_size=options.embed_spm_size / options.numNVDLA"
+                        pft_ctrl_str += ", pft_buf_size=options.embed_spm_size"
+                        # todo: directly do division would cause str and int type error, put it here first
                 elif options.add_accel_private_cache:   # both private cache-only and mixed private & shared cache
                     pft_ctrl_str += ", pft_buf_size=options.accel_pr_cache_size"
                 elif options.add_accel_shared_cache:
-                    pft_ctrl_str += ", pft_buf_size=options.accel_sh_cache_size / options.numNVDLA"
+                    pft_ctrl_str += ", pft_buf_size=options.accel_sh_cache_size"
+                    # todo: directly do division would cause str and int type error, put it here first
                 else:                                   # membus
                     pass
             else:

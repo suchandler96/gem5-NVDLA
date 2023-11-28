@@ -73,7 +73,7 @@ def main():
                   os.path.abspath(options.prototxts[i]) + " --nvdla-hw " + os.path.abspath(options.nvdla_hw) +
                   " --nvdla-compiler " + os.path.abspath(options.nvdla_compiler) + " --qemu-bin " +
                   os.path.abspath(options.qemu_bin) + " --qemu-lua " + os.path.abspath(options.qemu_lua) +
-                  " --out-dir " + work_dir + " --gem5-nvdla-dir " + os.path.abspath(options.gem5_nvdla_dir) +
+                  " --out-dir " + work_dir +
                   " --disk-image " + os.path.abspath(options.disk_image) + " --no-print-hints")
 
     '''
