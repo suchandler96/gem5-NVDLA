@@ -53,6 +53,9 @@ def get_host_seconds(sweep_dir):
 
 
 def get_simulated_seconds(sweep_dir):
+    if not os.path.exists(os.path.join(sweep_dir, "system.terminal")):
+        return "0"
+
     st_num = os.popen("cd " + sweep_dir + ' && cat system.terminal | grep "start_time =" -c').readlines()[0].strip('\n')
     ed_num = os.popen("cd " + sweep_dir + ' && cat system.terminal | grep "end_time =" -c').readlines()[0].strip('\n')
     pipeline_sign = os.popen("cd " + sweep_dir + ' && cat system.terminal | grep "finished all ops" -c').readlines()[0].strip('\n')
@@ -68,8 +71,8 @@ def get_simulated_seconds(sweep_dir):
         return str(end_time - start_time)
     elif int(pipeline_sign) != 0:               # pipeline pattern
         time_records = os.popen("cd " + sweep_dir + ' && cat system.terminal | grep " at t = "').readlines()
-        st_time_match = re.search(r"NVDLA [0-9]+ launched batch [0-9]+ at = ([0-9\.]+)", time_records[0])
-        ed_time_match = re.search(r"NVDLA [0-9]+ finished batch [0-9]+ at = ([0-9\.]+)", time_records[-1])
+        st_time_match = re.search(r"NVDLA [0-9]+ launched batch [0-9]+ at t = ([0-9\.]+)", time_records[0])
+        ed_time_match = re.search(r"NVDLA [0-9]+ finished batch [0-9]+ at t = ([0-9\.]+)", time_records[-1])
         if st_time_match is None or ed_time_match is None:
             return "0"
         return str(float(ed_time_match.group(1)) - float(st_time_match.group(1)))
