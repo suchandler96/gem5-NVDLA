@@ -350,8 +350,8 @@ def _run_simulation(cmd):
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     if process.returncode != 0:
-        print("Running simulation returned nonzero exit code! Contents of output:\n "
-              "%s\n%s" % (six.ensure_text(stdout), six.ensure_text(stderr)))
+        print("Running simulation returned nonzero exit code!\ncoming from cmd:\n%s\nContents of output:\n "
+              "%s\n%s" % (cmd, six.ensure_text(stdout), six.ensure_text(stderr)))
 
     with counter.get_lock():
         counter.value += 1
