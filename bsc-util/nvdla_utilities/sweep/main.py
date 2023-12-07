@@ -21,10 +21,9 @@ def main():
     # dependencies
     parser.add_argument(
         "--home", default="~", help="Absolute path to the home directory. "
-                                    "Useful when running in docker. The script will replace all ~'s with this path")
-    parser.add_argument(
-        "--nvdla-hw", default="~/nvdla/hw/",
-        help="Path to NVDLA hw repo")
+                                    "Useful when running in docker. The script will replace all ~'s with this path. "
+                                    "So if data points are generated on the host machine and experiments are to be "
+                                    "run in the docker environment, one may use --home /home")
     parser.add_argument(
         "--disk-image", default="~/gem5_linux_images/ubuntu-18.04-arm64-docker.img",
         help="path to the disk image for full system simulation")
@@ -47,10 +46,10 @@ def main():
         help="Whether to generate all the simulation points and regenerate a gem5 checkpoint.")
     parser.add_argument(
         "--run-points", action="store_true", default=False,
-        help="Option to run the generated data points.")
+        help="Whether to run the generated data points.")
     parser.add_argument(
         "--num-threads", type=int, default=8,
-        help="Number of threads used to run the data points.")
+        help="Number of threads used in each machine to run the data points.")
     parser.add_argument(
         "--machine-id", type=int, default=0,
         help="The ID of the current node. Useful when running in clusters")

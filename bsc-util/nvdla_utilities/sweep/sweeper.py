@@ -61,7 +61,6 @@ class Sweeper:
         self.gen_points = args.gen_points
         self.cpt_dir = None
         self.vp_out_dir = args.vp_out_dir
-        self.nvdla_hw_path = args.nvdla_hw
         self.out_dir = os.path.abspath(args.out_dir)
         self.model_name = args.model_name
         self.num_batches = args.pipeline_batches    # only for pipeline
@@ -158,8 +157,7 @@ class Sweeper:
             self.trace_id_prefixes.append(trace_id)
             if mapper_pfx not in self.mappers.keys():   # if a new remapper, record it
                 # for a certain workload and a certain class of remapper, only one remapper instance is needed
-                self.mappers[mapper_pfx] = eval(mapper_pfx + "Remapper(self.vp_out_dir, self.nvdla_hw_path, "
-                                                             "self.model_name)")
+                self.mappers[mapper_pfx] = eval(mapper_pfx + "Remapper(self.vp_out_dir, self.model_name)")
             mapper = self.mappers[mapper_pfx]
             if mapper_pfx == "Identity":
                 remap_subdir = "."
@@ -280,24 +278,6 @@ class Sweeper:
         self.parallel_remap_compute()
         self.resume_create_point()
 
-        os.system("cd " + os.path.join(self.gem5_nvdla_dir, "m5out") + " && rm -rf cpt.*")
-        os.system("cd " + self.gem5_nvdla_dir + " && build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py "
-                  "--big-cpus 0 --little-cpus 1 --cpu-type atomic --bootscript=configs/boot/hack_back_ckpt.rcS")
-        contents = os.listdir(os.path.join(self.gem5_nvdla_dir, "m5out"))
-        for cont in contents:
-            if "cpt." in cont:
-                self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cont)
-
-        # after generating the checkpoint, we can apply it to the scripts
-        for pt_dir in self.pt_dirs:
-            change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
-
-        esc_home_path = self.home_path.replace('/', '\\/')
-        esc_new_home = self.new_home.replace('/', '\\/')
-        esc_out_dir = self.out_dir.replace('/', '\\/')
-        os.system('sed -i "s/' + esc_home_path + '/' + esc_new_home + '/g" `grep "' +
-                  esc_home_path + '" -rl ' + esc_out_dir + '`')
-
     def run_all(self, args):
         """Run simulations for all data points.
 
@@ -310,6 +290,27 @@ class Sweeper:
                 if "run.sh" in files:
                     self.pt_dirs.append(root)
             self.pt_dirs.sort()
+
+        print("Generating checkpoint...")
+        os.makedirs(os.path.join(self.gem5_nvdla_dir, "m5out"), exist_ok=True)  # in case m5out doesn't exist
+        lg = os.popen("cd " + self.gem5_nvdla_dir + " && build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py "
+                      "--big-cpus 0 --little-cpus 1 --cpu-type atomic "
+                      "--bootscript=configs/boot/hack_back_ckpt.rcS").readlines()
+        # get the exact directory of the checkpoint just generated
+        tick_match = re.search("at tick ([0-9]+)", lg[-4])
+        assert tick_match is not None
+        cpt_dir_name = "cpt." + tick_match.group(1)
+        self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cpt_dir_name)
+
+        # after generating the checkpoint, we can apply it to the scripts
+        for pt_dir in self.pt_dirs:
+            change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
+
+        esc_home_path = self.home_path.replace('/', '\\/')
+        esc_new_home = self.new_home.replace('/', '\\/')
+        esc_out_dir = self.out_dir.replace('/', '\\/')
+        os.system('sed -i "s/' + esc_home_path + '/' + esc_new_home + '/g" `grep "' +
+                  esc_home_path + '" -rl ' + esc_out_dir + '`')
 
         print("Running all data points...")
         assert args.num_machines > 0

@@ -549,15 +549,6 @@ AXIResponder::process_read_resp() {
     uint64_t addr_front = *it_addr;
 
     axi_r_txn &txn = req_list_ptr->front();
-
-    /*
-    if (dma_enable && txn.rvalid == 0) {
-        // todo: this if block can be deleted if no assertion error after many tests
-        bool got = wrapper->spm->read_spm_axi_line(addr_front, txn.rdata, txn.rid);
-        assert(!got);
-        if (got) txn.rvalid = 1;
-    }
-    */
     if (txn.rvalid) {  // ensures the order of response
         printf("(%lu) read data used by nvdla#%d (returned by gem5 or already in spm), addr 0x%08lx\n",
                 wrapper->tickcount, wrapper->id_nvdla, addr_front);

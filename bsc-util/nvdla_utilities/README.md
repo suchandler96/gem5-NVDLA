@@ -13,13 +13,13 @@ This is a preprocessing program to convert the debugging log of running [NVDLA V
 
 ## Features & known problems
 1. This utility is coded for NVDLA hardware at branch `nvdlav1` with revision number 8e06b1b9d85aab65b40d43d08eec5ea4681ff715.
-2. Currently, the exact data layout is not supported in this conversion utility, i.e., the converted register trace can only be run with fake data. But this could be done by picking out the read-only addresses with `get_input_addresses()` and `get_output_addresses()` in `GetAddrAttrAndMatch.py` and writing a script to capture their values by going through the output debug info of VP.
-3. The verilator verification flow and VP may have different interrupt handling mechanisms. For the former one, one example can be these [lines of codes from line 323 to 334](https://github.com/nvdla/hw/blob/nvdlav1/verif/traces/traceplayer/googlenet_conv2_3x3_int16/input.txn#L323), where 4 interrupts are captured and cleared in a **one-by-one** fashion. Whereas for VP, one will see multiple bits of ones in the interrupt status register (NVDLA `0x000c`) detected and cleared **as a whole** in the cropped NVDLA traces in the LeNet example provided with this utility. To handle this discrepancy, a special NVDLA register transaction command other than `read_reg`, `write_reg`, or `wait` is added, which is named `until`. `until $reg $val` means the simulation flow will continuously read register `$reg` until it gives a read result of `$val`. The command is added to replace the original `wait` command to handle interrupts, because NVDLA interrupts can be raised by multiple hardware components, and each component is responsible for a certain bit in NVDLA register `0x000c`. So the `until` command is designed to match the interrupt handling mechanism of VP. To interpret this new command in the original NVDLA verilator verification flow, patch files of [`nvdla/hw/verif/verilator/input_txn_to_verilator.pl`](https://github.com/nvdla/hw/blob/nvdlav1/verif/verilator/input_txn_to_verilator.pl) and [`nvdla.cpp`](https://github.com/nvdla/hw/blob/nvdlav1/verif/verilator/nvdla.cpp) are provided, so that users can apply the patches to the files and run the converted NVDLA register traces in the original flow. The modified commands are STILL COMPATIBLE with the original interrupt handling mechanism, i.e., the `wait` command and the traces provided in `nvdla/hw/verif/` can still be run after applying the patch.
+2. Currently, capturing true data is not supported in this conversion utility, i.e., the converted register trace can only be run with fake data. But this could be done by parsing the debug info of VP.
+3. The verilator verification flow and VP may have different interrupt handling mechanisms. For the former one, one example can be these [lines of codes from line 323 to 334](https://github.com/nvdla/hw/blob/nvdlav1/verif/traces/traceplayer/googlenet_conv2_3x3_int16/input.txn#L323), where 4 interrupts are captured and cleared in a **one-by-one** fashion. Whereas for VP, one will see multiple bits of ones in the interrupt status register (NVDLA `0x000c`) detected and cleared **as a whole** in the cropped NVDLA traces in the LeNet example provided with this utility. To handle this discrepancy, a special NVDLA register transaction command other than `read_reg`, `write_reg`, or `wait` is added, which is named `until`. `until $reg $val` means the simulation flow will continuously read register `$reg` until it gives a read result of `$val`. The command is added to replace the original `wait` command to handle interrupts, because NVDLA interrupts can be raised by multiple hardware components, and each component is responsible for a certain bit in NVDLA register `0x000c`. So the `until` command is designed to match the interrupt handling mechanism of VP. To interpret this new command in the original NVDLA verilator verification flow, patch files of [`nvdla/hw/verif/verilator/input_txn_to_verilator.pl`](https://github.com/nvdla/hw/blob/nvdlav1/verif/verilator/input_txn_to_verilator.pl) and [`nvdla.cpp`](https://github.com/nvdla/hw/blob/nvdlav1/verif/verilator/nvdla.cpp) are provided (included in `nvdla_hw.patch`), so that users can apply the patches to the files and run the converted NVDLA register traces in the original flow. The modified commands are STILL COMPATIBLE with the original interrupt handling mechanism, i.e., the `wait` command and the traces provided in `nvdla/hw/verif/` can still be run after applying the patch.
 4. For NVDLA register `0xa004`, which is a control register related to the "ping-pong register group" working mechanism, may have some read mismatches in the verilator verification process after conversion. Although not 100% sure, this may be caused by some discrepancies between NVDLA SystemC model and verilog model, because the counterpart registers for other computing components do not see such mismatches. But ignoring the mismatches will produce exactly the same memory traces in all the inference tasks that this utility has been tested against.
 5. This utility has been tested against LeNet with 1x28x28 input images (e.g., MNIST), ResNet-18 with input size 3x32x32 (e.g., CIFAR-10), ResNet-18 with input size 3x224x224 (e.g., IMAGENET), and ResNet-50 with input size 3x224x224. The converted NVDLA register traces exhibit the same memory traces with the VP counterpart.
-6. We have provided a script to automate the conversion from Caffe model to *.txn register control sequences and also memory traces. Go to section "Automated Script" for details.
+6. We have provided a script to automate the conversion from Caffe model to *.txn register control sequences and also memory traces. Go to section "Automated Script for xx" for details.
 
-## How to get VP debug info
+## How to get VP debug info (Deprecated)
 1. Get a sample caffe NN model. Here we provide a pretrained LeNet inference model(`example_usage/LeNet/LeNet_caffe_model/`);
 
 2. Compile the NN model with [prebuilt NVDLA compiler](https://github.com/nvdla/sw/tree/master/prebuilt/x86-ubuntu) using the following command:
@@ -27,7 +27,7 @@ This is a preprocessing program to convert the debugging log of running [NVDLA V
     cd /path/to/nvdla/sw/prebuilt/x86/
     ./nvdla_compiler -o lenet --cprecision fp16 --configtarget nv_full --informat nchw --prototxt /path/to/LeNet_caffe_model/Lenet.prototxt --caffemodel /path/to/LeNet_caffe_model/lenet_iter_10000.caffemodel
 ```
-The output file with a suffix of ".nvdla" (e.g., fast-math.nvdla) is the "loadable" to be loaded by NVDLA_runtime;
+The output file with a suffix of ".nvdla" (e.g., fast-math.nvdla) is the "loadable" to be loaded by nvdla_runtime;
 
 3. Follow the instructions at [NVDLA Virtual Platform documentation](http://nvdla.org/vp.html#running-the-virtual-simulator-from-docker) to run the docker version of VP. Note the commands in NVDLA documentation let the user mount the host machine's `/home` directory to the docker's, making it possible to transfer files between the host machine and docker container;
 ```
@@ -59,65 +59,8 @@ The output file with a suffix of ".nvdla" (e.g., fast-math.nvdla) is the "loadab
 ```
 6. Users may refer to [this blog](https://medium.com/@anakin1028/run-lenet-on-nvdla-837a6fac6f8b) for more details to run a testcase on VP.
 
-7. Usually, the VP debug info file is SO LARGE that it may overflow the whole hard disk space. To resolve this issue, a patch file is provided in `bsc-util/nvdla_utilities/modify_cmod`. This patch comments out most of the debugging output except those related to NVDLA register transactions and memory traces. Users may apply that patch with `git apply /path/to/modify_cmod` under the `nvdla/hw` path, and then rebuild `cmod` and `vp` according to instructions on [NVDLA VP documentation](http://nvdla.org/vp.html#download-the-virtual-simulator) (As for the building environment, the docker provided with VP would be enough). Reducing those IO's not only reduces hard disk usage, but also accelerates simulation process. If users want to try out testcases like ResNet-18/50 for 3x224x224 images, this step is crucial. The detailed process would be:
-```
-    # in the host machine, cd to nvdla/vp path
-    # change the sources to update qemu repos according to [this thread](https://github.com/riscv-collab/riscv-gnu-toolchain/issues/280).
-    touch ~/.gitconfig
-    echo "[url \"https://git.qemu.org/git\"]" >> ~/.gitconfig
-    echo "insteadOf = git://git.qemu-project.org" >> ~/.gitconfig
-    git submodule update --init --recursive
 
-    # If some submodules are still not able to be pulled, users may need to pull mannually.
-    # For example, in my case, `QemuMacDrivers`, `qemu-palcode`, `skiboot`, `tlm2c` and `memory` failed, so I did the following:
-    cd /path/to/nvdla/vp/libs/qbox/roms
-    git clone https://git.qemu.org/QemuMacDrivers.git
-    cd QemuMacDrivers/
-    git checkout d4e7d7a
-
-    cd ../
-    git clone https://github.com/rth7680/qemu-palcode
-    cd qemu-palcode/
-    git checkout f3c7e44
-
-    cd ../
-    git clone https://git.qemu.org/skiboot.git
-    cd skiboot/
-    git checkout 762d008
-
-    # re-download everything in tlm2c/
-    cd /path/to/nvdla/vp/libs/
-    rm -rf tlm2c/
-    git clone git@github.com:nvdla/tlm2c.git
-    cd tlm2c/
-    git checkout c54ade0
-
-    # re-download everything in memory/
-    cd ../../models/
-    rm -rf memory/
-    git clone git@github.com:nvdla/simple_memory.git
-    mv simple_memory/ memory/
-    cd memory/
-    git checkout 1018f8
-
-    
-    # switch into nvdla/vp docker container
-    # because cmod may lack dependencies in host machine
-    cd /path/to/nvdla/hw
-    git apply path/to/this/repo/bsc-util/nvdla_utilities/modify_cmod
-    tools/bin/tmake -build cmod_top
-    cd /path/to/nvdla/vp
-    cmake -DCMAKE_INSTALL_PREFIX=build -DSYSTEMC_PREFIX=/usr/local/systemc-2.3.0/ -DNVDLA_HW_PREFIX=/home/YOUR_USR_NAME/path/to/nvdla/hw/ -DNVDLA_HW_PROJECT=nv_full -DCMAKE_BUILD_TYPE=Debug
-    make
-    make install
-```
-And an executable named `aarch64_toplevel` will appear under `vp/` directory. Use the path to the newly-built executable to replace the one used in [NVDLA VP documentation](http://nvdla.org/vp.html#running-the-virtual-simulator-from-docker) will work, i.e.,
-```
-    cd /usr/local/nvdla
-    /path/to/nvdla/vp/aarch64_toplevel -c aarch64_nvdla.lua
-```
-
-## Convert VP debug info to NVDLA trace file and memory traces with the utility
+## Convert VP debug info to NVDLA trace file and memory traces with the utility (Deprecated)
 1. Compile NVDLAUtil.cpp with any c++ compiler with c++11:
    ```
    g++ -std=c++11 NVDLAUtil.cpp -o NVDLAUtil
@@ -140,7 +83,7 @@ And an executable named `aarch64_toplevel` will appear under `vp/` directory. Us
     ```
 5. Use '-h' option to get help for all the options for NVDLAUtil.
 
-## Test generated register trace file and memory traces in gem5-NVDLA framework
+## Test generated register trace file and memory traces in gem5-NVDLA framework (Deprecated)
 1. Mount the disk image if not mounted
     ```
     cd /path/to/gem5-NVDLA
@@ -175,92 +118,6 @@ And an executable named `aarch64_toplevel` will appear under `vp/` directory. Us
     ```
     python3 get_sweep_stats.py --get-root-dir ../example_usage/experiments/logs/ --out-dir ~/ --out-prefix lenet_demo_sweep_
     ```
-
-## Automated Script for Compiling a Single Caffe NN
-This part provides a script to automate the process from "How to get VP debug info" to "Convert VP debug info to NVDLA trace file and memory traces with the utility". The script expects Caffe NN models as inputs, and will output the .txn file corresponding to the NN model, together with memory traces.
-
-The script, `caffe2trace.py`, should be run in a `nvdla/vp` docker container. Before running, users should:
-1. Run `apt update && apt install python3 expect` in the docker container for dependencies.
-2. If users want to build the VP on themselves (section 7 in "How to get VP debug info"), the building process should be finished before running this script.
-3. Mount the disk image for full system simulation to `gem5-NVDLA/mnt`.
-4. Modify the default values of argparse parameters according to one's own installation in the script. Please provide absolute path to the script if possible. An example usage would be (run in the docker container!):
-    ```
-    python3 caffe2trace.py --model-name lenet --caffemodel example_usage/LeNet/LeNet_caffe_model/lenet_iter_10000.caffemodel --prototxt example_usage/LeNet/LeNet_caffe_model/Lenet.prototxt
-    ```
-5. After compilation finishes, copy the generated files (`trace.bin`, `rd_only_var_log`) to a directory in the mounted disk image and create a checkpoint. Simulation can then be run from this checkpoint. Once a new file is to be moved to the disk image, a new checkpoint should be created.
-
-## Automated Script for Compiling Pipelined Multibatch NN Workload
-Our repo provides a scheduler that can map multiple batches of NN inference task of a single model onto multiple simulated NVDLAs. This script, `pipeline_compile.py`, is thus to work out the configuration to this scheduler, including addresses of tensors, dependency, etc. This script expects the user to manually split a Caffe NN into multiple `*.prototxt` files (the `*.caffemodel` does not need to be modified), each of which corresponds to a pipeline stage. These `.prototxt` files should be provided to the script in the order of pipeline stages. The script consists of two processes: the first is to call the `caffe2trace.py` script for each pipeline stage to convert them to `*.txn` files, while the second part is to remap tensors to a unified address space, figuring out the inputs and outputs of consecutive pipeline stages (since they are actually one tensor) while differentiating all the others. The script also reserves space for the activation tensors of multiple batches, which is made possible by reading the debug log of NVDLA compiler. See below for usage:
-
-1. Run all below in `nvdla/vp` docker environment, the `#`'s are command prompts:
-```
-    # cd /path/to/nvdla/sw
-    # git apply /path/to/gem5-NVDLA/bsc-util/nvdla_utilities/nvdla_sw.patch
-```
-
-2. Install buildroot to rebuild NVDLA compiler, runtime and driver to output debug log. Instead of downloading buildroot from its website, now need to download from its repository, and go back to branch 2017.11.
-```
-    # apt install cpio
-    # git clone git://git.buildroot.net/buildroot
-    # cd buildroot
-    # git branch -r list all remote branch
-    # git checkout -t the branch you want (orgin/2017.11.x)
-    
-    # make qemu_aarch64_virt_defconfig
-    # make menuconfig
-     * Target Options -> Target Architecture -> AArch64 (little endian)
-     * Target Options -> Target Architecture Variant -> cortex-A57
-     * Toolchain -> Custom kernel headers series -> 4.13.x
-     * Toolchain -> Toolchain type -> External toolchain
-     * Toolchain -> Toolchain -> Linaro AArch64 2017.08
-     * Toolchain -> Toolchain origin -> Toolchain to be downloaded and installed
-     * Kernel -> () Kernel version -> 4.13.3
-     * Kernel -> Kernel configuration -> Use the architecture default configuration
-     * System configuration -> Enable root login with password -> Y
-     * System configuration -> Root password -> nvdla
-     * Target Packages -> Show packages that are also provided by busybox -> Y
-     * Target Packages -> Networking applications -> openssh -> Y
-
-    # make -j4
-```
-
-3. Build KMD (Kernel Mode Driver)
-```
-    # git clone https://github.com/nvdla/sw.git
-    # cd sw/kmd
-    # make KDIR=(path_to)buildroot-2017.11/output/build/linux-4.13.3 ARCH=arm64 CROSS_COMPILE=(path_to_)buildroot-2017.11/output/host/bin/aarch64-linux-gnu-
-    # cp port/linux/opendla.ko /usr/local/nvdla/
-    # cd /usr/local/nvdla/
-    # mkdir backup
-    # mv opendla_1.ko driver_backup/ && mv opendla_2.ko backup/
-    # mv opendla.ko opendla_1.ko
-    
-```
-The opendla.ko is at `sw/kmd/port/linux/opendla.ko`. We do an additional backup and rename operation in the last several lines.
-
-4. Build UMD (User Mode Driver, including compiler and runtime)
-```
-    # cd sw/umd
-    # export TOP=$(pwd)
-    # make TOOLCHAIN_PREFIX=(path_to)buildroot-2017.11/output/host/opt/ext-toolchain/bin/aarch64-linux-gnu-
-    # make runtime TOOLCHAIN_PREFIX=(path_to)buildroot-2017.11/output/host/opt/ext-toolchain/bin/aarch64-linux-gnu-
-    # cd /usr/local/nvdla/
-    # mv nvdla_runtime backup/ && mv libnvdla_runtime.so backup/
-    # mkdir compiler
-    # cd /path/to/nvdla/sw/umd
-    # cp out/apps/compiler/nvdla_compiler/nvdla_compiler /usr/local/nvdla/compiler/
-    # cp out/core/src/compiler/libnvdla_compiler/libnvdla_compiler.so /usr/local/nvdla/compiler/
-    # cp out/apps/runtime/nvdla_runtime/nvdla_runtime /usr/local/nvdla/
-    # cp out/core/src/runtime/libnvdla_runtime/libnvdla_runtime.so /usr/local/nvdla/
-```
-Here we are still doing a backup and copy after building compiler and runtime.
-
-5. This guide for compiling NVDLA toolchain is modified from [this post](https://github.com/nvdla/sw/issues/51#issuecomment-404704012). Examples of generated files can be seen in `example_usage/resnet18_cifar10_auto_pipeline/`.
-
-6. Run the pipeline compilation script in the docker container. The `--out-dir` parameter is the directory to hold all the data corresponding to each stage before remapping addresses, while the `--out-dir-multibatch` parameter points to the directory to hold compilation data after remapping addresses and considering multiple batches.
-```
-    # python3 pipeline_compile.py --model-name resnet18-cf --caffemodel /home/lactose/caffe_models/resnet18-cf-pipeline/resnet-18.caffemodel --prototxts /path/to/resnet18-cf-pipeline/stage0.prototxt /path/to/resnet18-cf-pipeline/stage1.prototxt --out-dir /path/to/resnet18_cf_auto_pipeline/ --out-dir-multibatch /path/to/resnet18_cf_auto_pipeline/multibatch
-```
 
 ## Verify the converted NVDLA register trace file with verilator verification flow and get its memory traces
 This step is to ensure the users that the NVDLA register trace file is extracted correctly, so that using the verification tools in `nvdla/hw` will lead to the same memory access behaviors. Several memory accesses very close to each other could have some minor differences in access order, but the number of times each address is accessed should preserve the same.

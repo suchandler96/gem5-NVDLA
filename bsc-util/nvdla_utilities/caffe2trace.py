@@ -16,30 +16,21 @@ def parse_args():
     parser.add_argument(
         "--prototxt", help="Path to the Caffe prototxt", required=True)
     parser.add_argument(
-        "--nvdla-hw", default="/home/lactose/nvdla/hw/",
-        help="Path to NVDLA hw repo")
-    parser.add_argument(
-        "--nvdla-compiler", default="/home/lactose/nvdla/sw/prebuilt/x86-ubuntu/nvdla_compiler",
+        "--nvdla-compiler", default="/usr/local/nvdla/compiler/nvdla_compiler",
         help="Path to NVDLA compiler")
     parser.add_argument(
-        "--qemu-bin", default="/home/lactose/nvdla/vp/aarch64_toplevel",
+        "--qemu-bin", default="/usr/local/nvdla/vp/aarch64_toplevel",
         help="Path to qemu binary. By default it is pointing to the self-built qemu binary. Set to "
              "/usr/local/nvdla/aarch64_toplevel if one wants to use the one provided in docker image")
     parser.add_argument(
         "--qemu-lua", default="/usr/local/nvdla/aarch64_nvdla.lua",
         help="Path to configuration file of running qemu. Using the one in docker image is ok.")
     parser.add_argument(
-        "--out-dir", default="/home/lactose/nvdla/traces/lenet_auto/",
+        "--out-dir", default="/home/nvdla/traces/lenet/",
         help="directory to put the generated sc.log, register txn and mem traces")
-    parser.add_argument(
-        "--disk-image", default="/home/lactose/gem5_linux_images/ubuntu-18.04-arm64-docker.img",
-        help="path to the disk image for full system simulation")
     parser.add_argument(
         "--convert-only", action="store_true", default=False, help="Whether to assume the presence of sc.log "
         "and only do processing only"
-    )
-    parser.add_argument(
-        "--no-print-hints", action="store_true", default=False, help="Whether to print the steps afterwards"
     )
 
     args = parser.parse_args()
@@ -49,22 +40,21 @@ def parse_args():
 def check_dependence(options):
     assert os.path.exists(options.caffemodel)
     assert os.path.exists(options.prototxt)
-    assert os.path.exists(options.nvdla_hw)
     assert os.path.exists(options.nvdla_compiler)
     assert os.path.exists(options.qemu_bin)
     assert os.path.exists(options.qemu_lua)
-    assert os.path.exists(options.disk_image)
 
 
 def get_loadable(options):
     os.makedirs(options.out_dir, exist_ok=True)
     compiler_path, compiler_name = os.path.split(options.nvdla_compiler)
     assert os.path.exists(options.nvdla_compiler)
-    compile_log_path = os.path.join(options.out_dir, "compile_log")
-    cmd = "cd " + compiler_path + " && ./" + compiler_name + " -o " + options.model_name + \
-          " --cprecision fp16 --configtarget nv_full --informat nchw --prototxt " + options.prototxt + \
-          " --caffemodel " + options.caffemodel + " > " + compile_log_path + " 2>&1 && mv fast-math.nvdla " + \
-          options.model_name + ".nvdla && mv " + options.model_name + ".nvdla /usr/local/nvdla"
+    compile_log_path = os.path.abspath(os.path.join(options.out_dir, "compile_log"))
+    cmd = ("cd " + compiler_path + " && ./" + compiler_name + " -o " + options.model_name +
+           " --cprecision fp16 --configtarget nv_full --informat nchw --prototxt " + os.path.abspath(options.prototxt) +
+           " --caffemodel " + os.path.abspath(options.caffemodel) + " > " + compile_log_path +
+           " 2>&1 && mv fast-math.nvdla " + options.model_name + ".nvdla && mv " +
+           options.model_name + ".nvdla /usr/local/nvdla")
 
     try:
         os.system(cmd)
@@ -153,20 +143,7 @@ def process_log(options):
     workload.write_rd_only_var_log(os.path.join(options.out_dir, "rd_only_var_log"))
 
     # the nvdla/vp docker image has perl v5.22.1 installed, ok
-    perl_script_path = os.path.join(os.path.abspath(options.nvdla_hw), "verif/verilator/input_txn_to_verilator.pl")
-
-    # check contents of perl script. If it does not contain keyword `until`, abort and remind the user
-    with open(perl_script_path, "r") as f:
-        perl_script_lines = f.readlines()
-    found = False
-    for line in perl_script_lines:
-        if "until" in line:
-            found = True
-            break
-    if not found:
-        print("Patch file " + os.path.join(os.path.dirname(__file__), "nvdla_hw.patch") +
-              " should be applied to " + perl_script_path)
-        exit(1)
+    perl_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "input_txn_to_verilator.pl")
     os.system("perl " + perl_script_path + " " + os.path.join(options.out_dir, "input.txn") + " " +
               os.path.join(options.out_dir, "trace.bin"))
 
@@ -188,24 +165,6 @@ def main():
 
     # process the log file
     process_log(options)
-
-    # move to disk image for full system simulation
-    gem5_nvdla_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../"))
-    work_dir_in_image = os.path.join(gem5_nvdla_dir, "mnt/home/" + options.model_name)
-
-    if not options.no_print_hints:
-        print("""\n\n
-For the next steps, one needs to do the following ON THE HOST MACHINE (OUTSIDE THE DOCKER CONTAINER):\n
-1. Mount the disk image for simulation (ignore if have mounted, sudo may be required)
-```
-cd """ + gem5_nvdla_dir + " && mkdir mnt && sudo python3 util/gem5img.py mount " +
-          options.disk_image + """ ./mnt
-```
-2. Cross-compile schedulers like `my_validation_nvdla_single_thread.cpp` and `pipeline_execute.cpp` and move the \
-binaries to """ + os.path.join(os.path.abspath(gem5_nvdla_dir), "mnt/home/") + """
-
-3. Refer to """ + os.path.join(gem5_nvdla_dir, "bsc-util/nvdla_utilities/sweep/main.py") + """ for the options to \
-create simulation points and checkpoints""")
 
 
 if __name__ == "__main__":

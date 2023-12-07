@@ -11,10 +11,9 @@ from parse_qemu_log import *
 
 
 class BaseRemapper:
-    def __init__(self, in_dir, nvdla_hw_path, model_name):
+    def __init__(self, in_dir, model_name):
         """ paths """
         self.in_dir = in_dir
-        self.nvdla_hw_path = nvdla_hw_path
         self.model_name = model_name
 
         """ workload-related info """
@@ -58,8 +57,8 @@ class BaseRemapper:
 
 
 class IdentityRemapper(BaseRemapper):
-    def __init__(self, in_dir, nvdla_hw_path, model_name):
-        super(IdentityRemapper, self).__init__(in_dir, nvdla_hw_path, model_name)
+    def __init__(self, in_dir, model_name):
+        super(IdentityRemapper, self).__init__(in_dir, model_name)
 
         """ workload-related info """
         self.workload = Workload(in_dir)
@@ -72,7 +71,7 @@ class IdentityRemapper(BaseRemapper):
         pass
 
     def write_to_files(self):
-        script_path = os.path.join(os.path.abspath(self.nvdla_hw_path), "verif/verilator/input_txn_to_verilator.pl")
+        script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../input_txn_to_verilator.pl")
         os.system("perl " + script_path + " " + os.path.join(self.out_dir, "input.txn") + " " +
                   os.path.join(self.out_dir, "trace.bin"))
         rd_var_log_path = os.path.join(self.out_dir, "rd_only_var_log")
@@ -85,8 +84,8 @@ class IdentityRemapper(BaseRemapper):
 
 
 class CVSRAMRemapper(BaseRemapper):
-    def __init__(self, in_dir, nvdla_hw_path, model_name):
-        super(CVSRAMRemapper, self).__init__(in_dir, nvdla_hw_path, model_name)
+    def __init__(self, in_dir, model_name):
+        super(CVSRAMRemapper, self).__init__(in_dir, model_name)
 
         """ mapping parameters """
         self.num_cvsram = 0
@@ -161,8 +160,8 @@ class CVSRAMRemapper(BaseRemapper):
 
 
 class SingleAccelCVSRAMRemapper(CVSRAMRemapper):
-    def __init__(self, in_dir, nvdla_hw_path, model_name):
-        super(SingleAccelCVSRAMRemapper, self).__init__(in_dir, nvdla_hw_path, model_name)
+    def __init__(self, in_dir, model_name):
+        super(SingleAccelCVSRAMRemapper, self).__init__(in_dir, model_name)
 
         """ workload-related info """
         self.workload = Workload(in_dir)
@@ -197,7 +196,7 @@ class SingleAccelCVSRAMRemapper(CVSRAMRemapper):
         rd_var_log_path = os.path.join(self.out_dir, self.testcase_str + "_rd_only_var_log")
         with open(out_txn_path, "w") as fp:
             fp.writelines(new_lines)
-        script_path = os.path.join(os.path.abspath(self.nvdla_hw_path), "verif/verilator/input_txn_to_verilator.pl")
+        script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../input_txn_to_verilator.pl")
         os.system("perl " + script_path + " " + out_txn_path + " " +
                   os.path.join(self.out_dir, self.testcase_str + "_trace.bin"))
 
@@ -211,8 +210,8 @@ class SingleAccelCVSRAMRemapper(CVSRAMRemapper):
 
 
 class WeightPinRemapper(SingleAccelCVSRAMRemapper):
-    def __init__(self, in_dir, nvdla_hw_path, model_name):
-        super(WeightPinRemapper, self).__init__(in_dir, nvdla_hw_path, model_name)
+    def __init__(self, in_dir, model_name):
+        super(WeightPinRemapper, self).__init__(in_dir, model_name)
 
         """ workload-related info """
         # sort all the weights in workload
@@ -233,8 +232,8 @@ class WeightPinRemapper(SingleAccelCVSRAMRemapper):
 
 
 class ActPinRemapper(SingleAccelCVSRAMRemapper):
-    def __init__(self, in_dir, nvdla_hw_path, model_name):
-        super(ActPinRemapper, self).__init__(in_dir, nvdla_hw_path, model_name)
+    def __init__(self, in_dir, model_name):
+        super(ActPinRemapper, self).__init__(in_dir, model_name)
 
         """ workload-related info """
         self.last_tick = len(self.workload.raw_addr_log) - 1
@@ -287,8 +286,8 @@ class ActPinRemapper(SingleAccelCVSRAMRemapper):
 
 
 class MixPinRemapper(SingleAccelCVSRAMRemapper):
-    def __init__(self, in_dir, nvdla_hw_path, model_name):
-        super(MixPinRemapper, self).__init__(in_dir, nvdla_hw_path, model_name)
+    def __init__(self, in_dir, model_name):
+        super(MixPinRemapper, self).__init__(in_dir, model_name)
 
         """ workload-related info """
         self.last_tick = len(self.workload.raw_addr_log) - 1
@@ -360,8 +359,8 @@ class MixPinRemapper(SingleAccelCVSRAMRemapper):
 
 
 class PipelineRemapper(BaseRemapper):
-    def __init__(self, in_dir, nvdla_hw_path, model_name):
-        super(PipelineRemapper, self).__init__(in_dir, nvdla_hw_path, model_name)
+    def __init__(self, in_dir, model_name):
+        super(PipelineRemapper, self).__init__(in_dir, model_name)
 
         """ paths """
         self.in_dirs = []
@@ -538,15 +537,14 @@ class PipelineRemapper(BaseRemapper):
 
                 # also need to call the perl script to convert them into binary format
                 # the nvdla/vp docker image has perl v5.22.1 installed, ok
-                perl_script_path = os.path.join(os.path.abspath(self.nvdla_hw_path),
-                                                "verif/verilator/input_txn_to_verilator.pl")
-                os.system("perl " + perl_script_path + " " + out_txn_path + " " + out_bin_path)
+                script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../input_txn_to_verilator.pl")
+                os.system("perl " + script_path + " " + out_txn_path + " " + out_bin_path)
 
 
 class PipelineWeightPinRemapper(CVSRAMRemapper, PipelineRemapper):
-    def __init__(self, in_dir, nvdla_hw_path, model_name):
-        PipelineRemapper.__init__(self, in_dir, nvdla_hw_path, model_name)
-        CVSRAMRemapper.__init__(self, in_dir, nvdla_hw_path, model_name)
+    def __init__(self, in_dir, model_name):
+        PipelineRemapper.__init__(self, in_dir, model_name)
+        CVSRAMRemapper.__init__(self, in_dir, model_name)
 
     def testcase_init(self, out_dir, sim_dir, testcase_str):
         BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
@@ -579,9 +577,9 @@ class PipelineWeightPinRemapper(CVSRAMRemapper, PipelineRemapper):
 
 
 class PipelineActPinRemapper(CVSRAMRemapper, PipelineRemapper):
-    def __init__(self, in_dir, nvdla_hw_path, model_name):
-        PipelineRemapper.__init__(self, in_dir, nvdla_hw_path, model_name)
-        CVSRAMRemapper.__init__(self, in_dir, nvdla_hw_path, model_name)
+    def __init__(self, in_dir, model_name):
+        PipelineRemapper.__init__(self, in_dir, model_name)
+        CVSRAMRemapper.__init__(self, in_dir, model_name)
 
     def testcase_init(self, out_dir, sim_dir, testcase_str):
         BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)

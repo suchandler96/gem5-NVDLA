@@ -1,0 +1,18 @@
+{
+    "little-cpu-clock": ["3GHz"],
+    "freq-ratio": [3],
+    "ddr-type": ["DDR4_2400_8x8"],
+    "numNVDLA": [1],
+    "buffer-mode": ["all"],
+    "dma-enable": ["", "--dma-enable"],
+    "embed-spm-size": ["512kB", "1MB", "2MB", "4MB", "8MB", "16MB", "32MB", "64MB"],
+    "add-accel-private-cache": ["", "--add-accel-private-cache"],
+    "accel-pr-cache-size": ["512kB", "1MB", "2MB", "4MB", "8MB", "16MB", "32MB", "64MB"],
+    "accel-pr-cache-mshr": [64],
+    "pft-enable": ["", "--pft-enable"],
+    "use-fake-mem": ["", "--use-fake-mem"],
+    "cvsram-enable": [""],
+    "cvsram-size": ["64kB"],
+    "cvsram-bandwidth": ["16GB/s"],
+    "remapper": ["Identity"]
+}

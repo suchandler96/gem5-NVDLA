@@ -1,0 +1,1675 @@
+creating new wisdom context...
+opening wisdom context...
+parsing caffe network...
+libnvdla<3> mark prob
+Marking total 1 outputs
+attaching parsed network to the wisdom...
+compiling profile "fast-math"... config "nv_full"...
+libnvdla<3> raw weights of bias-0: -0.32513, -0.0206955, 0.121905, 0.0420712, -0.19227, 0.461132, -0.0378185, 0.0695715, -0.0610421, 0.112762, -0.222888, -0.0500664, -0.157256, -0.138772, -0.113115, 0.0229848, 0.125234, -0.24182, 0.145986, -0.0471339, 
+libnvdla<3> n-0:->n-0:dc-conv-0 n-1:bias-0 
+libnvdla<3> n-1:->n-2:pdp-0 
+libnvdla<3> raw weights of bias-1: -0.00742226, -0.0205923, -0.0691681, -0.0623374, -0.0409971, -0.0116488, -0.0501872, -0.00270392, 0.0143526, -0.0770256, -0.0594726, -0.0188801, -0.074374, -0.040061, -0.0578221, -0.0273095, -0.0868334, -0.00737349, -0.106901, 0.0163797, -0.0610746, -0.117287, -0.0713975, -0.0430498, -0.0817738, -0.0979847, -0.0782158, -0.0724723, -0.0806766, -0.0818147, -0.054633, -0.0288226, -0.0605025, -0.0453126, -0.0763458, -0.112606, 0.0147353, 0.00865334, -0.0621846, -0.0763606, 0.0178176, -0.0917324, -0.0842265, -0.116554, -0.0462331, -0.013731, -0.0446726, -0.0223454, -0.107723, -0.0805365, 
+libnvdla<3> n-2:->n-3:dc-conv-1 n-4:bias-1 
+libnvdla<3> n-3:->n-5:pdp-1 
+libnvdla<3> raw weights of bias-2: -0.00472608, 0.000718644, -0.00644762, -0.00533001, 0.00326281, 0.000557707, 6.48331e-05, -0.00177551, -0.00470854, 0.00868032, 0.00402914, 0.00353113, 0.00219909, -0.00421221, 0.0020093, 0.00935336, 0.00549786, 0.00174937, 0.00174582, 0.00410563, 0.00429858, 0.00313099, 0.00294611, 0.00643204, 0.00533105, 0.000236872, 0.00173827, -0.00283421, -0.00281646, 0.00480214, 0.00705401, -0.00202635, 0.00336405, -0.00256574, -0.00559784, -0.00385607, 0.00421028, -0.00374535, -0.000207138, -0.00465449, -0.0139911, -0.00703402, -0.00121972, 0.00172516, -4.32759e-05, 0.0121121, 8.76654e-05, 0.00125191, -0.00076264, 0.0102915, 0.00700106, 0.00435689, 0.00649471, -7.0633e-05, 0.00302245, 0.000162078, 0.000887123, 0.00244048, -0.000253353, 0.0025343, 0.00489042, 0.00281746, 0.0157122, 0.00351787, 0.00613251, 0.0031845, -0.00190354, -0.0041263, 0.00202256, 0.00477155, -0.00312474, -0.0041029, 0.00763615, 0.00888185, -0.00297316, -0.000598953, 0.00390792, -0.00366064, -0.0087437, 0.00571158, 0.00924481, 0.00113166, 0.00504069, 0.00224921, 0.000828133, -0.000557765, -0.00043259, 0.00181458, -0.00511237, -0.000833452, 0.00632091, -0.00809139, 0.0110638, -0.00638348, 0.00155087, 0.00130689, -0.00502512, 0.00203447, 0.00800542, -0.00453501, -0.000869612, 0.0126916, 0.00305161, 0.00175931, -0.00689497, -0.00360519, -0.0050568, 0.00291904, -0.00655179, 0.00366044, 0.0110045, -0.00350295, -0.00614851, 0.0046583, 0.00191553, -0.00491031, 0.0127498, 0.00212479, 0.00490635, 0.00302716, 0.000677699, 0.00822099, -0.00176951, -0.00638174, -0.00424068, 0.00580866, -0.00386367, -0.00134476, 0.00549655, -0.00917669, 0.00683181, 0.00484885, -0.00488776, -0.00660479, 0.00679467, -0.00106305, 0.00399962, 0.00600678, 0.000172337, 0.0115915, 0.00565544, 0.0070257, -0.000564128, 0.00858132, 0.00180822, 0.00277554, 0.00605691, -0.00470252, -0.00567038, 0.002464, -0.00170738, 0.00222324, 0.000233378, 0.000544547, 0.00948595, -0.00210524, 0.0049028, -0.00349841, -0.00813475, 0.00252948, 0.00907868, 0.00410191, 0.00707981, -0.00207401, 9.4019e-05, 0.00153525, 0.00439184, 0.00182022, -0.00458295, 0.000748828, 0.00569469, 0.0132338, 0.00115816, 0.000892435, 0.00716877, -0.00448924, -0.00245934, 0.00507043, 0.00237954, -0.00309488, 0.00611751, 0.00787991, 0.00567844, -0.00036879, 0.00500637, -0.00307213, 0.00615114, -0.000375829, 0.00798829, -0.000285115, 0.000180577, 0.00299895, 0.0097777, -0.00240026, 0.00744238, 0.000603799, 0.0083738, -0.00521161, 0.000747928, -0.0041068, -0.00503819, 0.00537184, 0.00662364, 0.00148475, 0.0119837, 0.0053057, 0.00371083, -0.000680711, 0.00352336, -0.000568785, -0.000516245, 0.00224015, 0.00180368, 0.0100465, 0.000592844, 0.00150938, 0.000465909, -0.00141112, 0.00066698, 0.00725105, -0.00248713, 0.00163958, -0.00180638, -0.00149882, 0.0082858, -0.00383579, 0.00941331, 0.00208688, 0.000496602, 5.14496e-05, -0.00119643, 7.09896e-05, -0.00328049, -0.00394267, -0.00229313, 0.00665874, -0.00256205, 0.00516483, 0.00615923, -0.00186642, 0.00802923, 0.00543658, 0.00229043, -0.00189095, -0.00292842, -0.0067125, -0.000267356, 0.00128475, 0.00831652, 0.0041664, 0.00333053, -0.00117166, 0.00329848, -0.00284754, -0.000203452, -0.00359076, 0.00150881, -0.00167454, 0.00435133, -0.00291436, 0.00343736, 0.00142729, -0.00127437, 0.00182664, 0.00124156, 0.00382609, 0.00517737, 0.0042181, -0.0029938, -0.00457685, 0.00546366, -0.00881711, 0.000247236, -0.00191656, 0.00766343, 0.00687699, -0.000114087, 0.00870199, -0.00145382, 0.00965471, 0.00257428, 0.00835646, 0.00483526, 0.000673443, 0.00607094, 0.00113534, 0.00874764, -0.000228776, 0.00657197, -0.000692552, -0.00646409, -0.00248469, 0.00114571, 0.0003906, -0.00283927, 0.00174554, -0.00236687, -0.0027424, 0.00999977, -0.00500806, 0.00527087, -0.000350606, -0.00437272, -0.00361153, -0.00415548, 0.00107516, -0.00106869, 0.00176127, -0.0012053, 0.00826488, 0.00583469, -0.00403711, -0.00510461, 0.0118535, -0.00162302, 0.00358886, -0.00326508, -0.000420859, -5.36418e-05, 0.00497748, 0.00304862, -0.00250526, -0.000979198, 0.000247606, 0.00928377, -0.00626124, 0.006672, -0.0149359, 0.00029158, 0.00658187, -0.00470651, -0.0020973, 0.00205601, 0.00578229, -0.00242263, -0.00512832, -0.00443917, 0.000409677, 0.00276742, 0.00105622, -0.00524364, -0.00214085, -0.00234977, 0.00820649, 0.00244736, -4.43618e-05, 0.00664468, 0.00781491, -0.00915504, 6.40011e-05, 0.00139784, -0.00141057, -0.000135344, 0.00591068, 0.00196586, -0.0021113, 0.00354632, -0.000829211, 0.00929824, -0.00217711, -0.0129378, 0.00772396, -0.00325213, 0.00233378, 0.00722856, 0.00413626, 0.00685527, 0.00408557, -0.00120527, 0.000886427, 0.00994354, 6.91837e-05, 0.0100415, 0.00461224, -0.00212345, 0.0105509, 0.00169784, 0.00805637, 0.000960481, 0.00518169, 0.00562534, -0.000437977, -0.000155904, -0.00369342, -0.000995536, 0.00426641, -0.00471824, 0.010225, 0.0021985, -0.000482518, -0.00034358, 0.00361083, 0.00527726, 0.0038777, 0.00313866, 0.00457728, -0.00227075, -0.0037109, -0.00915345, -0.00340207, -0.00566906, -0.00145368, 0.00201203, -0.000148229, -0.00237106, -0.000822919, 0.0155353, 0.00295867, 0.00431143, 0.000194136, -0.00192198, -0.000331254, -0.000897178, -0.00302694, -0.00219402, -0.000575927, -1.48006e-05, 0.000142561, 0.00108795, -0.00199154, 0.00137404, -0.00310933, 0.00339948, -0.00519363, 0.0119677, -0.00281148, -0.00327475, -0.00486346, -0.00670999, -0.00160536, -0.000667762, -0.00501687, 0.0031691, 0.0076627, -0.00281538, 0.0108047, -0.00945791, 0.00190867, 0.00532012, -0.0048685, 0.00603911, 0.00619243, -0.00759525, 0.0050084, 0.00247098, 0.00048739, -0.00224983, -0.00481341, 0.000953049, -0.000338707, -0.00143718, 0.00173562, -0.0101297, -0.000578692, 0.00911092, -0.00275815, 0.000383103, 0.00649676, 0.00287308, -0.00115922, 0.0126623, -0.0024021, 0.0042435, 0.00490062, 0.000772591, 0.00330433, -0.00238868, 0.011772, -0.0058384, 0.00307935, -0.00218364, -0.00442359, 0.000229794, 0.00893843, -0.00263968, 0.00266697, -0.000956585, 0.00227116, 0.00120761, -0.00458263, -0.000393896, -0.00425749, 0.00165918, -0.000881648, -0.00527685, -0.00305674, 0.00443703, -6.41516e-05, 0.0026059, 0.000606004, -0.00194565, -0.00325939, -0.00454074, -0.002043, 0.00783461, 0.0067744, -0.00104916, -0.007495, 0.00702857, 0.00170943, 
+libnvdla<3> n-4:->n-6:fc-0 n-7:bias-2 
+libnvdla<3> n-5:->n-8:act-0 
+libnvdla<3> raw weights of bias-3: -0.0109809, 0.0211215, -0.0177667, -0.00862381, 0.0042915, 0.00568359, -0.0262172, -0.00673318, 0.0502184, -0.0110033, 
+libnvdla<3> n-6:->n-9:fc-1 n-10:bias-3 
+libnvdla<3> n-7:->n-11:cpu-sm-0 
+libnvdla<3> EngineAST graph level input edge[0] is e-0
+libnvdla<3> input bind id: 0
+libnvdla<3> EngineAST graph level output edge[0] is e-8
+libnvdla<3> output bind id: 0
+libnvdla<3> dc-conv-0/n-0/conv1:
+libnvdla<3> 	in e-0
+libnvdla<3> 	out e-11
+libnvdla<3> 	aux e-9
+libnvdla<3> bias-0/n-1/conv1:
+libnvdla<3> 	in e-11
+libnvdla<3> 	out e-1
+libnvdla<3> 	aux e-10
+libnvdla<3> pdp-0/n-2/pool1:
+libnvdla<3> 	in e-1
+libnvdla<3> 	out e-2
+libnvdla<3> dc-conv-1/n-3/conv2:
+libnvdla<3> 	in e-2
+libnvdla<3> 	out e-14
+libnvdla<3> 	aux e-12
+libnvdla<3> bias-1/n-4/conv2:
+libnvdla<3> 	in e-14
+libnvdla<3> 	out e-3
+libnvdla<3> 	aux e-13
+libnvdla<3> pdp-1/n-5/pool2:
+libnvdla<3> 	in e-3
+libnvdla<3> 	out e-4
+libnvdla<3> fc-0/n-6/ip1:
+libnvdla<3> 	in e-4
+libnvdla<3> 	out e-17
+libnvdla<3> 	aux e-15
+libnvdla<3> bias-2/n-7/ip1:
+libnvdla<3> 	in e-17
+libnvdla<3> 	out e-5
+libnvdla<3> 	aux e-16
+libnvdla<3> act-0/n-8/relu1:
+libnvdla<3> 	in e-5
+libnvdla<3> 	out e-6
+libnvdla<3> fc-1/n-9/ip2:
+libnvdla<3> 	in e-6
+libnvdla<3> 	out e-20
+libnvdla<3> 	aux e-18
+libnvdla<3> bias-3/n-10/ip2:
+libnvdla<3> 	in e-20
+libnvdla<3> 	out e-7
+libnvdla<3> 	aux e-19
+libnvdla<3> cpu-sm-0/n-11/prob:
+libnvdla<3> 	in e-7
+libnvdla<3> 	out e-8
+libnvdla<3> edge: e-9 tsd: tsd-0 registered
+libnvdla<3> edge: e-0 tsd: tsd-1 registered
+libnvdla<3> edge: e-10 tsd: tsd-2 registered
+libnvdla<3> edge: e-12 tsd: tsd-3 registered
+libnvdla<3> edge: e-13 tsd: tsd-4 registered
+libnvdla<3> edge: e-15 tsd: tsd-5 registered
+libnvdla<3> edge: e-16 tsd: tsd-6 registered
+libnvdla<3> edge: e-18 tsd: tsd-7 registered
+libnvdla<3> edge: e-19 tsd: tsd-8 registered
+libnvdla<3> edge: e-11 tsd: tsd-9 registered
+libnvdla<3> edge: e-1 tsd: tsd-10 registered
+libnvdla<3> edge: e-2 tsd: tsd-11 registered
+libnvdla<3> edge: e-14 tsd: tsd-12 registered
+libnvdla<3> edge: e-3 tsd: tsd-13 registered
+libnvdla<3> edge: e-4 tsd: tsd-14 registered
+libnvdla<3> edge: e-17 tsd: tsd-15 registered
+libnvdla<3> edge: e-5 tsd: tsd-16 registered
+libnvdla<3> edge: e-6 tsd: tsd-17 registered
+libnvdla<3> edge: e-20 tsd: tsd-18 registered
+libnvdla<3> edge: e-7 tsd: tsd-19 registered
+libnvdla<3> edge: e-8 tsd: tsd-20 registered
+libnvdla<3> e-9 edge setting new surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge setting new surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge setting new surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge setting new surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge setting new surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge setting new surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge setting new surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge setting new surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-5 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-16 for tsd-16 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-16 for tsd-16 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-16 for tsd-16 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> 
+libnvdla<3> Try Merging: dc-conv-0 & bias-0
+libnvdla<3> Merging: Not Feasible
+libnvdla<3> 
+libnvdla<3> Try Merging: dc-conv-1 & bias-1
+libnvdla<3> Merging: Not Feasible
+libnvdla<3> 
+libnvdla<3> Try Merging: fc-0 & bias-2
+libnvdla<3> Merging: Not Feasible
+libnvdla<3> 
+libnvdla<3> Try Merging: bias-2 & act-0
+libnvdla<3> Merging: Sucess
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> 
+libnvdla<3> Try Merging: fc-0 & bias-2
+libnvdla<3> Merging: Not Feasible
+libnvdla<3> 
+libnvdla<3> Try Merging: fc-1 & bias-3
+libnvdla<3> Merging: Not Feasible
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> translating weights for n-0 kernel-dims kcrs = 20,1,5,5 and size= 500
+libnvdla<3> translating weights for n-1 bias-dims kcrs = 1,20,1,1 and size= 20
+libnvdla<3> translating weights for n-3 kernel-dims kcrs = 50,20,5,5 and size= 25000
+libnvdla<3> translating weights for n-4 bias-dims kcrs = 1,50,1,1 and size= 50
+libnvdla<3> translating weights for n-6 kernel-dims kcrs = 500,50,4,4 and size= 400000
+libnvdla<3> translating weights for n-7 bias-dims kcrs = 1,500,1,1 and size= 500
+libnvdla<3> translating weights for n-9 kernel-dims kcrs = 10,500,1,1 and size= 5000
+libnvdla<3> translating weights for n-10 bias-dims kcrs = 1,10,1,1 and size= 10
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> printGraph: pree fuseSDPSubEngineOps
+libnvdla<3> 		n-0:dc-conv-0/conv1:	(in)e-0[1x1x28x28][tsd-1][tt-1], 	(Aux)e-9[20x1x5x5][tsd-0][tt-4], 	(out)e-11[1x20x24x24][tsd-9][tt-8], 
+libnvdla<3> 		n-1:bias-0/conv1:	(Aux)e-10[1x20x1x1][tsd-2][tt-5], 	(in)e-11[1x20x24x24][tsd-9][tt-8], 	(out)e-1[1x20x24x24][tsd-10][tt-3], 
+libnvdla<3> 		n-2:pdp-0/pool1:	(in)e-1[1x20x24x24][tsd-10][tt-3], 	(out)e-2[1x20x12x12][tsd-11][tt-3], 
+libnvdla<3> 		n-3:dc-conv-1/conv2:	(in)e-2[1x20x12x12][tsd-11][tt-3], 	(Aux)e-12[50x20x5x5][tsd-3][tt-4], 	(out)e-14[1x50x8x8][tsd-12][tt-8], 
+libnvdla<3> 		n-4:bias-1/conv2:	(Aux)e-13[1x50x1x1][tsd-4][tt-5], 	(in)e-14[1x50x8x8][tsd-12][tt-8], 	(out)e-3[1x50x8x8][tsd-13][tt-3], 
+libnvdla<3> 		n-5:pdp-1/pool2:	(in)e-3[1x50x8x8][tsd-13][tt-3], 	(out)e-4[1x50x4x4][tsd-14][tt-3], 
+libnvdla<3> 		n-6:fc-0/ip1:	(in)e-4[1x50x4x4][tsd-14][tt-3], 	(Aux)e-15[500x50x4x4][tsd-5][tt-4], 	(out)e-17[1x500x1x1][tsd-15][tt-8], 
+libnvdla<3> 		n-7:bias-2/ip1:	(Aux)e-16[1x500x1x1][tsd-6][tt-5], 	(in)e-17[1x500x1x1][tsd-15][tt-8], 	(out)e-6[1x500x1x1][tsd-17][tt-3], 
+libnvdla<3> 		n-9:fc-1/ip2:	(in)e-6[1x500x1x1][tsd-17][tt-3], 	(Aux)e-18[10x500x1x1][tsd-7][tt-4], 	(out)e-20[1x10x1x1][tsd-18][tt-8], 
+libnvdla<3> 		n-10:bias-3/ip2:	(Aux)e-19[1x10x1x1][tsd-8][tt-5], 	(in)e-20[1x10x1x1][tsd-18][tt-8], 	(out)e-7[1x10x1x1][tsd-19][tt-3], 
+libnvdla<3> 		n-11:cpu-sm-0/prob:	(in)e-7[1x10x1x1][tsd-19][tt-3], 	(out)e-8[1x10x1x1][tsd-20][tt-2], 
+libnvdla<3> e-9 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-10 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-12 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-13 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-15 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-16 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-18 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-19 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-11 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-14 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-17 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-6 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-20 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-7 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-8 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-9 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-1 for tsd-1 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-2 for tsd-2 for e-10 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-12 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-4 for tsd-4 for e-13 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-15 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-6 for tsd-6 for e-16 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-7 for tsd-7 for e-18 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-8 for tsd-8 for e-19 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-9 for tsd-9 for e-11 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-10 for tsd-10 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-11 for tsd-11 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-12 for tsd-12 for e-14 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-13 for tsd-13 for e-3 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-14 for tsd-14 for e-4 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-15 for tsd-15 for e-17 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-17 for tsd-17 for e-6 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-18 for tsd-18 for e-20 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-19 for tsd-19 for e-7 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-20 for tsd-20 for e-8 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> printGraph: post fuseSDPSubEngineOps
+libnvdla<3> 		n-0:dc-conv-0/conv1:	(in)e-0[1x1x28x28][tsd-1][tt-1], 	(Aux)e-9[20x1x5x5][tsd-0][tt-4], 	(out)e-11[1x20x24x24][tsd-9][tt-8], 
+libnvdla<3> 		n-1:bias-0/conv1:	(Aux)e-10[1x20x1x1][tsd-2][tt-5], 	(in)e-11[1x20x24x24][tsd-9][tt-8], 	(out)e-1[1x20x24x24][tsd-10][tt-3], 
+libnvdla<3> 		n-2:pdp-0/pool1:	(in)e-1[1x20x24x24][tsd-10][tt-3], 	(out)e-2[1x20x12x12][tsd-11][tt-3], 
+libnvdla<3> 		n-3:dc-conv-1/conv2:	(in)e-2[1x20x12x12][tsd-11][tt-3], 	(Aux)e-12[50x20x5x5][tsd-3][tt-4], 	(out)e-14[1x50x8x8][tsd-12][tt-8], 
+libnvdla<3> 		n-4:bias-1/conv2:	(Aux)e-13[1x50x1x1][tsd-4][tt-5], 	(in)e-14[1x50x8x8][tsd-12][tt-8], 	(out)e-3[1x50x8x8][tsd-13][tt-3], 
+libnvdla<3> 		n-5:pdp-1/pool2:	(in)e-3[1x50x8x8][tsd-13][tt-3], 	(out)e-4[1x50x4x4][tsd-14][tt-3], 
+libnvdla<3> 		n-6:fc-0/ip1:	(in)e-4[1x50x4x4][tsd-14][tt-3], 	(Aux)e-15[500x50x4x4][tsd-5][tt-4], 	(out)e-17[1x500x1x1][tsd-15][tt-8], 
+libnvdla<3> 		n-7:bias-2/ip1:	(Aux)e-16[1x500x1x1][tsd-6][tt-5], 	(in)e-17[1x500x1x1][tsd-15][tt-8], 	(out)e-6[1x500x1x1][tsd-17][tt-3], 
+libnvdla<3> 		n-9:fc-1/ip2:	(in)e-6[1x500x1x1][tsd-17][tt-3], 	(Aux)e-18[10x500x1x1][tsd-7][tt-4], 	(out)e-20[1x10x1x1][tsd-18][tt-8], 
+libnvdla<3> 		n-10:bias-3/ip2:	(Aux)e-19[1x10x1x1][tsd-8][tt-5], 	(in)e-20[1x10x1x1][tsd-18][tt-8], 	(out)e-7[1x10x1x1][tsd-19][tt-3], 
+libnvdla<3> 		n-11:cpu-sm-0/prob:	(in)e-7[1x10x1x1][tsd-19][tt-3], 	(out)e-8[1x10x1x1][tsd-20][tt-2], 
+libnvdla<3> annid=0 node=dc-conv-0.B0 deps=1
+libnvdla<3> 	producer: [, , , , , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-1(annId:3):OP_PROGRAMMED, , bias-0(annId:1):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=1 node=bias-0.B0 deps=1
+libnvdla<3> 	producer: [, dc-conv-0(annId:0):OP_PROGRAMMED, , , , , , , , , ]
+libnvdla<3> 	consumer: [, , , bias-1(annId:4):OP_PROGRAMMED, pdp-0(annId:2):OP_COMPLETED, , , , , , ]
+libnvdla<3> annid=2 node=pdp-0.B0 deps=1
+libnvdla<3> 	producer: [, , , bias-0(annId:1):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-1(annId:3):OP_COMPLETED, , , pdp-1(annId:5):OP_PROGRAMMED, , , , , , ]
+libnvdla<3> annid=3 node=dc-conv-1.B0 deps=3
+libnvdla<3> 	producer: [, dc-conv-0(annId:0):OP_PROGRAMMED, , , pdp-0(annId:2):OP_COMPLETED, , , , , , ]
+libnvdla<3> 	consumer: [, fc-0(annId:6):OP_PROGRAMMED, , bias-1(annId:4):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=4 node=bias-1.B0 deps=2
+libnvdla<3> 	producer: [, dc-conv-1(annId:3):OP_PROGRAMMED, , bias-0(annId:1):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, , , bias-2(annId:7):OP_PROGRAMMED, pdp-1(annId:5):OP_COMPLETED, , , , , , ]
+libnvdla<3> annid=5 node=pdp-1.B0 deps=2
+libnvdla<3> 	producer: [, , , bias-1(annId:4):OP_COMPLETED, pdp-0(annId:2):OP_PROGRAMMED, , , , , , ]
+libnvdla<3> 	consumer: [, fc-0(annId:6):OP_COMPLETED, , , , , , , , , ]
+libnvdla<3> annid=6 node=fc-0.B0 deps=3
+libnvdla<3> 	producer: [, dc-conv-1(annId:3):OP_PROGRAMMED, , , pdp-1(annId:5):OP_COMPLETED, , , , , , ]
+libnvdla<3> 	consumer: [, fc-1(annId:8):OP_PROGRAMMED, , bias-2(annId:7):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=7 node=bias-2.B0 deps=2
+libnvdla<3> 	producer: [, fc-0(annId:6):OP_PROGRAMMED, , bias-1(annId:4):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, fc-1(annId:8):OP_COMPLETED, , bias-3(annId:9):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=8 node=fc-1.B0 deps=3
+libnvdla<3> 	producer: [, fc-0(annId:6):OP_PROGRAMMED, , bias-2(annId:7):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	consumer: [, , , bias-3(annId:9):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=9 node=bias-3.B0 deps=2
+libnvdla<3> 	producer: [, fc-1(annId:8):OP_PROGRAMMED, , bias-2(annId:7):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [cpu-sm-0(annId:0):OP_COMPLETED, , , , , , , , , , ]
+libnvdla<3> annid=0 node=cpu-sm-0.B0 deps=1
+libnvdla<3> 	producer: [, , , bias-3(annId:9):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	consumer: [, , , , , , , , , , ]
+libnvdla<3> beginning resolveMemory phase
+libnvdla<3> begin memory resolver pooling=1 reuse=1 greedy_eviction=0
+libnvdla<3> 	local cvsram size=0 local sdram size=1073741824 global sdram size=536870912
+libnvdla<3> 	node=dc-conv-0 anno=0.0 in=[tsd-1] aux=[tsd-0] io=[] out=[tsd-9]
+libnvdla<3> 		tsd=tsd-9 (stream tensor)
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-1/tb-1 aux=0 pooling=0
+libnvdla<3> 			placed tsd-1/tb-1 batch-0 inside DRAM @0
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-0/tb-0 aux=1 pooling=1
+libnvdla<3> [MEMTOOL] t = 0	dc-conv-0's	AUX	tb-0-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-0 batch-0 inside GLOBAL_DRAM_POOL@0
+libnvdla<3> 			tsd=tsd-0 set content pooled=1
+libnvdla<3> 	done node=dc-conv-0 rc=0
+libnvdla<3> 	node=bias-0 anno=0.1 in=[tsd-9] aux=[tsd-2] io=[] out=[tsd-10]
+libnvdla<3> 		tsd=tsd-9 (stream tensor)
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-2/tb-2 aux=1 pooling=1
+libnvdla<3> [MEMTOOL] t = 1	bias-0's	AUX	tb-2-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-2 batch-0 inside GLOBAL_DRAM_POOL@4096
+libnvdla<3> 			tsd=tsd-2 set content pooled=1
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-10/tb-10 aux=0 pooling=1
+libnvdla<3> [MEMTOOL] t = 2	bias-0's	OUTPUT	tb-10-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-10 batch-0 inside LOCAL_DRAM_POOL@0
+libnvdla<3> 	done node=bias-0 rc=0
+libnvdla<3> 	node=pdp-0 anno=0.2 in=[tsd-10] aux=[] io=[] out=[tsd-11]
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-11/tb-11 aux=0 pooling=1
+libnvdla<3> [MEMTOOL] t = 3	pdp-0's	OUTPUT	tb-11-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-11 batch-0 inside LOCAL_DRAM_POOL@65536
+libnvdla<3> 	done node=pdp-0 rc=0
+libnvdla<3> 	node=dc-conv-1 anno=0.3 in=[tsd-11] aux=[tsd-3] io=[] out=[tsd-12]
+libnvdla<3> 		tsd=tsd-12 (stream tensor)
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-3/tb-3 aux=1 pooling=1
+libnvdla<3> [MEMTOOL] t = 4	dc-conv-1's	AUX	tb-3-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-3 batch-0 inside GLOBAL_DRAM_POOL@65536
+libnvdla<3> 			tsd=tsd-3 set content pooled=1
+libnvdla<3> 	done node=dc-conv-1 rc=0
+libnvdla<3> 	node=bias-1 anno=0.4 in=[tsd-12] aux=[tsd-4] io=[] out=[tsd-13]
+libnvdla<3> 		tsd=tsd-12 (stream tensor)
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-4/tb-4 aux=1 pooling=1
+libnvdla<3> [MEMTOOL] t = 5	bias-1's	AUX	tb-4-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-4 batch-0 inside GLOBAL_DRAM_POOL@8192
+libnvdla<3> 			tsd=tsd-4 set content pooled=1
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-13/tb-13 aux=0 pooling=1
+libnvdla<3> [MEMTOOL] t = 6	bias-1's	OUTPUT	tb-13-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-13 batch-0 inside LOCAL_DRAM_POOL@81920
+libnvdla<3> 	done node=bias-1 rc=0
+libnvdla<3> 	node=pdp-1 anno=0.5 in=[tsd-13] aux=[] io=[] out=[tsd-14]
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-14/tb-14 aux=0 pooling=1
+libnvdla<3> [MEMTOOL] t = 7	pdp-1's	OUTPUT	tb-14-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-14 batch-0 inside LOCAL_DRAM_POOL@90112
+libnvdla<3> 	done node=pdp-1 rc=0
+libnvdla<3> 	node=fc-0 anno=0.6 in=[tsd-14] aux=[tsd-5] io=[] out=[tsd-15]
+libnvdla<3> 		tsd=tsd-15 (stream tensor)
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-5/tb-5 aux=1 pooling=1
+libnvdla<3> [MEMTOOL] t = 8	fc-0's	AUX	tb-5-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-5 batch-0 inside GLOBAL_DRAM_POOL@1048576
+libnvdla<3> 			tsd=tsd-5 set content pooled=1
+libnvdla<3> 	done node=fc-0 rc=0
+libnvdla<3> 	node=bias-2 anno=0.7 in=[tsd-15] aux=[tsd-6] io=[] out=[tsd-17]
+libnvdla<3> 		tsd=tsd-15 (stream tensor)
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-6/tb-6 aux=1 pooling=1
+libnvdla<3> [MEMTOOL] t = 9	bias-2's	AUX	tb-6-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-6 batch-0 inside GLOBAL_DRAM_POOL@12288
+libnvdla<3> 			tsd=tsd-6 set content pooled=1
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-17/tb-17 aux=0 pooling=1
+libnvdla<3> [MEMTOOL] t = 10	bias-2's	OUTPUT	tb-17-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-17 batch-0 inside LOCAL_DRAM_POOL@94208
+libnvdla<3> 	done node=bias-2 rc=0
+libnvdla<3> 	node=fc-1 anno=0.8 in=[tsd-17] aux=[tsd-7] io=[] out=[tsd-18]
+libnvdla<3> 		tsd=tsd-18 (stream tensor)
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-7/tb-7 aux=1 pooling=1
+libnvdla<3> [MEMTOOL] t = 11	fc-1's	AUX	tb-7-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-7 batch-0 inside GLOBAL_DRAM_POOL@16384
+libnvdla<3> 			tsd=tsd-7 set content pooled=1
+libnvdla<3> 	done node=fc-1 rc=0
+libnvdla<3> 	node=bias-3 anno=0.9 in=[tsd-18] aux=[tsd-8] io=[] out=[tsd-19]
+libnvdla<3> 		tsd=tsd-18 (stream tensor)
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-8/tb-8 aux=1 pooling=1
+libnvdla<3> [MEMTOOL] t = 12	bias-3's	AUX	tb-8-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-8 batch-0 inside GLOBAL_DRAM_POOL@32768
+libnvdla<3> 			tsd=tsd-8 set content pooled=1
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-19/tb-19 aux=0 pooling=1
+libnvdla<3> [MEMTOOL] t = 13	bias-3's	OUTPUT	tb-19-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-19 batch-0 inside LOCAL_DRAM_POOL@98304
+libnvdla<3> 	done node=bias-3 rc=0
+libnvdla<3> 	node=cpu-sm-0 anno=1.0 in=[tsd-19] aux=[] io=[] out=[tsd-20]
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-20/tb-20 aux=0 pooling=0
+libnvdla<3> 			placed tsd-20/tb-20 batch-0 inside DRAM @0
+libnvdla<3> 	done node=cpu-sm-0 rc=0
+libnvdla<3> end memory resolver
+libnvdla<3> (Pool) Memory list entry=1 size=1851392 used=1848576 domain=0 flags=3
+libnvdla<3> 	content: tb-0 @ 0
+libnvdla<3> 	content: tb-2 @ 4096
+libnvdla<3> 	content: tb-3 @ 65536
+libnvdla<3> 	content: tb-4 @ 8192
+libnvdla<3> 	content: tb-5 @ 1048576
+libnvdla<3> 	content: tb-6 @ 12288
+libnvdla<3> 	content: tb-7 @ 16384
+libnvdla<3> 	content: tb-8 @ 32768
+libnvdla<3> 
+libnvdla<3> (Pool) Memory list entry=2 size=102400 used=98336 domain=0 flags=1
+libnvdla<3> 
+libnvdla<3> create tensor desc precision=3 category=3 sf=65
+libnvdla<3> 	name         : data
+libnvdla<3> 	n,c,h,w      : 1,1,28,28
+libnvdla<3> 	data format  : 3
+libnvdla<3> 	data type    : 2
+libnvdla<3> 	data category: 2
+libnvdla<3> 	pixel format : 36
+libnvdla<3> 	pixel mapping: 0
+libnvdla<3> 	strides  : 2 896 25088 00 0 0 0
+libnvdla<3> (Bindable)(Buffer) Memory list entry for tbd=tb-1:0 : 0 size=25088 domain=0 flags=5
+libnvdla<3> create tensor desc precision=3 category=3 sf=65
+libnvdla<3> 	name         : prob
+libnvdla<3> 	n,c,h,w      : 1,10,1,1
+libnvdla<3> 	data format  : 3
+libnvdla<3> 	data type    : 2
+libnvdla<3> 	data category: 2
+libnvdla<3> 	pixel format : 36
+libnvdla<3> 	pixel mapping: 0
+libnvdla<3> 	strides  : 2 32 32 00 0 0 0
+libnvdla<3> (Bindable)(Buffer) Memory list entry for tbd=tb-20:0 : 0 size=32 domain=0 flags=9
+libnvdla<3> (Surface) Address list entry for tsd=tsd-0/tb-0:0 -> 1 offset=0 size=1024
+libnvdla<3> (Surface) Address list entry for tsd=tsd-1/tb-1:0 -> 3 offset=0 size=25088
+libnvdla<3> (Surface) Address list entry for tsd=tsd-10/tb-10:0 -> 2 offset=0 size=36864
+libnvdla<3> (Surface) Address list entry for tsd=tsd-11/tb-11:0 -> 2 offset=65536 size=9216
+libnvdla<3> (Surface) Address list entry for tsd=tsd-13/tb-13:0 -> 2 offset=81920 size=8192
+libnvdla<3> (Surface) Address list entry for tsd=tsd-14/tb-14:0 -> 2 offset=90112 size=2048
+libnvdla<3> (Surface) Address list entry for tsd=tsd-17/tb-17:0 -> 2 offset=94208 size=1024
+libnvdla<3> (Surface) Address list entry for tsd=tsd-19/tb-19:0 -> 2 offset=98304 size=32
+libnvdla<3> (Surface) Address list entry for tsd=tsd-2/tb-2:0 -> 1 offset=4096 size=40
+libnvdla<3> (Surface) Address list entry for tsd=tsd-20/tb-20:0 -> 4 offset=0 size=32
+libnvdla<3> (Surface) Address list entry for tsd=tsd-3/tb-3:0 -> 1 offset=65536 size=50048
+libnvdla<3> (Surface) Address list entry for tsd=tsd-4/tb-4:0 -> 1 offset=8192 size=100
+libnvdla<3> (Surface) Address list entry for tsd=tsd-5/tb-5:0 -> 1 offset=1048576 size=800000
+libnvdla<3> (Surface) Address list entry for tsd=tsd-6/tb-6:0 -> 1 offset=12288 size=1000
+libnvdla<3> (Surface) Address list entry for tsd=tsd-7/tb-7:0 -> 1 offset=16384 size=10112
+libnvdla<3> (Surface) Address list entry for tsd=tsd-8/tb-8:0 -> 1 offset=32768 size=20
+libnvdla<3> data cube access by tsd:batch=tsd-1:0 id[offs]=3
+libnvdla<3> data cube access by tsd:batch=tsd-0:0 id[offs]=1
+libnvdla<3> Convolution node @ op_slot = 0 batch_id = 0
+libnvdla<3> 	src data loc: 0
+libnvdla<3> 	dst data loc: 2
+libnvdla<3> 	post y extension: 0
+libnvdla<3> 	in_precision 2
+libnvdla<3> 	out_precision 2
+libnvdla<3> 	pad_val 0
+libnvdla<3> 	conv mode 0
+libnvdla<3> 	data_reuse 0
+libnvdla<3> 	weight_reuse 0
+libnvdla<3> 	skip_data_rls 0
+libnvdla<3> 	skip_wt_rls 0
+libnvdla<3> 	eps 7
+libnvdla<3> 	fetch_grain 1
+libnvdla<3> 	data_format 36
+libnvdla<3> 	pixel_mapping 0
+libnvdla<3> 	batch 1
+libnvdla<3> 	weight_format 0
+libnvdla<3> 	b4d 1
+libnvdla<3> 	b4w 1
+libnvdla<3> 	batch_stride 0
+libnvdla<3> 	release 28
+libnvdla<3> 	post_extension 0
+libnvdla<3> 	pixel_override 1
+libnvdla<3> 	mean_format 0
+libnvdla<3> 	stride-x 1
+libnvdla<3> 	stride-y 1
+libnvdla<3> 	pad-left 0
+libnvdla<3> 	pad-top 0
+libnvdla<3> 	pad-right 0
+libnvdla<3> 	pad-bottom 0
+libnvdla<3> 	dilationx-x 1
+libnvdla<3> 	dilation-y 1
+libnvdla<3> 	pra_truncate 0
+libnvdla<3> 	inputwidthcsc 28
+libnvdla<3> 	inputheightcsc 28
+libnvdla<3> 	inputchannelcsc 1
+libnvdla<3> 	kernelwidthcsc 5
+libnvdla<3> 	kernelheightcsc 5
+libnvdla<3> 	kernelchannelcsc 1
+libnvdla<3> 	inputwidthcmac 24
+libnvdla<3> 	inputheightcmac 24
+libnvdla<3> 	bytesperkernel 50
+libnvdla<3> 	offsetU 0
+libnvdla<3> 	dependencyCount 1
+libnvdla<3> 	src tsd:tsd-1
+libnvdla<3> 	src addr=3
+libnvdla<3> 	src size 25088
+libnvdla<3> 	src width 28
+libnvdla<3> 	src height 28
+libnvdla<3> 	src channel 1
+libnvdla<3> 	src linestride 896
+libnvdla<3> 	src surfstride 25088
+libnvdla<3> 	dst tsd:tsd-9
+libnvdla<3> 	dst addr=-1
+libnvdla<3> 	dst size 36864
+libnvdla<3> 	dst width 24
+libnvdla<3> 	dst height 24
+libnvdla<3> 	dst channel 20
+libnvdla<3> 	dst linestride 768
+libnvdla<3> 	dst surfstride 18432
+libnvdla<3> 	wt  tsd:tsd-0
+libnvdla<3> 	weight addr=1
+libnvdla<3> 	wt size 1024
+libnvdla<3> 	wt width 5
+libnvdla<3> 	wt height 5
+libnvdla<3> 	wt channel 1
+libnvdla<3> data cube access by tsd:batch=tsd-10:0 id[offs]=2
+libnvdla<3> data cube access by tsd:batch=tsd-2:0 id[offs]=1
+libnvdla<3> SDP bias node @ op_slot = 1 batch_id = 0
+libnvdla<3> 	src precision 2
+libnvdla<3> 	dst precision 2
+libnvdla<3> 	x1 enable 1
+libnvdla<3> 	x1 precision 2
+libnvdla<3> 	x1 aluType 2
+libnvdla<3> 	x1 type 2
+libnvdla<3> 	x1 mode 1
+libnvdla<3> 	x1 act 0
+libnvdla<3> 	x1 shiftValue 0
+libnvdla<3> 	x1 aluOperand 0
+libnvdla<3> 	x1 mulOperand 1
+libnvdla<3> 	x1 truncate 0
+libnvdla<3> 	x2 enable 0
+libnvdla<3> 	y enable 0
+libnvdla<3> 	src tsd:tsd-9
+libnvdla<3> 	dst tsd:tsd-10/tb-10:off= 0
+libnvdla<3> 	bias tsd:tsd-2
+libnvdla<3> 	dependencyCount1
+libnvdla<3> 	conv_mode 0
+libnvdla<3> 	src addr=-1
+libnvdla<3> 	src type=2
+libnvdla<3> 	src size 36864
+libnvdla<3> 	src width 24
+libnvdla<3> 	src height 24
+libnvdla<3> 	src channel 20
+libnvdla<3> 	src linestride 768
+libnvdla<3> 	src surfstride 18432
+libnvdla<3> 	bias addr=1
+libnvdla<3> 	bias type=0
+libnvdla<3> 	bias size 40
+libnvdla<3> 	bias width 1
+libnvdla<3> 	bias height 1
+libnvdla<3> 	bias channel 20
+libnvdla<3> 	bias linestride 32
+libnvdla<3> 	bias surfstride 32
+libnvdla<3> 	dst addr=2
+libnvdla<3> 	dst type=0
+libnvdla<3> 	dst size 36864
+libnvdla<3> 	dst width 24
+libnvdla<3> 	dst height 24
+libnvdla<3> 	dst channel 20
+libnvdla<3> 	dst linestride 768
+libnvdla<3> 	dst surfstride 18432
+libnvdla<3> 	out_cvt enable 0
+libnvdla<3> 	out_cvt scale 1
+libnvdla<3> 	out_cvt offset 0
+libnvdla<3> 	out_cvt truncate 0
+libnvdla<3> data cube access by tsd:batch=tsd-10:0 id[offs]=2
+libnvdla<3> data cube access by tsd:batch=tsd-11:0 id[offs]=2
+libnvdla<3> PDP node @ op_slot = 2 batch_id = 0
+libnvdla<3> 	pdp precision2
+libnvdla<3> 	pdp pool mode1
+libnvdla<3> 	src tsd:tsd-10
+libnvdla<3> 	dst tsd:tsd-11
+libnvdla<3> 	src addr=2
+libnvdla<3> 	src type=0
+libnvdla<3> 	dependencyCount1
+libnvdla<3> 	splitNum 1
+libnvdla<3> 	padLeft 0
+libnvdla<3> 	padTop 0
+libnvdla<3> 	padRight 0
+libnvdla<3> 	padBottom 0
+libnvdla<3> 	pool height 1
+libnvdla<3> 	pool width 1
+libnvdla<3> 	stride x 2
+libnvdla<3> 	stride y 2
+libnvdla<3> 	src size 36864
+libnvdla<3> 	src width 24
+libnvdla<3> 	src height 24
+libnvdla<3> 	src channel 20
+libnvdla<3> 	src linestride 768
+libnvdla<3> 	src surfstride 18432
+libnvdla<3> 	dst addr=2
+libnvdla<3> 	dst type=0
+libnvdla<3> 	dst size 9216
+libnvdla<3> 	dst width 12
+libnvdla<3> 	dst height 12
+libnvdla<3> 	dst channel 20
+libnvdla<3> 	dst linestride 384
+libnvdla<3> 	dst surfstride 4608
+libnvdla<3> data cube access by tsd:batch=tsd-11:0 id[offs]=2
+libnvdla<3> data cube access by tsd:batch=tsd-3:0 id[offs]=1
+libnvdla<3> Convolution node @ op_slot = 3 batch_id = 0
+libnvdla<3> 	src data loc: 0
+libnvdla<3> 	dst data loc: 2
+libnvdla<3> 	post y extension: 0
+libnvdla<3> 	in_precision 2
+libnvdla<3> 	out_precision 2
+libnvdla<3> 	pad_val 0
+libnvdla<3> 	conv mode 0
+libnvdla<3> 	data_reuse 0
+libnvdla<3> 	weight_reuse 0
+libnvdla<3> 	skip_data_rls 0
+libnvdla<3> 	skip_wt_rls 0
+libnvdla<3> 	eps 6
+libnvdla<3> 	fetch_grain 1
+libnvdla<3> 	data_format 36
+libnvdla<3> 	pixel_mapping 0
+libnvdla<3> 	batch 1
+libnvdla<3> 	weight_format 0
+libnvdla<3> 	b4d 1
+libnvdla<3> 	b4w 2
+libnvdla<3> 	batch_stride 0
+libnvdla<3> 	release 12
+libnvdla<3> 	post_extension 0
+libnvdla<3> 	pixel_override 1
+libnvdla<3> 	mean_format 0
+libnvdla<3> 	stride-x 1
+libnvdla<3> 	stride-y 1
+libnvdla<3> 	pad-left 0
+libnvdla<3> 	pad-top 0
+libnvdla<3> 	pad-right 0
+libnvdla<3> 	pad-bottom 0
+libnvdla<3> 	dilationx-x 1
+libnvdla<3> 	dilation-y 1
+libnvdla<3> 	pra_truncate 0
+libnvdla<3> 	inputwidthcsc 12
+libnvdla<3> 	inputheightcsc 12
+libnvdla<3> 	inputchannelcsc 20
+libnvdla<3> 	kernelwidthcsc 5
+libnvdla<3> 	kernelheightcsc 5
+libnvdla<3> 	kernelchannelcsc 20
+libnvdla<3> 	inputwidthcmac 8
+libnvdla<3> 	inputheightcmac 8
+libnvdla<3> 	bytesperkernel 1000
+libnvdla<3> 	offsetU 0
+libnvdla<3> 	dependencyCount 3
+libnvdla<3> 	src tsd:tsd-11
+libnvdla<3> 	src addr=2
+libnvdla<3> 	src size 9216
+libnvdla<3> 	src width 12
+libnvdla<3> 	src height 12
+libnvdla<3> 	src channel 20
+libnvdla<3> 	src linestride 384
+libnvdla<3> 	src surfstride 4608
+libnvdla<3> 	dst tsd:tsd-12
+libnvdla<3> 	dst addr=-1
+libnvdla<3> 	dst size 8192
+libnvdla<3> 	dst width 8
+libnvdla<3> 	dst height 8
+libnvdla<3> 	dst channel 50
+libnvdla<3> 	dst linestride 256
+libnvdla<3> 	dst surfstride 2048
+libnvdla<3> 	wt  tsd:tsd-3
+libnvdla<3> 	weight addr=1
+libnvdla<3> 	wt size 50048
+libnvdla<3> 	wt width 5
+libnvdla<3> 	wt height 5
+libnvdla<3> 	wt channel 20
+libnvdla<3> data cube access by tsd:batch=tsd-13:0 id[offs]=2
+libnvdla<3> data cube access by tsd:batch=tsd-4:0 id[offs]=1
+libnvdla<3> SDP bias node @ op_slot = 4 batch_id = 0
+libnvdla<3> 	src precision 2
+libnvdla<3> 	dst precision 2
+libnvdla<3> 	x1 enable 1
+libnvdla<3> 	x1 precision 2
+libnvdla<3> 	x1 aluType 2
+libnvdla<3> 	x1 type 2
+libnvdla<3> 	x1 mode 1
+libnvdla<3> 	x1 act 0
+libnvdla<3> 	x1 shiftValue 0
+libnvdla<3> 	x1 aluOperand 0
+libnvdla<3> 	x1 mulOperand 1
+libnvdla<3> 	x1 truncate 0
+libnvdla<3> 	x2 enable 0
+libnvdla<3> 	y enable 0
+libnvdla<3> 	src tsd:tsd-12
+libnvdla<3> 	dst tsd:tsd-13/tb-13:off= 0
+libnvdla<3> 	bias tsd:tsd-4
+libnvdla<3> 	dependencyCount2
+libnvdla<3> 	conv_mode 0
+libnvdla<3> 	src addr=-1
+libnvdla<3> 	src type=2
+libnvdla<3> 	src size 8192
+libnvdla<3> 	src width 8
+libnvdla<3> 	src height 8
+libnvdla<3> 	src channel 50
+libnvdla<3> 	src linestride 256
+libnvdla<3> 	src surfstride 2048
+libnvdla<3> 	bias addr=1
+libnvdla<3> 	bias type=0
+libnvdla<3> 	bias size 100
+libnvdla<3> 	bias width 1
+libnvdla<3> 	bias height 1
+libnvdla<3> 	bias channel 50
+libnvdla<3> 	bias linestride 32
+libnvdla<3> 	bias surfstride 32
+libnvdla<3> 	dst addr=2
+libnvdla<3> 	dst type=0
+libnvdla<3> 	dst size 8192
+libnvdla<3> 	dst width 8
+libnvdla<3> 	dst height 8
+libnvdla<3> 	dst channel 50
+libnvdla<3> 	dst linestride 256
+libnvdla<3> 	dst surfstride 2048
+libnvdla<3> 	out_cvt enable 0
+libnvdla<3> 	out_cvt scale 1
+libnvdla<3> 	out_cvt offset 0
+libnvdla<3> 	out_cvt truncate 0
+libnvdla<3> data cube access by tsd:batch=tsd-13:0 id[offs]=2
+libnvdla<3> data cube access by tsd:batch=tsd-14:0 id[offs]=2
+libnvdla<3> PDP node @ op_slot = 5 batch_id = 0
+libnvdla<3> 	pdp precision2
+libnvdla<3> 	pdp pool mode1
+libnvdla<3> 	src tsd:tsd-13
+libnvdla<3> 	dst tsd:tsd-14
+libnvdla<3> 	src addr=2
+libnvdla<3> 	src type=0
+libnvdla<3> 	dependencyCount2
+libnvdla<3> 	splitNum 1
+libnvdla<3> 	padLeft 0
+libnvdla<3> 	padTop 0
+libnvdla<3> 	padRight 0
+libnvdla<3> 	padBottom 0
+libnvdla<3> 	pool height 1
+libnvdla<3> 	pool width 1
+libnvdla<3> 	stride x 2
+libnvdla<3> 	stride y 2
+libnvdla<3> 	src size 8192
+libnvdla<3> 	src width 8
+libnvdla<3> 	src height 8
+libnvdla<3> 	src channel 50
+libnvdla<3> 	src linestride 256
+libnvdla<3> 	src surfstride 2048
+libnvdla<3> 	dst addr=2
+libnvdla<3> 	dst type=0
+libnvdla<3> 	dst size 2048
+libnvdla<3> 	dst width 4
+libnvdla<3> 	dst height 4
+libnvdla<3> 	dst channel 50
+libnvdla<3> 	dst linestride 128
+libnvdla<3> 	dst surfstride 512
+libnvdla<3> data cube access by tsd:batch=tsd-14:0 id[offs]=2
+libnvdla<3> data cube access by tsd:batch=tsd-5:0 id[offs]=1
+libnvdla<3> FullyConnected node @ op_slot = 6 batch_id = 0
+libnvdla<3> 	src data loc: 0
+libnvdla<3> 	dst data loc: 2
+libnvdla<3> 	post y extension: 0
+libnvdla<3> 	in_precision 2
+libnvdla<3> 	out_precision 2
+libnvdla<3> 	pad_val 0
+libnvdla<3> 	conv mode 0
+libnvdla<3> 	data_reuse 0
+libnvdla<3> 	weight_reuse 0
+libnvdla<3> 	skip_data_rls 0
+libnvdla<3> 	skip_wt_rls 0
+libnvdla<3> 	eps 4
+libnvdla<3> 	fetch_grain 1
+libnvdla<3> 	data_format 36
+libnvdla<3> 	pixel_mapping 0
+libnvdla<3> 	batch 1
+libnvdla<3> 	weight_format 0
+libnvdla<3> 	b4d 1
+libnvdla<3> 	b4w 2
+libnvdla<3> 	batch_stride 0
+libnvdla<3> 	release 4
+libnvdla<3> 	post_extension 0
+libnvdla<3> 	pixel_override 0
+libnvdla<3> 	mean_format 0
+libnvdla<3> 	stride-x 1
+libnvdla<3> 	stride-y 1
+libnvdla<3> 	pad-left 0
+libnvdla<3> 	pad-top 0
+libnvdla<3> 	pad-right 0
+libnvdla<3> 	pad-bottom 0
+libnvdla<3> 	dilationx-x 1
+libnvdla<3> 	dilation-y 1
+libnvdla<3> 	pra_truncate 0
+libnvdla<3> 	inputwidthcsc 4
+libnvdla<3> 	inputheightcsc 4
+libnvdla<3> 	inputchannelcsc 50
+libnvdla<3> 	kernelwidthcsc 4
+libnvdla<3> 	kernelheightcsc 4
+libnvdla<3> 	kernelchannelcsc 50
+libnvdla<3> 	inputwidthcmac 1
+libnvdla<3> 	inputheightcmac 1
+libnvdla<3> 	bytesperkernel 1600
+libnvdla<3> 	offsetU 0
+libnvdla<3> 	dependencyCount 3
+libnvdla<3> 	src tsd:tsd-14
+libnvdla<3> 	src addr=2
+libnvdla<3> 	src size 2048
+libnvdla<3> 	src width 4
+libnvdla<3> 	src height 4
+libnvdla<3> 	src channel 50
+libnvdla<3> 	src linestride 128
+libnvdla<3> 	src surfstride 512
+libnvdla<3> 	dst tsd:tsd-15
+libnvdla<3> 	dst addr=-1
+libnvdla<3> 	dst size 1024
+libnvdla<3> 	dst width 1
+libnvdla<3> 	dst height 1
+libnvdla<3> 	dst channel 500
+libnvdla<3> 	dst linestride 32
+libnvdla<3> 	dst surfstride 32
+libnvdla<3> 	wt  tsd:tsd-5
+libnvdla<3> 	weight addr=1
+libnvdla<3> 	wt size 800000
+libnvdla<3> 	wt width 4
+libnvdla<3> 	wt height 4
+libnvdla<3> 	wt channel 50
+libnvdla<3> data cube access by tsd:batch=tsd-17:0 id[offs]=2
+libnvdla<3> data cube access by tsd:batch=tsd-6:0 id[offs]=1
+libnvdla<3> SDP bias node @ op_slot = 7 batch_id = 0
+libnvdla<3> 	src precision 2
+libnvdla<3> 	dst precision 2
+libnvdla<3> 	x1 enable 1
+libnvdla<3> 	x1 precision 2
+libnvdla<3> 	x1 aluType 2
+libnvdla<3> 	x1 type 2
+libnvdla<3> 	x1 mode 1
+libnvdla<3> 	x1 act 1
+libnvdla<3> 	x1 shiftValue 0
+libnvdla<3> 	x1 aluOperand 0
+libnvdla<3> 	x1 mulOperand 1
+libnvdla<3> 	x1 truncate 0
+libnvdla<3> 	x2 enable 0
+libnvdla<3> 	y enable 0
+libnvdla<3> 	src tsd:tsd-15
+libnvdla<3> 	dst tsd:tsd-17/tb-17:off= 0
+libnvdla<3> 	bias tsd:tsd-6
+libnvdla<3> 	dependencyCount2
+libnvdla<3> 	conv_mode 0
+libnvdla<3> 	src addr=-1
+libnvdla<3> 	src type=2
+libnvdla<3> 	src size 1024
+libnvdla<3> 	src width 1
+libnvdla<3> 	src height 1
+libnvdla<3> 	src channel 500
+libnvdla<3> 	src linestride 32
+libnvdla<3> 	src surfstride 32
+libnvdla<3> 	bias addr=1
+libnvdla<3> 	bias type=0
+libnvdla<3> 	bias size 1000
+libnvdla<3> 	bias width 1
+libnvdla<3> 	bias height 1
+libnvdla<3> 	bias channel 500
+libnvdla<3> 	bias linestride 32
+libnvdla<3> 	bias surfstride 32
+libnvdla<3> 	dst addr=2
+libnvdla<3> 	dst type=0
+libnvdla<3> 	dst size 1024
+libnvdla<3> 	dst width 1
+libnvdla<3> 	dst height 1
+libnvdla<3> 	dst channel 500
+libnvdla<3> 	dst linestride 32
+libnvdla<3> 	dst surfstride 32
+libnvdla<3> 	out_cvt enable 0
+libnvdla<3> 	out_cvt scale 1
+libnvdla<3> 	out_cvt offset 0
+libnvdla<3> 	out_cvt truncate 0
+libnvdla<3> data cube access by tsd:batch=tsd-17:0 id[offs]=2
+libnvdla<3> data cube access by tsd:batch=tsd-7:0 id[offs]=1
+libnvdla<3> FullyConnected node @ op_slot = 8 batch_id = 0
+libnvdla<3> 	src data loc: 0
+libnvdla<3> 	dst data loc: 2
+libnvdla<3> 	post y extension: 0
+libnvdla<3> 	in_precision 2
+libnvdla<3> 	out_precision 2
+libnvdla<3> 	pad_val 0
+libnvdla<3> 	conv mode 0
+libnvdla<3> 	data_reuse 0
+libnvdla<3> 	weight_reuse 0
+libnvdla<3> 	skip_data_rls 0
+libnvdla<3> 	skip_wt_rls 0
+libnvdla<3> 	eps 8
+libnvdla<3> 	fetch_grain 1
+libnvdla<3> 	data_format 36
+libnvdla<3> 	pixel_mapping 0
+libnvdla<3> 	batch 1
+libnvdla<3> 	weight_format 0
+libnvdla<3> 	b4d 1
+libnvdla<3> 	b4w 1
+libnvdla<3> 	batch_stride 0
+libnvdla<3> 	release 1
+libnvdla<3> 	post_extension 0
+libnvdla<3> 	pixel_override 0
+libnvdla<3> 	mean_format 0
+libnvdla<3> 	stride-x 1
+libnvdla<3> 	stride-y 1
+libnvdla<3> 	pad-left 0
+libnvdla<3> 	pad-top 0
+libnvdla<3> 	pad-right 0
+libnvdla<3> 	pad-bottom 0
+libnvdla<3> 	dilationx-x 1
+libnvdla<3> 	dilation-y 1
+libnvdla<3> 	pra_truncate 0
+libnvdla<3> 	inputwidthcsc 1
+libnvdla<3> 	inputheightcsc 1
+libnvdla<3> 	inputchannelcsc 500
+libnvdla<3> 	kernelwidthcsc 1
+libnvdla<3> 	kernelheightcsc 1
+libnvdla<3> 	kernelchannelcsc 500
+libnvdla<3> 	inputwidthcmac 1
+libnvdla<3> 	inputheightcmac 1
+libnvdla<3> 	bytesperkernel 1000
+libnvdla<3> 	offsetU 0
+libnvdla<3> 	dependencyCount 3
+libnvdla<3> 	src tsd:tsd-17
+libnvdla<3> 	src addr=2
+libnvdla<3> 	src size 1024
+libnvdla<3> 	src width 1
+libnvdla<3> 	src height 1
+libnvdla<3> 	src channel 500
+libnvdla<3> 	src linestride 32
+libnvdla<3> 	src surfstride 32
+libnvdla<3> 	dst tsd:tsd-18
+libnvdla<3> 	dst addr=-1
+libnvdla<3> 	dst size 32
+libnvdla<3> 	dst width 1
+libnvdla<3> 	dst height 1
+libnvdla<3> 	dst channel 10
+libnvdla<3> 	dst linestride 32
+libnvdla<3> 	dst surfstride 32
+libnvdla<3> 	wt  tsd:tsd-7
+libnvdla<3> 	weight addr=1
+libnvdla<3> 	wt size 10112
+libnvdla<3> 	wt width 1
+libnvdla<3> 	wt height 1
+libnvdla<3> 	wt channel 500
+libnvdla<3> data cube access by tsd:batch=tsd-19:0 id[offs]=2
+libnvdla<3> data cube access by tsd:batch=tsd-8:0 id[offs]=1
+libnvdla<3> SDP bias node @ op_slot = 9 batch_id = 0
+libnvdla<3> 	src precision 2
+libnvdla<3> 	dst precision 2
+libnvdla<3> 	x1 enable 1
+libnvdla<3> 	x1 precision 2
+libnvdla<3> 	x1 aluType 2
+libnvdla<3> 	x1 type 2
+libnvdla<3> 	x1 mode 1
+libnvdla<3> 	x1 act 0
+libnvdla<3> 	x1 shiftValue 0
+libnvdla<3> 	x1 aluOperand 0
+libnvdla<3> 	x1 mulOperand 1
+libnvdla<3> 	x1 truncate 0
+libnvdla<3> 	x2 enable 0
+libnvdla<3> 	y enable 0
+libnvdla<3> 	src tsd:tsd-18
+libnvdla<3> 	dst tsd:tsd-19/tb-19:off= 0
+libnvdla<3> 	bias tsd:tsd-8
+libnvdla<3> 	dependencyCount2
+libnvdla<3> 	conv_mode 0
+libnvdla<3> 	src addr=-1
+libnvdla<3> 	src type=2
+libnvdla<3> 	src size 32
+libnvdla<3> 	src width 1
+libnvdla<3> 	src height 1
+libnvdla<3> 	src channel 10
+libnvdla<3> 	src linestride 32
+libnvdla<3> 	src surfstride 32
+libnvdla<3> 	bias addr=1
+libnvdla<3> 	bias type=0
+libnvdla<3> 	bias size 20
+libnvdla<3> 	bias width 1
+libnvdla<3> 	bias height 1
+libnvdla<3> 	bias channel 10
+libnvdla<3> 	bias linestride 32
+libnvdla<3> 	bias surfstride 32
+libnvdla<3> 	dst addr=2
+libnvdla<3> 	dst type=0
+libnvdla<3> 	dst size 32
+libnvdla<3> 	dst width 1
+libnvdla<3> 	dst height 1
+libnvdla<3> 	dst channel 10
+libnvdla<3> 	dst linestride 32
+libnvdla<3> 	dst surfstride 32
+libnvdla<3> 	out_cvt enable 0
+libnvdla<3> 	out_cvt scale 1
+libnvdla<3> 	out_cvt offset 0
+libnvdla<3> 	out_cvt truncate 0
+libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=2270fa0 originalOffset=2271014 offset=74 interface=1 subInterface=4 relocType=1
+libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=2270fa0 originalOffset=2271018 offset=78 interface=1 subInterface=4 relocType=2
+libnvdla<3> Softmax node @ op_slot = 0 batch_id = 0
+libnvdla<3> 	src addr=2[98304]
+libnvdla<3> 	dst addr=4[0]
+libnvdla<3> 	input scale factor 1
+libnvdla<3> 	output scale factor 1
+libnvdla<3> 	src size=32
+libnvdla<3> 	src format=3
+libnvdla<3> 	src width=1
+libnvdla<3> 	src height=1
+libnvdla<3> 	src channel=10
+libnvdla<3> 	dst size=32
+libnvdla<3> 	dst format=3
+libnvdla<3> 	dst width=1
+libnvdla<3> 	dst height=1
+libnvdla<3> 	dst channel=10
+libnvdla<3> gathered reloc entry: address id=4 writeId=13 useBase=22770f0 originalOffset=2277202 offset=112 interface=2 subInterface=4 relocType=1
+libnvdla<3> gathered reloc entry: address id=4 writeId=13 useBase=22770f0 originalOffset=2277206 offset=116 interface=2 subInterface=4 relocType=2
+closing wisdom context...

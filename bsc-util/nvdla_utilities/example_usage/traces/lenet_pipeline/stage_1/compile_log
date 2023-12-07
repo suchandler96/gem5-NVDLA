@@ -1,0 +1,400 @@
+creating new wisdom context...
+opening wisdom context...
+parsing caffe network...
+libnvdla<3> mark pool1
+Marking total 1 outputs
+attaching parsed network to the wisdom...
+compiling profile "fast-math"... config "nv_full"...
+libnvdla<3> raw weights of bias-0: -0.32513, -0.0206955, 0.121905, 0.0420712, -0.19227, 0.461132, -0.0378185, 0.0695715, -0.0610421, 0.112762, -0.222888, -0.0500664, -0.157256, -0.138772, -0.113115, 0.0229848, 0.125234, -0.24182, 0.145986, -0.0471339, 
+libnvdla<3> n-0:->n-0:dc-conv-0 n-1:bias-0 
+libnvdla<3> n-1:->n-2:pdp-0 
+libnvdla<3> EngineAST graph level input edge[0] is e-0
+libnvdla<3> input bind id: 0
+libnvdla<3> EngineAST graph level output edge[0] is e-2
+libnvdla<3> output bind id: 0
+libnvdla<3> dc-conv-0/n-0/conv1:
+libnvdla<3> 	in e-0
+libnvdla<3> 	out e-5
+libnvdla<3> 	aux e-3
+libnvdla<3> bias-0/n-1/conv1:
+libnvdla<3> 	in e-5
+libnvdla<3> 	out e-1
+libnvdla<3> 	aux e-4
+libnvdla<3> pdp-0/n-2/pool1:
+libnvdla<3> 	in e-1
+libnvdla<3> 	out e-2
+libnvdla<3> edge: e-0 tsd: tsd-0 registered
+libnvdla<3> edge: e-3 tsd: tsd-1 registered
+libnvdla<3> edge: e-4 tsd: tsd-2 registered
+libnvdla<3> edge: e-5 tsd: tsd-3 registered
+libnvdla<3> edge: e-1 tsd: tsd-4 registered
+libnvdla<3> edge: e-2 tsd: tsd-5 registered
+libnvdla<3> e-0 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge setting new surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-4 edge setting new surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-5 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge setting new surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-1 for tsd-1 for e-3 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-2 for tsd-2 for e-4 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-4 for tsd-4 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-1 for tsd-1 for e-3 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-2 for tsd-2 for e-4 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-4 for tsd-4 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-1 for tsd-1 for e-3 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-2 for tsd-2 for e-4 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-4 for tsd-4 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> 
+libnvdla<3> Try Merging: dc-conv-0 & bias-0
+libnvdla<3> Merging: Not Feasible
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-1 for tsd-1 for e-3 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-2 for tsd-2 for e-4 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-4 for tsd-4 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-1 for tsd-1 for e-3 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-2 for tsd-2 for e-4 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-4 for tsd-4 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-1 for tsd-1 for e-3 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-2 for tsd-2 for e-4 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-4 for tsd-4 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-1 for tsd-1 for e-3 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-2 for tsd-2 for e-4 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-4 for tsd-4 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> translating weights for n-0 kernel-dims kcrs = 20,1,5,5 and size= 500
+libnvdla<3> translating weights for n-1 bias-dims kcrs = 1,20,1,1 and size= 20
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-1 for tsd-1 for e-3 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-2 for tsd-2 for e-4 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-4 for tsd-4 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-1 for tsd-1 for e-3 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-2 for tsd-2 for e-4 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-4 for tsd-4 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-1 for tsd-1 for e-3 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-2 for tsd-2 for e-4 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-4 for tsd-4 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> printGraph: pree fuseSDPSubEngineOps
+libnvdla<3> 		n-0:dc-conv-0/conv1:	(in)e-0[1x1x28x28][tsd-0][tt-1], 	(Aux)e-3[20x1x5x5][tsd-1][tt-4], 	(out)e-5[1x20x24x24][tsd-3][tt-8], 
+libnvdla<3> 		n-1:bias-0/conv1:	(Aux)e-4[1x20x1x1][tsd-2][tt-5], 	(in)e-5[1x20x24x24][tsd-3][tt-8], 	(out)e-1[1x20x24x24][tsd-4][tt-3], 
+libnvdla<3> 		n-2:pdp-0/pool1:	(in)e-1[1x20x24x24][tsd-4][tt-3], 	(out)e-2[1x20x12x12][tsd-5][tt-2], 
+libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-3 edge already has set surface format NVDLA_WEIGHT_DC_FP16
+libnvdla<3> e-4 edge already has set surface format NVDLA_BIAS_DATA_FP16
+libnvdla<3> e-5 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-1 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> e-2 edge already has set surface format NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-0 for tsd-0 for e-0 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-1 for tsd-1 for e-3 with NVDLA_WEIGHT_DC_FP16
+libnvdla<3> tb-2 for tsd-2 for e-4 with NVDLA_BIAS_DATA_FP16
+libnvdla<3> tb-3 for tsd-3 for e-5 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-4 for tsd-4 for e-1 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> tb-5 for tsd-5 for e-2 with NVDLA_FEATURE_DATA_FP16
+libnvdla<3> printGraph: post fuseSDPSubEngineOps
+libnvdla<3> 		n-0:dc-conv-0/conv1:	(in)e-0[1x1x28x28][tsd-0][tt-1], 	(Aux)e-3[20x1x5x5][tsd-1][tt-4], 	(out)e-5[1x20x24x24][tsd-3][tt-8], 
+libnvdla<3> 		n-1:bias-0/conv1:	(Aux)e-4[1x20x1x1][tsd-2][tt-5], 	(in)e-5[1x20x24x24][tsd-3][tt-8], 	(out)e-1[1x20x24x24][tsd-4][tt-3], 
+libnvdla<3> 		n-2:pdp-0/pool1:	(in)e-1[1x20x24x24][tsd-4][tt-3], 	(out)e-2[1x20x12x12][tsd-5][tt-2], 
+libnvdla<3> annid=0 node=dc-conv-0.B0 deps=1
+libnvdla<3> 	producer: [, , , , , , , , , , ]
+libnvdla<3> 	consumer: [, , , bias-0(annId:1):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=1 node=bias-0.B0 deps=1
+libnvdla<3> 	producer: [, dc-conv-0(annId:0):OP_PROGRAMMED, , , , , , , , , ]
+libnvdla<3> 	consumer: [, , , , pdp-0(annId:2):OP_COMPLETED, , , , , , ]
+libnvdla<3> annid=2 node=pdp-0.B0 deps=1
+libnvdla<3> 	producer: [, , , bias-0(annId:1):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	consumer: [, , , , , , , , , , ]
+libnvdla<3> beginning resolveMemory phase
+libnvdla<3> begin memory resolver pooling=1 reuse=1 greedy_eviction=0
+libnvdla<3> 	local cvsram size=0 local sdram size=1073741824 global sdram size=536870912
+libnvdla<3> 	node=dc-conv-0 anno=0.0 in=[tsd-0] aux=[tsd-1] io=[] out=[tsd-3]
+libnvdla<3> 		tsd=tsd-3 (stream tensor)
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-0/tb-0 aux=0 pooling=0
+libnvdla<3> 			placed tsd-0/tb-0 batch-0 inside DRAM @0
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-1/tb-1 aux=1 pooling=1
+libnvdla<3> [MEMTOOL] t = 0	dc-conv-0's	AUX	tb-1-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-1 batch-0 inside GLOBAL_DRAM_POOL@0
+libnvdla<3> 			tsd=tsd-1 set content pooled=1
+libnvdla<3> 	done node=dc-conv-0 rc=0
+libnvdla<3> 	node=bias-0 anno=0.1 in=[tsd-3] aux=[tsd-2] io=[] out=[tsd-4]
+libnvdla<3> 		tsd=tsd-3 (stream tensor)
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-2/tb-2 aux=1 pooling=1
+libnvdla<3> [MEMTOOL] t = 1	bias-0's	AUX	tb-2-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-2 batch-0 inside GLOBAL_DRAM_POOL@4096
+libnvdla<3> 			tsd=tsd-2 set content pooled=1
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-4/tb-4 aux=0 pooling=1
+libnvdla<3> [MEMTOOL] t = 2	bias-0's	OUTPUT	tb-4-B0[0;31m	ALLOC [0m
+libnvdla<3> 			placed tb-4 batch-0 inside LOCAL_DRAM_POOL@0
+libnvdla<3> 	done node=bias-0 rc=0
+libnvdla<3> 	node=pdp-0 anno=0.2 in=[tsd-4] aux=[] io=[] out=[tsd-5]
+libnvdla<3> 		resolve placement/alloc for tsd=tsd-5/tb-5 aux=0 pooling=0
+libnvdla<3> 			placed tsd-5/tb-5 batch-0 inside DRAM @0
+libnvdla<3> 	done node=pdp-0 rc=0
+libnvdla<3> end memory resolver
+libnvdla<3> (Pool) Memory list entry=1 size=8192 used=4136 domain=0 flags=3
+libnvdla<3> 	content: tb-1 @ 0
+libnvdla<3> 	content: tb-2 @ 4096
+libnvdla<3> 
+libnvdla<3> (Pool) Memory list entry=2 size=36864 used=36864 domain=0 flags=1
+libnvdla<3> 
+libnvdla<3> create tensor desc precision=3 category=3 sf=65
+libnvdla<3> 	name         : data
+libnvdla<3> 	n,c,h,w      : 1,1,28,28
+libnvdla<3> 	data format  : 3
+libnvdla<3> 	data type    : 2
+libnvdla<3> 	data category: 2
+libnvdla<3> 	pixel format : 36
+libnvdla<3> 	pixel mapping: 0
+libnvdla<3> 	strides  : 2 896 25088 00 0 0 0
+libnvdla<3> (Bindable)(Buffer) Memory list entry for tbd=tb-0:0 : 0 size=25088 domain=0 flags=5
+libnvdla<3> create tensor desc precision=3 category=3 sf=65
+libnvdla<3> 	name         : pool1
+libnvdla<3> 	n,c,h,w      : 1,20,12,12
+libnvdla<3> 	data format  : 3
+libnvdla<3> 	data type    : 2
+libnvdla<3> 	data category: 2
+libnvdla<3> 	pixel format : 36
+libnvdla<3> 	pixel mapping: 0
+libnvdla<3> 	strides  : 2 384 4608 00 0 0 0
+libnvdla<3> (Bindable)(Buffer) Memory list entry for tbd=tb-5:0 : 0 size=9216 domain=0 flags=9
+libnvdla<3> (Surface) Address list entry for tsd=tsd-0/tb-0:0 -> 3 offset=0 size=25088
+libnvdla<3> (Surface) Address list entry for tsd=tsd-1/tb-1:0 -> 1 offset=0 size=1024
+libnvdla<3> (Surface) Address list entry for tsd=tsd-2/tb-2:0 -> 1 offset=4096 size=40
+libnvdla<3> (Surface) Address list entry for tsd=tsd-4/tb-4:0 -> 2 offset=0 size=36864
+libnvdla<3> (Surface) Address list entry for tsd=tsd-5/tb-5:0 -> 4 offset=0 size=9216
+libnvdla<3> data cube access by tsd:batch=tsd-0:0 id[offs]=3
+libnvdla<3> data cube access by tsd:batch=tsd-1:0 id[offs]=1
+libnvdla<3> Convolution node @ op_slot = 0 batch_id = 0
+libnvdla<3> 	src data loc: 0
+libnvdla<3> 	dst data loc: 2
+libnvdla<3> 	post y extension: 0
+libnvdla<3> 	in_precision 2
+libnvdla<3> 	out_precision 2
+libnvdla<3> 	pad_val 0
+libnvdla<3> 	conv mode 0
+libnvdla<3> 	data_reuse 0
+libnvdla<3> 	weight_reuse 0
+libnvdla<3> 	skip_data_rls 0
+libnvdla<3> 	skip_wt_rls 0
+libnvdla<3> 	eps 7
+libnvdla<3> 	fetch_grain 1
+libnvdla<3> 	data_format 36
+libnvdla<3> 	pixel_mapping 0
+libnvdla<3> 	batch 1
+libnvdla<3> 	weight_format 0
+libnvdla<3> 	b4d 1
+libnvdla<3> 	b4w 1
+libnvdla<3> 	batch_stride 0
+libnvdla<3> 	release 28
+libnvdla<3> 	post_extension 0
+libnvdla<3> 	pixel_override 1
+libnvdla<3> 	mean_format 0
+libnvdla<3> 	stride-x 1
+libnvdla<3> 	stride-y 1
+libnvdla<3> 	pad-left 0
+libnvdla<3> 	pad-top 0
+libnvdla<3> 	pad-right 0
+libnvdla<3> 	pad-bottom 0
+libnvdla<3> 	dilationx-x 1
+libnvdla<3> 	dilation-y 1
+libnvdla<3> 	pra_truncate 0
+libnvdla<3> 	inputwidthcsc 28
+libnvdla<3> 	inputheightcsc 28
+libnvdla<3> 	inputchannelcsc 1
+libnvdla<3> 	kernelwidthcsc 5
+libnvdla<3> 	kernelheightcsc 5
+libnvdla<3> 	kernelchannelcsc 1
+libnvdla<3> 	inputwidthcmac 24
+libnvdla<3> 	inputheightcmac 24
+libnvdla<3> 	bytesperkernel 50
+libnvdla<3> 	offsetU 0
+libnvdla<3> 	dependencyCount 1
+libnvdla<3> 	src tsd:tsd-0
+libnvdla<3> 	src addr=3
+libnvdla<3> 	src size 25088
+libnvdla<3> 	src width 28
+libnvdla<3> 	src height 28
+libnvdla<3> 	src channel 1
+libnvdla<3> 	src linestride 896
+libnvdla<3> 	src surfstride 25088
+libnvdla<3> 	dst tsd:tsd-3
+libnvdla<3> 	dst addr=-1
+libnvdla<3> 	dst size 36864
+libnvdla<3> 	dst width 24
+libnvdla<3> 	dst height 24
+libnvdla<3> 	dst channel 20
+libnvdla<3> 	dst linestride 768
+libnvdla<3> 	dst surfstride 18432
+libnvdla<3> 	wt  tsd:tsd-1
+libnvdla<3> 	weight addr=1
+libnvdla<3> 	wt size 1024
+libnvdla<3> 	wt width 5
+libnvdla<3> 	wt height 5
+libnvdla<3> 	wt channel 1
+libnvdla<3> data cube access by tsd:batch=tsd-4:0 id[offs]=2
+libnvdla<3> data cube access by tsd:batch=tsd-2:0 id[offs]=1
+libnvdla<3> SDP bias node @ op_slot = 1 batch_id = 0
+libnvdla<3> 	src precision 2
+libnvdla<3> 	dst precision 2
+libnvdla<3> 	x1 enable 1
+libnvdla<3> 	x1 precision 2
+libnvdla<3> 	x1 aluType 2
+libnvdla<3> 	x1 type 2
+libnvdla<3> 	x1 mode 1
+libnvdla<3> 	x1 act 0
+libnvdla<3> 	x1 shiftValue 0
+libnvdla<3> 	x1 aluOperand 0
+libnvdla<3> 	x1 mulOperand 1
+libnvdla<3> 	x1 truncate 0
+libnvdla<3> 	x2 enable 0
+libnvdla<3> 	y enable 0
+libnvdla<3> 	src tsd:tsd-3
+libnvdla<3> 	dst tsd:tsd-4/tb-4:off= 0
+libnvdla<3> 	bias tsd:tsd-2
+libnvdla<3> 	dependencyCount1
+libnvdla<3> 	conv_mode 0
+libnvdla<3> 	src addr=-1
+libnvdla<3> 	src type=2
+libnvdla<3> 	src size 36864
+libnvdla<3> 	src width 24
+libnvdla<3> 	src height 24
+libnvdla<3> 	src channel 20
+libnvdla<3> 	src linestride 768
+libnvdla<3> 	src surfstride 18432
+libnvdla<3> 	bias addr=1
+libnvdla<3> 	bias type=0
+libnvdla<3> 	bias size 40
+libnvdla<3> 	bias width 1
+libnvdla<3> 	bias height 1
+libnvdla<3> 	bias channel 20
+libnvdla<3> 	bias linestride 32
+libnvdla<3> 	bias surfstride 32
+libnvdla<3> 	dst addr=2
+libnvdla<3> 	dst type=0
+libnvdla<3> 	dst size 36864
+libnvdla<3> 	dst width 24
+libnvdla<3> 	dst height 24
+libnvdla<3> 	dst channel 20
+libnvdla<3> 	dst linestride 768
+libnvdla<3> 	dst surfstride 18432
+libnvdla<3> 	out_cvt enable 0
+libnvdla<3> 	out_cvt scale 1
+libnvdla<3> 	out_cvt offset 0
+libnvdla<3> 	out_cvt truncate 0
+libnvdla<3> data cube access by tsd:batch=tsd-4:0 id[offs]=2
+libnvdla<3> data cube access by tsd:batch=tsd-5:0 id[offs]=4
+libnvdla<3> PDP node @ op_slot = 2 batch_id = 0
+libnvdla<3> 	pdp precision2
+libnvdla<3> 	pdp pool mode1
+libnvdla<3> 	src tsd:tsd-4
+libnvdla<3> 	dst tsd:tsd-5
+libnvdla<3> 	src addr=2
+libnvdla<3> 	src type=0
+libnvdla<3> 	dependencyCount1
+libnvdla<3> 	splitNum 1
+libnvdla<3> 	padLeft 0
+libnvdla<3> 	padTop 0
+libnvdla<3> 	padRight 0
+libnvdla<3> 	padBottom 0
+libnvdla<3> 	pool height 1
+libnvdla<3> 	pool width 1
+libnvdla<3> 	stride x 2
+libnvdla<3> 	stride y 2
+libnvdla<3> 	src size 36864
+libnvdla<3> 	src width 24
+libnvdla<3> 	src height 24
+libnvdla<3> 	src channel 20
+libnvdla<3> 	src linestride 768
+libnvdla<3> 	src surfstride 18432
+libnvdla<3> 	dst addr=4
+libnvdla<3> 	dst type=0
+libnvdla<3> 	dst size 9216
+libnvdla<3> 	dst width 12
+libnvdla<3> 	dst height 12
+libnvdla<3> 	dst channel 20
+libnvdla<3> 	dst linestride 384
+libnvdla<3> 	dst surfstride 4608
+libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=26ea400 originalOffset=26ea474 offset=74 interface=1 subInterface=4 relocType=1
+libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=26ea400 originalOffset=26ea478 offset=78 interface=1 subInterface=4 relocType=2
+libnvdla<3> gathered reloc entry: address id=4 writeId=8 useBase=26ea400 originalOffset=26ea93c offset=53c interface=1 subInterface=4 relocType=1
+libnvdla<3> gathered reloc entry: address id=4 writeId=8 useBase=26ea400 originalOffset=26ea940 offset=540 interface=1 subInterface=4 relocType=2
+closing wisdom context...

@@ -1,6 +1,0 @@
-{
-    "numNVDLA": [1],
-    "add-accel-private-cache": ["--add-accel-private-cache"],
-    "accel-pr-cache-size": ["64kB", "128kB", "256kB", "512kB", "1MB", "2MB", "4MB", "8MB", "16MB"],
-    "pft-enable": ["", "--pft-enable"]
-}
