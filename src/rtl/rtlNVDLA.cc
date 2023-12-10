@@ -458,9 +458,9 @@ rtlNVDLA::finishTranslation(WholeTranslationState *state) {
         state->mainReq->getVaddr(),state->mainReq->getPaddr());
 
     } else {
-        // we end up in a situation we shouldn't be
-        DPRINTF(rtlNVDLA,
-                "Finished translation without physical addr\n");
+        to_retry_vaddr = req->getVaddr();
+        schedule(retryTranslateEvent, nextCycle());
+        return;
     }
 
     PacketPtr new_pkt = new Packet(req, MemCmd::ReadReq, 64);

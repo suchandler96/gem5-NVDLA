@@ -246,8 +246,11 @@ protected:
     // Enable RTL Object Trace
     bool enableWaveform;
 
+    Addr to_retry_vaddr;
+
     /** The tick event used for scheduling CPU ticks. */
     EventFunctionWrapper tickEvent;
+    EventFunctionWrapper retryTranslateEvent;
 
     struct rtl_stats
     {
@@ -289,6 +292,7 @@ protected:
     bool isSquashed() const { return false; }
     void startTranslate(Addr vaddr, ContextID contextId);
     virtual void finishTranslation(WholeTranslationState *state);
+    void retryTranslate();
 
     /*
     *  regStats functionalities,

@@ -43,6 +43,8 @@ rtlObject::rtlObject(const rtlObjectParams &params) :
     enableObject(params.enableRTLObject),
     enableWaveform(params.enableWaveform),
     tickEvent([this]{ tick(); }, params.name + " tick"),
+    retryTranslateEvent([this]{ retryTranslate(); }, params.name + " retryTranslate"),
+    to_retry_vaddr(0),
     cyclesStat(0)
 {
 
@@ -213,6 +215,11 @@ rtlObject::finishTranslation(WholeTranslationState *state) {
     exit(-1);
 }
 
+void
+rtlObject::retryTranslate() {
+    printf("retryTranslate at tick = %lu\n", curTick());
+    startTranslate(to_retry_vaddr, 0);
+}
 
 void
 rtlObject::regStats()
