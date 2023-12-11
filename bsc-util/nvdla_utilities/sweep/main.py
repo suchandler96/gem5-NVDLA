@@ -48,6 +48,12 @@ def main():
         "--run-points", action="store_true", default=False,
         help="Whether to run the generated data points.")
     parser.add_argument(
+        "--skip-checkpoint", action="store_true", default=False,
+        help="By default in the 'run_points' phase, machine_id=0 will do checkpointing first and "
+             "modify the checkpoint paths in the directories of all simulation points. "
+             "If '--skip-checkpoint' is enabled, it will assume the checkpointing step "
+             "has been done and thus will skip this step.")
+    parser.add_argument(
         "--num-threads", type=int, default=8,
         help="Number of threads used in each machine to run the data points.")
     parser.add_argument(

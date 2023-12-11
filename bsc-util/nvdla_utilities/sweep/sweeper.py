@@ -291,30 +291,31 @@ class Sweeper:
                     self.pt_dirs.append(root)
             self.pt_dirs.sort()
 
-        print("Generating checkpoint...")
-        os.makedirs(os.path.join(self.gem5_nvdla_dir, "m5out"), exist_ok=True)  # in case m5out doesn't exist
-        lg = os.popen("cd " + self.gem5_nvdla_dir + " && build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py "
-                      "--big-cpus 0 --little-cpus 1 --cpu-type atomic "
-                      "--bootscript=configs/boot/hack_back_ckpt.rcS").readlines()
-        # get the exact directory of the checkpoint just generated
-        tick_match = re.search("at tick ([0-9]+)", lg[-4])
-        assert tick_match is not None
-        cpt_dir_name = "cpt." + tick_match.group(1)
-        self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cpt_dir_name)
-
-        # after generating the checkpoint, we can apply it to the scripts
-        for pt_dir in self.pt_dirs:
-            change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
-
-        esc_home_path = self.home_path.replace('/', '\\/')
-        esc_new_home = self.new_home.replace('/', '\\/')
-        esc_out_dir = self.out_dir.replace('/', '\\/')
-        os.system('sed -i "s/' + esc_home_path + '/' + esc_new_home + '/g" `grep "' +
-                  esc_home_path + '" -rl ' + esc_out_dir + '`')
-
-        print("Running all data points...")
-        assert args.num_machines > 0
         assert 0 <= args.machine_id < args.num_machines
+        if args.machine_id == 0 and not args.skip_checkpoint:
+            print("Generating checkpoint...")
+            os.makedirs(os.path.join(self.gem5_nvdla_dir, "m5out"), exist_ok=True)  # in case m5out doesn't exist
+            lg = os.popen("cd " + self.gem5_nvdla_dir + " && build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py"
+                          " --big-cpus 0 --little-cpus 1 --cpu-type atomic"
+                          " --bootscript=configs/boot/hack_back_ckpt.rcS").readlines()
+            # get the exact directory of the checkpoint just generated
+            tick_match = re.search("at tick ([0-9]+)", lg[-4])
+            assert tick_match is not None
+            cpt_dir_name = "cpt." + tick_match.group(1)
+            self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cpt_dir_name)
+
+            # after generating the checkpoint, we can apply it to the scripts
+            for pt_dir in self.pt_dirs:
+                change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
+
+            esc_home_path = self.home_path.replace('/', '\\/')
+            esc_new_home = self.new_home.replace('/', '\\/')
+            esc_out_dir = self.out_dir.replace('/', '\\/')
+            os.system('sed -i "s/' + esc_home_path + '/' + esc_new_home + '/g" `grep "' +
+                      esc_home_path + '" -rl ' + esc_out_dir + '`')
+
+        print("machine_id = %d, running all data points..." % args.machine_id)
+        assert args.num_machines > 0
         this_machine_pt_dirs = []
         num_groups = math.ceil(len(self.pt_dirs) / args.num_threads)
         for grp_id in range(num_groups):

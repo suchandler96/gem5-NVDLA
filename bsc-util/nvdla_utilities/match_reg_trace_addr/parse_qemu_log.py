@@ -48,7 +48,7 @@ class Workload:
         self.addr_log = None        # = {addr: [[rw_id, 'r' or 'w'], ...]}
         self.sorted_addr = None     # = [addr, ...]
         self.raw_addr_log = None    # = [['r' or 'w', addr], ...]
-        self.rd_only_vars = []      # = [[addr, len], ...]
+        self.rd_only_vars = []      # = [[addr_id, offset], ...]
 
         with open(os.path.join(self.in_dir, "qemu_log")) as fp:
             lines = fp.readlines()

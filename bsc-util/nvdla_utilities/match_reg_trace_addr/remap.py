@@ -434,7 +434,8 @@ class PipelineRemapper(BaseRemapper):
         next_avail_aligned = self.weight_base_addr
         for weight_desc in self.all_weights:
             # weight_desc: (stage_id, addr_id, offset)
-            self.weight_map[weight_desc] = (next_avail_aligned, False)
+            self.weight_map[weight_desc] = (next_avail_aligned, False)  # False means it isn't mapped to CVSRAM
+            # aligned size
             al_sz = self.aligned_ceil(self.pipeline_stages[weight_desc[0]].data[(weight_desc[1], weight_desc[2])].size)
             next_avail_aligned += al_sz
 
@@ -454,6 +455,9 @@ class PipelineRemapper(BaseRemapper):
             next_avail_aligned += aligned_size
 
         # match the outputs of the previous stage with the inputs of the next stage
+        # for inter-stage tensors, only their output-side were added to self.all_activations
+        # and are thus mapped in the previous loop,
+        # so we assert (input_)key not in activation_map
         for stage_id in range(1, len(self.pipeline_stages)):
             for i, ipt in enumerate(self.pipeline_stages[stage_id].inputs):
                 for batch_id in range(self.batch_num):
@@ -531,6 +535,9 @@ class PipelineRemapper(BaseRemapper):
                 out_pfx = self.model_name + "_" + self.testcase_str + "_" + str(batch_id + 1) + "_" + str(i + 1) + "_"
                 out_txn_path = os.path.join(os.path.abspath(self.out_dir), out_pfx + "input.txn")
                 out_bin_path = os.path.join(os.path.abspath(self.out_dir), out_pfx + "trace.bin")
+                rd_var_log_path = os.path.join(os.path.abspath(self.out_dir), out_pfx + "rd_only_var_log")
+                # the "pipeline_execute" scheduler expects rd_only_var_log to be dependent on batchID
+                # so that it may be compatible with future prefetch policies
 
                 with open(out_txn_path, "w") as fp:
                     fp.writelines(new_lines)
@@ -539,6 +546,20 @@ class PipelineRemapper(BaseRemapper):
                 # the nvdla/vp docker image has perl v5.22.1 installed, ok
                 script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../input_txn_to_verilator.pl")
                 os.system("perl " + script_path + " " + out_txn_path + " " + out_bin_path)
+
+                """ modify rd_only_var_log """
+                with open(rd_var_log_path, "wb") as fp:
+                    for rd_only_var in self.pipeline_stages[i].rd_only_vars:
+                        data_blk = self.pipeline_stages[i].data[rd_only_var]
+
+                        # we have disabled input prefetching in current rd_only_var_log
+                        assert data_blk.attr == "weight"
+                        key = (i, rd_only_var[0], rd_only_var[1])
+                        mapped_to_cvsram = self.weight_map[key][1]
+                        if not mapped_to_cvsram:
+                            mapped_addr = self.weight_map[key][0]
+                            fp.write(mapped_addr.to_bytes(4, byteorder="little", signed=False))
+                            fp.write(data_blk.size.to_bytes(4, byteorder="little", signed=False))
 
 
 class PipelineWeightPinRemapper(CVSRAMRemapper, PipelineRemapper):
