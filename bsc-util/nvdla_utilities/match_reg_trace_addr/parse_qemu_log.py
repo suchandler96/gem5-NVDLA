@@ -326,7 +326,7 @@ def parse_rd_wr_trace(file_name):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--work-dir", default="/home/lactose/nvdla/traces/lenet_auto/",
+        "--work-dir", default="/home/nvdla/traces/lenet_auto/",
         help="directory to put the generated sc.log, register txn and mem traces")
 
     args = parser.parse_args()

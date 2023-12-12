@@ -79,7 +79,7 @@ Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
     // we always enable the trace
     // but we will use it depending on traceOn
     // otherwise this function launch an error
-    Verilated::traceEverOn(true);
+    Verilated::traceEverOn(false);
 
     // CSB Wrapper
     csb = new CSBMaster(dla, this);
@@ -410,27 +410,22 @@ bool ScratchpadMemory::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, u
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
 
-    printf("(%lu) read_spm_axi_line addr %#lx\n", wrapper->tickcount, axi_addr);
     // first check read buffers
     switch (wrapper->buf_mode) {
         case BUF_MODE_PFT:
         case BUF_MODE_PFT_CUTOFF: {
             if (addr_base != read_buffers[stream_id].first) {
-                printf("(%lu) not match read buf %d (%#lx != %#lx), ", wrapper->tickcount, stream_id, addr_base, read_buffers[stream_id].first);
                 auto spm_line_it = get_it(addr_base, stream_id);
 
                 if (spm_line_it == spm.end()) {
-                    printf("not found in SPM\n");
                     return false;
                 } else {
-                    printf("but found in SPM, moving to read buffer\n");
                     read_buffers[stream_id].first = addr_base;
                     read_buffers[stream_id].second = std::move(spm_line_it->second.spm_line);
                     erase_spm_line_clean(spm_line_it);
                 }
             }
             // always in read buffer here
-            printf("(%lu) read buffer hit\n", wrapper->tickcount);
 #ifndef NO_DATA
             std::vector<uint8_t> &entry_vector = read_buffers[stream_id].second;
             for (int i = 0; i < AXI_WIDTH / 8; i++)
@@ -662,7 +657,6 @@ void ScratchpadMemory::erase_spm_line() {
         }
     }
     spm.erase(to_erase_it);
-    printf("(%lu) SPM line addr 0x%08lx is erased, dirty: %d\n", wrapper->tickcount, to_erase_it->first, to_erase_it->second.dirty);
 }
 
 void ScratchpadMemory::erase_spm_line_clean(std::map<uint64_t, ScratchpadMemory::SPMLineWithTag>::iterator it) {
@@ -676,7 +670,6 @@ void ScratchpadMemory::erase_spm_line_clean(std::map<uint64_t, ScratchpadMemory:
             stream_last_it[i] = spm.end();
         }
     spm.erase(it);
-    printf("(%lu) SPM line addr 0x%08lx CLEAN is erased\n", wrapper->tickcount, it->first);
 }
 
 void ScratchpadMemory::flush_spm() {

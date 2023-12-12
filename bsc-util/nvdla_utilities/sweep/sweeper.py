@@ -306,7 +306,19 @@ class Sweeper:
 
             # after generating the checkpoint, we can apply it to the scripts
             for pt_dir in self.pt_dirs:
-                change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
+                with open(os.path.join(pt_dir, "run.sh")) as fp:
+                    run_sh_lines = fp.readlines()
+                for i, line in enumerate(run_sh_lines):
+                    if "restore-from" in line:
+                        if "cpt-dir" in line:   # placeholder found
+                            change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
+                        else:
+                            cpt_match = re.search(r"(cpt\.[0-9]+)", line)
+                            assert cpt_match is not None
+                            run_sh_lines[i] = run_sh_lines[i].replace(cpt_match.group(1), cpt_dir_name)
+                            with open(os.path.join(pt_dir, "run.sh"), "w") as fp:
+                                fp.writelines(run_sh_lines)
+                        break
 
             esc_home_path = self.home_path.replace('/', '\\/')
             esc_new_home = self.new_home.replace('/', '\\/')
