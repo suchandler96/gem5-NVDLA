@@ -195,6 +195,8 @@ class rtlNVDLA : public rtlObject
 
     MemNVDLAPort dramPort;
 
+    DmaPort dmaPort;
+
     int bytesToRead;    // it works as a counter
     unsigned int bytesReaded;
 
@@ -277,14 +279,13 @@ public:
 
     int prefetch_enable;
     uint32_t pft_threshold;
-    uint64_t pft_buf_size;  // prefetch buffer size
 
     uint32_t spm_latency;
     uint32_t spm_line_size;
     uint32_t spm_line_num;
+    uint32_t assoc;
 
     int dma_enable;
-    DmaPort dmaPort;
     DmaReadFifo* dma_rd_engine;
     DmaNvdla* dma_wr_engine;
 

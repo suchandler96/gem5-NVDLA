@@ -97,6 +97,7 @@
 
 #include <queue>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 #include "VNV_nvdla.h"
@@ -104,12 +105,14 @@
 #include "verilated_vcd_c.h"
 #include "csbMaster.hh"
 #include "axiResponder.hh"
+#include "embeddedBuffer.hh"
 #include "rtl_packet_nvdla.hh"
 
 
 class CSBMaster;
 class AXIResponder;
 class Wrapper_nvdla;
+class Buffer;
 
 enum BufferMode {
     BUF_MODE_ALL = 0,
@@ -117,60 +120,15 @@ enum BufferMode {
     BUF_MODE_PFT_CUTOFF = 2,
 };
 
-class ScratchpadMemory {
-private:
-    Wrapper_nvdla* const wrapper;
-
-    struct SPMLineWithTag {
-        std::vector<uint8_t> spm_line;
-        std::list<std::map<uint64_t, SPMLineWithTag>::iterator>::iterator lru_it;
-        uint8_t dirty;
-    };
-    std::map<uint64_t, SPMLineWithTag> spm;
-    // todo: need a spm write waiting list to temporarily store dirty data if write mask != 0xffffffffffffffff so that we can load clean from mem
-    std::list<std::map<uint64_t, SPMLineWithTag>::iterator> lru_order;
-
-    //! auxiliary data structures for each stream to improve lookup performance
-    uint64_t last_addr_n;               // not-found address
-    uint64_t stream_last_addr[10];      // the found addresses for each stream
-    std::map<uint64_t, SPMLineWithTag>::iterator stream_last_it[10];    // the found iterators for each stream
-
-    //! buffers for each stream (used only for reading)
-    std::pair<uint64_t, std::vector<uint8_t> > read_buffers[10];
-
-public:
-    const uint32_t spm_latency;
-    const uint32_t spm_line_size;   // all the sizes are in bytes
-    const uint32_t spm_line_num;
-
-    ScratchpadMemory(Wrapper_nvdla* const wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num);
-    inline size_t size() { return spm.size(); }
-    std::map<uint64_t, SPMLineWithTag>::iterator get_it(uint64_t addr_base, uint8_t stream);
-    uint8_t read_spm_byte(uint64_t addr);
-    void read_spm_line(uint64_t aligned_addr, uint8_t* data_out);
-    bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id);
-    void write_spm_byte(uint64_t addr, uint8_t data);
-    void write_spm_line(uint64_t aligned_addr, const uint8_t* const data, uint8_t dirty);
-    void write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data, uint8_t dirty);
-    void write_spm_axi_line(uint64_t axi_addr, const uint8_t* const data);
-    void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* const data, const uint64_t mask, uint8_t stream);
-    bool check_txn_data_in_spm(uint64_t addr);
-    std::map<uint64_t, SPMLineWithTag>::iterator get_it_to_erase();
-    void erase_spm_line();
-    void erase_spm_line_clean(std::map<uint64_t, ScratchpadMemory::SPMLineWithTag>::iterator it);
-    void flush_spm();
-    void write_back_dirty();
-};
-
 
 class Wrapper_nvdla {
 private:
-    static ScratchpadMemory* shared_spm;
+    static Buffer* shared_spm;
 
 public:
     Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
                   bool _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num, bool pft_enable,
-                  bool use_shared_spm, BufferMode mode, uint64_t pft_buf_size);
+                  bool use_shared_spm, BufferMode mode, uint32_t _assoc);
     ~Wrapper_nvdla();
 
     void tick();
@@ -187,7 +145,7 @@ public:
     void addLongWriteReq(bool write_sram, bool write_timing, bool cacheable,
         uint64_t write_addr, uint32_t length, const uint8_t* const write_data, uint64_t mask);
     void addDMAReadReq(uint64_t read_addr, uint32_t read_bytes);
-    void addDMAWriteReq(uint64_t addr, std::vector<uint8_t>&& write_data);
+    void addDMAWriteReq(uint64_t addr, const std::vector<uint8_t>& write_data);
     void tryMergeDMAWriteReq(uint64_t addr, uint8_t* write_data, uint32_t len);
     void clearOutput();
 
@@ -205,12 +163,12 @@ public:
 
     //! SPM & DMA
     bool use_shared_spm;
-    ScratchpadMemory* spm;
+    Buffer* spm;
 
     // software prefetching
     int prefetch_enable;
-    uint64_t pft_buf_size;
     BufferMode buf_mode;
+    uint32_t assoc;
 };
 
 #endif 

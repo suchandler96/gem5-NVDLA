@@ -52,21 +52,34 @@ double sc_time_stamp() {
   return double_t(0);
 }
 
-ScratchpadMemory* Wrapper_nvdla::shared_spm = nullptr;
+Buffer* Wrapper_nvdla::shared_spm = nullptr;
 
 Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
                              bool _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num,
-                             bool pft_enable, bool use_shared_spm, BufferMode mode, uint64_t pft_buf_size) :
+                             bool pft_enable, bool use_shared_spm, BufferMode mode, uint32_t _assoc) :
         id_nvdla(id_nvdla),
         tickcount(0),
         prefetch_enable(pft_enable),
         use_shared_spm(use_shared_spm),
         buf_mode(mode),
-        pft_buf_size(pft_buf_size) {
+        assoc(_assoc) {
     if (use_shared_spm && shared_spm) {
         spm = shared_spm;
     } else {
-        spm = new ScratchpadMemory(this, _spm_latency, _spm_line_size, _spm_line_num);
+        switch (mode) {
+            case BUF_MODE_ALL:
+                spm = new allBuffer(this, _spm_latency, _spm_line_size, _spm_line_num, _assoc);
+                break;
+            case BUF_MODE_PFT:
+                spm = new prefetchBuffer<allBufferSet>(this, _spm_latency, _spm_line_size, _spm_line_num, _assoc);
+                break;
+            case BUF_MODE_PFT_CUTOFF:
+                spm = new prefetchBuffer<prefetchThrottleSet>(this, _spm_latency, _spm_line_size, _spm_line_num, _assoc);
+                break;
+            default:
+                assert(false);
+        }
+
         if (use_shared_spm) shared_spm = spm;
     }
 
@@ -153,18 +166,39 @@ Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
 
 
 Wrapper_nvdla::~Wrapper_nvdla() {
-    // TODO: this was causing a segfault not sure
-    // TO CHECK
-    //dla->final(); 
     delete dla;
 
     if (use_shared_spm) {
         if (shared_spm) {
-            delete shared_spm;
+            switch (buf_mode) {
+                case BUF_MODE_ALL:
+                    delete static_cast<allBuffer*>(shared_spm);
+                    break;
+                case BUF_MODE_PFT:
+                    delete static_cast<prefetchBuffer<allBufferSet>*>(shared_spm);
+                    break;
+                case BUF_MODE_PFT_CUTOFF:
+                    delete static_cast<prefetchBuffer<prefetchThrottleSet>*>(shared_spm);
+                    break;
+                default:
+                    assert(false);
+            }
             shared_spm = nullptr;
         }
     } else {
-        delete spm;
+        switch (buf_mode) {
+            case BUF_MODE_ALL:
+                delete static_cast<allBuffer*>(spm);
+                break;
+            case BUF_MODE_PFT:
+                delete static_cast<prefetchBuffer<allBufferSet>*>(spm);
+                break;
+            case BUF_MODE_PFT_CUTOFF:
+                delete static_cast<prefetchBuffer<prefetchThrottleSet>*>(spm);
+                break;
+            default:
+                assert(false);
+        }
     }
     exit(EXIT_SUCCESS);
 }
@@ -340,7 +374,7 @@ outputNVDLA& Wrapper_nvdla::tick(inputNVDLA in) {
     return output;
 }
 
-void Wrapper_nvdla::addDMAWriteReq(uint64_t addr, std::vector<uint8_t>&& write_data) {
+void Wrapper_nvdla::addDMAWriteReq(uint64_t addr, const std::vector<uint8_t>& write_data) {
     output.dma_write_buffer.emplace_back(addr, write_data);
 }
 
@@ -357,362 +391,4 @@ void Wrapper_nvdla::tryMergeDMAWriteReq(uint64_t addr, uint8_t* write_data, uint
 
 void Wrapper_nvdla::addDMAReadReq(uint64_t read_addr, uint32_t read_bytes) {
     output.dma_read_buffer.emplace(read_addr, read_bytes);
-}
-
-std::map<uint64_t, ScratchpadMemory::SPMLineWithTag>::iterator ScratchpadMemory::get_it(uint64_t addr_base, uint8_t stream) {
-    std::map<uint64_t, SPMLineWithTag>::iterator spm_line_it;
-    if (addr_base == stream_last_addr[stream])
-        spm_line_it = stream_last_it[stream];
-    else if (addr_base == last_addr_n)
-        spm_line_it = spm.end();
-    else {
-        spm_line_it = spm.find(addr_base);
-        if (spm_line_it != spm.end()) {
-            stream_last_addr[stream] = addr_base;
-            stream_last_it[stream] = spm_line_it;
-        } else
-            last_addr_n = addr_base;
-    }
-    return spm_line_it;
-}
-
-uint8_t ScratchpadMemory::read_spm_byte(uint64_t addr) {
-    uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
-
-    auto spm_line_it = spm.find(addr_base);
-
-    assert(spm_line_it != spm.end());
-
-    uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
-    
-    lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
-
-    return spm_line_it->second.spm_line[offset];
-}
-
-void ScratchpadMemory::read_spm_line(uint64_t aligned_addr, uint8_t* data_out) {
-    assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
-
-    auto spm_line_it = spm.find(aligned_addr);
-
-    assert(spm_line_it != spm.end());
-#ifndef NO_DATA
-    for (int i = 0; i < spm_line_size; i++) {
-        data_out[i] = spm_line_it->second.spm_line[i];
-    }
-#endif
-    lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
-}
-
-bool ScratchpadMemory::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id) {
-    assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
-
-    uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
-    uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
-
-    // first check read buffers
-    switch (wrapper->buf_mode) {
-        case BUF_MODE_PFT:
-        case BUF_MODE_PFT_CUTOFF: {
-            if (addr_base != read_buffers[stream_id].first) {
-                auto spm_line_it = get_it(addr_base, stream_id);
-
-                if (spm_line_it == spm.end()) {
-                    return false;
-                } else {
-                    read_buffers[stream_id].first = addr_base;
-                    read_buffers[stream_id].second = std::move(spm_line_it->second.spm_line);
-                    erase_spm_line_clean(spm_line_it);
-                }
-            }
-            // always in read buffer here
-#ifndef NO_DATA
-            std::vector<uint8_t> &entry_vector = read_buffers[stream_id].second;
-            for (int i = 0; i < AXI_WIDTH / 8; i++)
-                data_out[i] = entry_vector[offset + i];
-#endif
-            return true;
-        }
-        case BUF_MODE_ALL: {
-            auto spm_line_it = get_it(addr_base, stream_id);
-            if (spm_line_it == spm.end()) {
-                return false;
-            }
-#ifndef NO_DATA
-            std::vector<uint8_t> &entry_vector = spm_line_it->second.spm_line;
-            for (int i = 0; i < AXI_WIDTH / 8; i++)
-                data_out[i] = entry_vector[offset + i];
-#endif
-            lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
-            return true;
-        }
-        default:
-            assert(false);
-    }
-}
-
-void ScratchpadMemory::write_spm_byte(uint64_t addr, uint8_t data) {
-    uint64_t addr_base = addr & ~(uint64_t)(spm_line_size - 1);
-    uint64_t offset = addr & (uint64_t)(spm_line_size - 1);
-
-    auto spm_line_it = spm.find(addr_base);
-
-    if (spm_line_it == spm.end()) {      // if the element to write is not in spm
-        if (spm.size() >= spm_line_num) {
-            erase_spm_line();   // lru_order maintenance of erasing is done inside
-        }
-
-        if (addr_base == last_addr_n)
-            last_addr_n = 0;
-
-        // assign space to this spm line
-        std::map<uint64_t, SPMLineWithTag>::iterator entry_it;
-        bool alloc_succ;
-        std::tie(entry_it, alloc_succ) = spm.insert(std::move(std::make_pair(addr_base, SPMLineWithTag())));
-        lru_order.push_back(entry_it);
-
-        std::vector<uint8_t>& entry_vector = entry_it->second.spm_line;
-        entry_vector.resize(spm_line_size, 0);
-#ifndef NO_DATA
-        entry_vector[offset] = data;
-#endif
-        entry_it->second.dirty = 1;    // write bytes are always coming from NVDLA
-        entry_it->second.lru_it = std::prev(lru_order.end());
-    } else {
-        spm_line_it->second.spm_line[offset] = data;
-        spm_line_it->second.dirty = 1;
-
-        lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
-    }
-}
-
-void ScratchpadMemory::write_spm_line(uint64_t aligned_addr, const uint8_t* const data, uint8_t dirty) {
-    assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
-
-    auto spm_line_it = spm.find(aligned_addr);
-    if (spm_line_it == spm.end()) {
-        if (spm.size() >= spm_line_num) {
-            erase_spm_line();   // lru_order maintenance of erasing is done inside
-        }
-
-        if (aligned_addr == last_addr_n)
-            last_addr_n = 0;
-
-        // assign space to this spm line
-        std::map<uint64_t, SPMLineWithTag>::iterator entry_it;
-        bool alloc_succ;
-        std::tie(entry_it, alloc_succ) = spm.insert(std::move(std::make_pair(aligned_addr, SPMLineWithTag())));
-        lru_order.push_back(entry_it);
-
-        auto& entry = entry_it->second;
-#ifndef NO_DATA
-        entry.spm_line.assign(data, data + spm_line_size);
-#endif
-        entry.dirty = dirty;
-        entry.lru_it = std::prev(lru_order.end());
-    } else {
-#ifndef NO_DATA
-        spm_line_it->second.spm_line.assign(data, data + spm_line_size);
-#endif
-        spm_line_it->second.dirty = dirty;
-
-        lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
-    }    
-}
-
-void ScratchpadMemory::write_spm_line(uint64_t aligned_addr, const std::vector<uint8_t>& data, uint8_t dirty) {
-    assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
-
-    auto spm_line_it = spm.find(aligned_addr);
-    if (spm_line_it == spm.end()) {
-        if (spm.size() >= spm_line_num) {
-            erase_spm_line();   // lru_order maintenance of erasing is done inside
-        }
-
-        if (aligned_addr == last_addr_n)
-            last_addr_n = 0;
-
-        assert(lru_order.size() == spm_line_num - 1);
-
-        // assign space to this spm line
-        std::map<uint64_t, SPMLineWithTag>::iterator entry_it;
-        bool alloc_succ;
-        std::tie(entry_it, alloc_succ) = spm.insert(std::move(std::make_pair(aligned_addr,
-            SPMLineWithTag{ data, std::list<std::map<uint64_t, SPMLineWithTag>::iterator>::iterator(), dirty })));
-        lru_order.push_back(entry_it);
-
-        entry_it->second.lru_it = std::prev(lru_order.end());
-    } else {
-        auto size = lru_order.size();
-#ifndef NO_DATA
-        spm_line_it->second.spm_line.assign(data.begin(), data.end());
-#endif
-        spm_line_it->second.dirty = dirty;
-
-        lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
-        assert(size == lru_order.size());
-    }
-}
-
-void ScratchpadMemory::write_spm_axi_line(uint64_t axi_addr, const uint8_t* const data) {
-    assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
-
-    uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
-    uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
-
-    auto spm_line_it = spm.find(addr_base);
-    if (spm_line_it == spm.end()) {
-        if (spm.size() >= spm_line_num) {
-            erase_spm_line();   // lru_order maintenance of erasing is done inside
-        }
-
-        if (addr_base == last_addr_n)
-            last_addr_n = 0;
-
-        // assign space to this spm line
-        bool alloc_succ;
-        std::tie(spm_line_it, alloc_succ) = spm.insert(std::move(std::make_pair(addr_base, SPMLineWithTag())));
-        lru_order.push_back(spm_line_it);
-        spm_line_it->second.lru_it = std::prev(lru_order.end());
-        spm_line_it->second.spm_line.resize(spm_line_size, 0);
-    } else {
-        lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
-    }
-    // writes at AXI_WIDTH/8-granularity is always coming from NVDLA, so we write dirty bit
-    spm_line_it->second.dirty = 1;
-#ifndef NO_DATA
-    for (int i = 0; i < AXI_WIDTH / 8; i++) {
-        spm_line_it->second.spm_line[offset + i] = data[i];
-    }
-#endif
-}
-
-void ScratchpadMemory::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* const data, const uint64_t mask, uint8_t stream) {
-    assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
-
-    uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
-    uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
-
-    auto spm_line_it = get_it(addr_base, stream);
-    if (spm_line_it == spm.end()) {
-        if (spm.size() >= spm_line_num) {
-            erase_spm_line();   // lru_order maintenance of erasing is done inside
-        }
-
-        if (addr_base == last_addr_n)
-            last_addr_n = 0;
-
-        // assign space to this spm line
-        bool alloc_succ;
-        std::tie(spm_line_it, alloc_succ) = spm.insert(std::move(std::make_pair(addr_base, SPMLineWithTag())));
-        lru_order.push_back(spm_line_it);
-        spm_line_it->second.lru_it = std::prev(lru_order.end());
-        spm_line_it->second.spm_line.resize(spm_line_size, 0);
-    } else {
-        lru_order.splice(lru_order.end(), lru_order, spm_line_it->second.lru_it);
-    }
-    // writes at AXI_WIDTH/8-granularity is always coming from NVDLA, so we write dirty bit
-    spm_line_it->second.dirty = 1;
-#ifndef NO_DATA
-    if (mask == 0xFFFFFFFFFFFFFFFF) {
-        for (int i = 0; i < AXI_WIDTH / 8; i++) {
-            spm_line_it->second.spm_line[offset + i] = data[i];
-        }
-    } else {
-        for (int i = 0; i < AXI_WIDTH / 8; i++) {
-            if (!((mask >> i) & 1))
-                continue;
-            spm_line_it->second.spm_line[offset + i] = data[i];
-        }
-    }
-#endif
-}
-
-bool ScratchpadMemory::check_txn_data_in_spm(uint64_t addr) {
-    uint64_t spm_line_addr = addr & ~((uint64_t)(spm_line_size - 1));
-    return spm.find(spm_line_addr) != spm.end();
-}
-
-std::map<uint64_t, ScratchpadMemory::SPMLineWithTag>::iterator ScratchpadMemory::get_it_to_erase() {
-    // naive: spm.begin()
-    // return spm.begin();
-
-    return lru_order.front();
-}
-
-void ScratchpadMemory::erase_spm_line() {
-    assert(!spm.empty());
-
-    auto to_erase_it = get_it_to_erase();
-
-    if (to_erase_it->second.dirty) {
-        wrapper->addDMAWriteReq(to_erase_it->first, std::move(to_erase_it->second.spm_line));
-    }
-    lru_order.pop_front();
-
-    for (int i = 0; i < 10; i++) {
-        if (stream_last_addr[i] == to_erase_it->first) {
-            stream_last_addr[i] = 0;
-            stream_last_it[i] = spm.end();
-        }
-    }
-    spm.erase(to_erase_it);
-}
-
-void ScratchpadMemory::erase_spm_line_clean(std::map<uint64_t, ScratchpadMemory::SPMLineWithTag>::iterator it) {
-    assert(!spm.empty());
-
-    lru_order.erase(it->second.lru_it);
-
-    for (int i = 0; i < 10; i++)
-        if (stream_last_addr[i] == it->first) {
-            stream_last_addr[i] = 0;
-            stream_last_it[i] = spm.end();
-        }
-    spm.erase(it);
-}
-
-void ScratchpadMemory::flush_spm() {
-    auto it = spm.begin();
-    while (it != spm.end()) {
-        if (it->second.dirty) {   // this is a read-and-write variable
-            wrapper->addDMAWriteReq(it->first, std::move(it->second.spm_line));
-            spm.erase(it++);
-        } else {
-            it++;
-        }
-    }
-    lru_order.clear();
-    last_addr_n = 0;
-
-    for (int i = 0; i < 10; i++)
-        stream_last_addr[i] = 0;
-
-    for (int i = 0; i < 10; i++)
-        stream_last_it[i] = spm.end();
-}
-
-void ScratchpadMemory::write_back_dirty() {
-    auto it = spm.begin();
-    while (it != spm.end()) {
-        if (it->second.dirty) {
-            wrapper->addDMAWriteReq(it->first, std::move(it->second.spm_line));
-            lru_order.erase(it->second.lru_it);
-            spm.erase(it++);
-        } else {
-            it++;
-        }
-    }
-}
-
-ScratchpadMemory::ScratchpadMemory(Wrapper_nvdla* const wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num) :
-    wrapper(wrap), spm_latency(_lat), spm_line_size(_line_size), spm_line_num(_line_num) {
-
-    last_addr_n = 0;
-
-    for (int i = 0; i < 10; i++)
-        stream_last_addr[i] = 0;
-
-    for (int i = 0; i < 10; i++)
-        read_buffers[0].first = 0;
 }

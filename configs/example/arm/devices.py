@@ -175,27 +175,15 @@ class CpuCluster(SubSystem):
 
             if options.pft_enable:
                 pft_ctrl_str += ", prefetch_enable=1, pft_threshold=options.pft_threshold"
-                if options.dma_enable:
-                    if not options.shared_spm:          # regular private SPM
-                        pft_ctrl_str += ", pft_buf_size=options.embed_spm_size"
-                    else:
-                        pft_ctrl_str += ", pft_buf_size=options.embed_spm_size"
-                        # todo: directly do division would cause str and int type error, put it here first
-                elif options.add_accel_private_cache:   # both private cache-only and mixed private & shared cache
-                    pft_ctrl_str += ", pft_buf_size=options.accel_pr_cache_size"
-                elif options.add_accel_shared_cache:
-                    pft_ctrl_str += ", pft_buf_size=options.accel_sh_cache_size"
-                    # todo: directly do division would cause str and int type error, put it here first
-                else:                                   # membus
-                    pass
             else:
                 pft_ctrl_str += ", prefetch_enable=0"
 
             # in the current phase, we only use one NVDLA accelerator, and spm cannot be used with caches
             if options.dma_enable:
                 assert not options.add_accel_private_cache and not options.add_accel_shared_cache
-                dma_ctrl_str = "dma_enable=1, spm_latency=options.accel_embed_spm_lat, spm_line_size=1024, " \
-                               "spm_size=options.embed_spm_size, use_shared_spm=options.shared_spm"
+                dma_ctrl_str = "dma_enable=1, spm_latency=options.embed_spm_lat, spm_line_size=1024, " \
+                               "spm_size=options.embed_spm_size, use_shared_spm=options.shared_spm, " \
+                               "assoc=options.embed_spm_assoc.lower()"
             else:
                 dma_ctrl_str = "dma_enable=0"
 

@@ -45,7 +45,7 @@ class rtlNVDLA(rtlObject):
     freq_ratio = Param.UInt32(1, "=(frequency of LITTLE CPU) / (frequency of NVDLA)")
 
     buffer_mode = Param.UInt32(0, "How to use pr/sh cache/embedded-SPM. all(0): cache all; "
-                                  "pft(1): prefetch-buffer-only")
+                                  "pft(1): prefetch-buffer-only; pft-cut(2): prefetch buffer with throttling")
 
     dma_enable = Param.UInt32(0, "Whether to use DMA in testing")
 
@@ -53,7 +53,7 @@ class rtlNVDLA(rtlObject):
 
     spm_size = Param.MemorySize('64kB', "The size of the embedded SPM")
 
-    spm_latency = Param.UInt32(12, "Latency for NVDLA private scratchpad memory")
+    spm_latency = Param.UInt32(2, "Latency for NVDLA private scratchpad memory")
 
     spm_line_size = Param.UInt32(1024, "The minimal granularity to copy data from memory to SPM")
 
@@ -61,8 +61,7 @@ class rtlNVDLA(rtlObject):
 
     pft_threshold = Param.UInt32(16, "the threshold of current inflight memory requests to launch software prefetch")
 
-    pft_buf_size = Param.MemorySize('1GB', "The size of the prefetch buffer. Set to 1GB if no limit on this. "
-                                           "This param is only for informing purpose.")
+    assoc = Param.String("full", "The associativity of the embedded buffer")
     
     id_nvdla = Param.UInt64(0, "id of the NVDLA")
 
@@ -73,7 +72,5 @@ class rtlNVDLA(rtlObject):
     base_addr_sram = Param.UInt64(0xB0000000, "")
 
     enableTimingAXI = Param.Bool(False, "Enable Timing mode in AXI")
-
-
 
     use_fake_mem = Param.Bool(False, "Whether to use fake memory to simulate")

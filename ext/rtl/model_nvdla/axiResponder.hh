@@ -13,6 +13,7 @@
 #define AXI_BLOCK_SIZE 4096
 #define AXI_WIDTH 512
 #include <list>
+#include <unordered_map>
 
 #include "wrapper_nvdla.hh"
 
@@ -106,6 +107,7 @@ private:
     };
     std::map<uint64_t, DMAAttr> inflight_dma_attr;  // record the inflight dma attribute: whether to bypass DMA
     std::queue<uint64_t> inflight_dma_addr_queue;   // keep dma request order
+    std::vector<uint32_t> inflight_count_for_sets;  // count inflight dma requests for each embedded buffer set
 
     // prefetch
     uint32_t pft_threshold;

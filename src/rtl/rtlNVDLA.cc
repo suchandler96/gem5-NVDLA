@@ -40,6 +40,7 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     memPort(params.name + ".mem_side", this),
     sramPort(params.name + ".sram_port", this, true),
     dramPort(params.name + ".dram_port", this, false),
+    dmaPort(this, params.system),
     bytesToRead(0),
     bytesReaded(0),
     blocked(false),
@@ -51,12 +52,11 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     waiting_for_gem5_mem(0),
     flushing_spm(0),
     prefetch_enable(params.prefetch_enable),
+    pft_threshold(params.pft_threshold),
     spm_latency(params.spm_latency),
     spm_line_size(params.spm_line_size),
     spm_line_num(params.spm_size / params.spm_line_size),
     dma_enable(params.dma_enable),
-    dmaPort(this, params.system),
-    pft_threshold(params.pft_threshold),
     use_fake_mem(params.use_fake_mem) {
 
     switch (params.buffer_mode) {
@@ -72,6 +72,11 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
         default:
             assert(false);
     }
+
+    uint32_t temp_assoc;
+    temp_assoc = (params.assoc == "full") ? 0xffffffff : std::stoi(params.assoc);
+    assoc = (temp_assoc > spm_line_num) ? spm_line_num : temp_assoc;
+    assert(assoc > 0);
 
     initNVDLA(params.use_shared_spm);
     startMemRegion = 0xC0000000;
@@ -91,13 +96,6 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
         dma_rd_engine = nullptr;
         dma_wr_engine = nullptr;
     }
-
-    pft_buf_size = params.pft_buf_size;
-
-    // todo: add another parameter controlling the mode of using embedded SPM / cache, whether as an all-in-one buffer or simply a prefetch buffer
-    // this involves changing the encoding of rd_only_var_log, caching attributes of rd_wr packets, SPM handling the non-caching DMA txns
-    // and also parameter meaningful logic, as prefetch buffer makes no sense when it is not prefetching
-
 }
 
 
@@ -158,7 +156,8 @@ void
 rtlNVDLA::initNVDLA(bool use_shared_spm) {
     // Wrapper
     wr = new Wrapper_nvdla(id_nvdla, max_req_inflight,
-    dma_enable, spm_latency, spm_line_size, spm_line_num, prefetch_enable, use_shared_spm, buffer_mode, pft_buf_size);
+        dma_enable, spm_latency, spm_line_size, spm_line_num,
+        prefetch_enable, use_shared_spm, buffer_mode, assoc);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
     sim_time = time(nullptr);
@@ -311,10 +310,12 @@ rtlNVDLA::runIterationNVDLA() {
         }
     }
     processOutput(output);
+    printf("runIterationNVDLA ended\n");
 }
 
 void
 rtlNVDLA::tick() {
+    printf("tick NVDLA at t = %lu\n", curTick());
     DPRINTF(rtlNVDLADebug, "Tick NVDLA \n");
     // if we are still running trace
     // runIteration
@@ -326,7 +327,9 @@ rtlNVDLA::tick() {
         stats.nvdla_cycles++;
         cyclesNVDLA++;
         runIterationNVDLA();
+        printf("preschedule: t = %lu\n", curTick());
         schedule(tickEvent, nextCycle() + (freq_ratio - 1) * clockPeriod());
+        printf("scheduled at t = %lu\n", nextCycle() + (freq_ratio - 1) * clockPeriod());
     } else {
         // we have finished running the trace
         printf("done at %lu ticks\n", wr->tickcount);

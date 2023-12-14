@@ -42,9 +42,9 @@ rtlObject::rtlObject(const rtlObjectParams &params) :
     system(params.system),
     enableObject(params.enableRTLObject),
     enableWaveform(params.enableWaveform),
+    to_retry_vaddr(0),
     tickEvent([this]{ tick(); }, params.name + " tick"),
     retryTranslateEvent([this]{ retryTranslate(); }, params.name + " retryTranslate"),
-    to_retry_vaddr(0),
     cyclesStat(0)
 {
 

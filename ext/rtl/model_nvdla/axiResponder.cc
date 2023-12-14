@@ -21,7 +21,8 @@ AXIResponder::AXIResponder(struct connections _dla,
                            bool sram_,
                            const unsigned int maxReq,
                            bool _dma_enable):
-                               dla(_dla), wrapper(_wrapper), name(_name), sram(sram_), dma_enable(_dma_enable) {
+                               dla(_dla), wrapper(_wrapper), name(_name), sram(sram_), dma_enable(_dma_enable),
+                               inflight_count_for_sets(_wrapper->spm->num_sets, 0) {
     *dla.aw_awready = 1;
     *dla.w_wready = 1;
     *dla.b_bvalid = 0;
@@ -479,6 +480,7 @@ AXIResponder::process_read_req() {
                         map_it->second.is_bypass = (wrapper->buf_mode != BUF_MODE_ALL);
                         inflight_dma_addr_queue.push(spm_line_addr);
                         wrapper->addDMAReadReq(spm_line_addr, wrapper->spm->spm_line_size);
+                        inflight_count_for_sets[(spm_line_addr / wrapper->spm->spm_line_size) % wrapper->spm->num_sets]++;
                         issued_req_this_cycle = true;
                     }
                     map_it->second.deps.emplace_back(start_addr, std::prev(req_it->second.end()));
@@ -636,7 +638,7 @@ AXIResponder::inflight_dma_resp(const uint8_t* data, uint32_t len) {
     auto addr_it = inflight_dma_attr.find(addr);
     assert(addr_it != inflight_dma_attr.end());
     if (!addr_it->second.is_bypass)     // if not bypass, then write this data
-        wrapper->spm->write_spm_line(addr, data, 0);
+        wrapper->spm->fill_spm_line(addr, data);
 
     for (auto dep : inflight_dma_attr[addr].deps) {
         auto txn_addr = dep.first;
@@ -650,6 +652,7 @@ AXIResponder::inflight_dma_resp(const uint8_t* data, uint32_t len) {
 
     inflight_dma_attr.erase(addr_it);
     inflight_dma_addr_queue.pop();
+    inflight_count_for_sets[(addr / wrapper->spm->spm_line_size) % wrapper->spm->num_sets]--;
 }
 
 void
@@ -778,9 +781,23 @@ AXIResponder::generate_prefetch_request() {
     uint32_t& log_entry_length = std::get<1>(read_var_log.front());
     uint32_t& log_entry_issued_len = std::get<2>(read_var_log.front());
 
-    if ((wrapper->spm->size() + inflight_dma_attr.size()) < wrapper->spm->spm_line_num || wrapper->buf_mode != BUF_MODE_PFT_CUTOFF) {
-        uint64_t to_issue_addr = log_entry_addr + log_entry_issued_len;
+    uint64_t to_issue_addr = log_entry_addr + log_entry_issued_len;
+    bool can_preftch;
+    switch (wrapper->buf_mode) {
+        case BUF_MODE_ALL:
+        case BUF_MODE_PFT:
+            can_preftch = true;
+            break;
+        case BUF_MODE_PFT_CUTOFF: {
+            uint32_t used = static_cast<prefetchBuffer<prefetchThrottleSet>*>(wrapper->spm)->num_valid(to_issue_addr);
+            can_preftch = (used + inflight_count_for_sets[(to_issue_addr / wrapper->spm->spm_line_size) % wrapper->spm->num_sets] < wrapper->spm->assoc);
+            break;
+        }
+        default:
+            assert(false);
+    }
 
+    if (can_preftch) {
         // generate the corresponding txn
         axi_r_txn txn;
 
@@ -806,6 +823,7 @@ AXIResponder::generate_prefetch_request() {
 
                 inflight_dma_addr_queue.push(spm_line_addr);
                 wrapper->addDMAReadReq(spm_line_addr, wrapper->spm->spm_line_size);
+                inflight_count_for_sets[(spm_line_addr / wrapper->spm->spm_line_size) % wrapper->spm->num_sets]++;
 
                 log_entry_issued_len += spm_line_addr + wrapper->spm->spm_line_size - to_issue_addr;
                 // here we don't add dma prefetch to inflight_req and inflight_order

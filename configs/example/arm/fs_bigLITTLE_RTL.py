@@ -229,15 +229,20 @@ def addOptions(parser):
 
     # options.buffer_mode
     parser.add_argument("--buffer-mode", type=str, default="all", help="How to use pr/sh cache/embedded-SPM. "
-                        "all: cache all; pft: prefetch-buffer-only; pft-cut: prefetch buffer but does not prefetch overflowed tensors")
+                        "all: cache all; pft: prefetch-buffer-only; "
+                        "pft-cut: prefetch buffer but does not prefetch overflowed tensors")
     # options.dma_enable
-    parser.add_argument("--dma-enable", action="store_true", default=False, help="Use scratchpad embedded in NVDLA wrapper, aided with DMA")
+    parser.add_argument("--dma-enable", action="store_true", default=False,
+                        help="Use the buffer embedded in NVDLA wrapper, aided with DMA")
     # options.shared_spm
-    parser.add_argument("--shared-spm", action="store_true", default=False, help="change embedded SPM to shared")
+    parser.add_argument("--shared-spm", action="store_true", default=False, help="change embedded buffer to shared")
     # options.embed_spm_size
-    parser.add_argument("--embed-spm-size", type=str, default="64kB", help="specify private SPM size for accelerators (embedded SPM)")
-    # options.accel_embed_spm_lat
-    parser.add_argument("--accel-embed-spm-lat", type=int, default=12, help="specify private SPM latency for accelerators (embedded SPM)")
+    parser.add_argument("--embed-spm-size", type=str, default="64kB", help="specify embedded buffer size")
+    # options.embed_spm_assoc
+    parser.add_argument("--embed-spm-assoc", type=str, default="full", help="embedded buffer associativity: "
+                                                                            "use string, full: fully-associative")
+    # options.embed_spm_lat
+    parser.add_argument("--embed-spm-lat", type=int, default=12, help="specify embedded SPM latency")
 
 
     # options.cvsram_enable

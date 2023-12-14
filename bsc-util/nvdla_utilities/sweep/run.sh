@@ -13,7 +13,8 @@
 %(dma-enable)s \
 %(shared-spm)s \
 --embed-spm-size %(embed-spm-size)s \
---accel-embed-spm-lat %(accel-embed-spm-lat)s \
+--embed-spm-assoc %(embed-spm-assoc)s \
+--embed-spm-lat %(embed-spm-lat)s \
 %(add-accel-private-cache)s \
 --accel-pr-cache-size %(accel-pr-cache-size)s \
 --accel-pr-cache-assoc %(accel-pr-cache-assoc)s \

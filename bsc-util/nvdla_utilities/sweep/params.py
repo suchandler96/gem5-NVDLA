@@ -258,13 +258,13 @@ class EmbedSPMSizeParam(BaseParam):
         return ["64kB"]
 
 
-class AccelEmbedSPMLatParam(BaseParam):
+class EmbedSPMAssocParam(BaseParam):
     def __init__(self, name, sweep_vals):
         BaseParam.__init__(self, name, sweep_vals)
 
     def apply(self, point_dir):
         change_config_file(
-            point_dir, "run.sh", {"accel-embed-spm-lat": self.curr_sweep_value()})
+            point_dir, "run.sh", {"embed-spm-assoc": self.curr_sweep_value()})
 
     def is_meaningful(self, type_val_pairs):
         if type_val_pairs[DMAEnableParam] != "--dma-enable" and self.curr_sweep_value() != self._sweep_vals[0]:
@@ -279,14 +279,45 @@ class AccelEmbedSPMLatParam(BaseParam):
             run_sh_lines = fp.readlines()
 
         for line in run_sh_lines:
-            pos = line.find("--accel-embed-spm-lat")
+            pos = line.find("--embed-spm-assoc")
             if pos == -1:
                 continue
-            return re.search(r"--accel-embed-spm-lat\s+([0-9]+)", line).group(1)
+            return re.search(r"--embed-spm-assoc\s+([0-9a-zA-Z]+)", line).group(1)
 
     @classmethod
     def default_value(cls):
-        return [12]
+        return ["full"]
+
+
+class EmbedSPMLatParam(BaseParam):
+    def __init__(self, name, sweep_vals):
+        BaseParam.__init__(self, name, sweep_vals)
+
+    def apply(self, point_dir):
+        change_config_file(
+            point_dir, "run.sh", {"embed-spm-lat": self.curr_sweep_value()})
+
+    def is_meaningful(self, type_val_pairs):
+        if type_val_pairs[DMAEnableParam] != "--dma-enable" and self.curr_sweep_value() != self._sweep_vals[0]:
+            return False
+        return True
+
+    @classmethod
+    def get(self, point_dir):
+        run_sh_path = os.path.join(point_dir, "run.sh")
+        assert os.path.exists(run_sh_path)
+        with open(run_sh_path, "r") as fp:
+            run_sh_lines = fp.readlines()
+
+        for line in run_sh_lines:
+            pos = line.find("--embed-spm-lat")
+            if pos == -1:
+                continue
+            return re.search(r"--embed-spm-lat\s+([0-9]+)", line).group(1)
+
+    @classmethod
+    def default_value(cls):
+        return [2]
 
 
 class AddAccelPrivateCacheParam(BaseParam):
