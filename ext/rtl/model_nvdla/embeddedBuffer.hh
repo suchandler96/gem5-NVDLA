@@ -38,8 +38,9 @@ protected:
         uint8_t dirty;
         uint8_t valid;
 
-        allBufferLineWithTag(uint32_t spm_line_size, std::list<uint32_t>::iterator _lru_it):
-                spm_line(spm_line_size, 0), lru_it(_lru_it), dirty(0), valid(0) {}
+        allBufferLineWithTag(uint32_t spm_line_size, std::list<uint32_t>::iterator _lru_it,
+                             std::unordered_map<uint64_t, uint32_t>::iterator _map_it):
+                spm_line(spm_line_size, 0), lru_it(_lru_it), map_it(_map_it), dirty(0), valid(0) {}
     };
     std::vector<allBufferLineWithTag> lines;
     std::list<uint32_t> lru_order;

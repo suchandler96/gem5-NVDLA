@@ -310,12 +310,10 @@ rtlNVDLA::runIterationNVDLA() {
         }
     }
     processOutput(output);
-    printf("runIterationNVDLA ended\n");
 }
 
 void
 rtlNVDLA::tick() {
-    printf("tick NVDLA at t = %lu\n", curTick());
     DPRINTF(rtlNVDLADebug, "Tick NVDLA \n");
     // if we are still running trace
     // runIteration
@@ -327,9 +325,7 @@ rtlNVDLA::tick() {
         stats.nvdla_cycles++;
         cyclesNVDLA++;
         runIterationNVDLA();
-        printf("preschedule: t = %lu\n", curTick());
         schedule(tickEvent, nextCycle() + (freq_ratio - 1) * clockPeriod());
-        printf("scheduled at t = %lu\n", nextCycle() + (freq_ratio - 1) * clockPeriod());
     } else {
         // we have finished running the trace
         printf("done at %lu ticks\n", wr->tickcount);

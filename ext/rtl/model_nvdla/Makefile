@@ -47,13 +47,15 @@ DIR=${DIR_VCD}
 #CPP=/usr/bin/cpp-4.9
 
 CC=clang
-CXX=clang++ -std=c++0x -fPIC
-# --gcc-toolchain=/usr/bin/gcc-6
+# -fPIC --gcc-toolchain=/usr/lib/gcc/x86_64-linux-gnu/6.5.0
+CXX=clang++ -fPIC --gcc-toolchain=/usr/lib/gcc/x86_64-linux-gnu/6.5.0
+# --gcc-toolchain=/usr/lib/gcc/x86_64-linux-gnu/6.5.0 -v
 # CLANG=/home/glopez/BSC/MasterThesis/src/sw/clang-3.4/bin/clang
+# --gcc-toolchain=/usr/lib/gcc/x86_64-linux-gnu/6.5.0 -v
 CLANG=/usr/local/clang_llvm/bin/clang
 
 create_csbMaster_o: csbMaster.cc csbMaster.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
+	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
 	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
 	-Wno-sign-compare -Wno-uninitialized \
@@ -61,7 +63,7 @@ create_csbMaster_o: csbMaster.cc csbMaster.hh
 	-c -o csbMaster.o csbMaster.cc
 
 create_axiResponder_o: axiResponder.cc axiResponder.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
+	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
 	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
 	-Wno-sign-compare -Wno-uninitialized \
@@ -69,7 +71,7 @@ create_axiResponder_o: axiResponder.cc axiResponder.hh
 	-c -o axiResponder.o axiResponder.cc
 
 create_embeddedBuffer_o: embeddedBuffer.cc embeddedBuffer.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
+	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
 	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
 	-Wno-sign-compare -Wno-uninitialized \
@@ -77,7 +79,7 @@ create_embeddedBuffer_o: embeddedBuffer.cc embeddedBuffer.hh
 	-c -o embeddedBuffer.o embeddedBuffer.cc
 
 create_wrapper_vcd_o: create_axiResponder_o create_csbMaster_o create_embeddedBuffer_o wrapper_nvdla.cc wrapper_nvdla.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
+	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
 	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
 	-Wno-sign-compare -Wno-uninitialized \

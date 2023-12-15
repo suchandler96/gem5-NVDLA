@@ -170,6 +170,9 @@ rtlObject::MemSidePort::recvRangeChange()
 }
 
 void
+rtlObject::tick() {}
+
+void
 rtlObject::startTranslate(Addr vaddr, ContextID contextId) {
 
     DPRINTF(rtlObject, "Started translation\n");

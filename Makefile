@@ -29,4 +29,7 @@ nvdla:
 	CC=clang-6.0 CXX=clang++-6.0 /usr/bin/python3 /usr/bin/scons build/ARM/gem5.opt PYTHON_CONFIG=/usr/bin/python3-config PROTOC=/usr/local/bin/protoc -j 24
 # `CC=clang-6.0 CXX=clang++-6.0 /usr/bin/python3 $(which scons) build/ARM/gem5.opt PYTHON_CONFIG=/usr/bin/python3-config PROTOC=/usr/local/bin/protoc -j 24`
 # should work, but seems to neglect $(which scons)
-	
+
+nvdladbg:
+	cd ext/rtl/model_nvdla && make create_library_vcd && cd ../../../
+	CC=clang-6.0 CXX=clang++-6.0 /usr/bin/python3 /usr/bin/scons build/ARM/gem5.debug PYTHON_CONFIG=/usr/bin/python3-config PROTOC=/usr/local/bin/protoc -j 24
