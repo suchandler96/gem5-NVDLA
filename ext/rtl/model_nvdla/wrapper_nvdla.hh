@@ -112,7 +112,7 @@
 class CSBMaster;
 class AXIResponder;
 class Wrapper_nvdla;
-class Buffer;
+class embeddedBuffer;
 
 enum BufferMode {
     BUF_MODE_ALL = 0,
@@ -123,7 +123,7 @@ enum BufferMode {
 
 class Wrapper_nvdla {
 private:
-    static Buffer* shared_spm;
+    static embeddedBuffer* shared_spm;
 
 public:
     Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
@@ -163,7 +163,7 @@ public:
 
     //! SPM & DMA
     bool use_shared_spm;
-    Buffer* spm;
+    embeddedBuffer* spm;
 
     // software prefetching
     int prefetch_enable;

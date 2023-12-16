@@ -25,11 +25,12 @@ public:
     inline virtual bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) { assert(false); }
     inline virtual bool read_spm_line(uint64_t aligned_addr, std::vector<uint8_t>& data_out) { assert(false); }
     inline virtual void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask) { assert(false); }
+    inline virtual void clear_and_write_back_dirty() { assert(false); }
     virtual void fill_spm_line(uint64_t aligned_addr, const uint8_t* data) = 0;
 };
 
 
-class allBufferSet: public abstractSet {
+class allBufferSet: virtual public abstractSet {
 protected:
     struct allBufferLineWithTag {
         std::vector<uint8_t> spm_line;
@@ -50,12 +51,13 @@ public:
     ~allBufferSet() override = default;
     bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) override;
     void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask) override;
+    void clear_and_write_back_dirty() override;
     void fill_spm_line(uint64_t aligned_addr, const uint8_t* data) override;
     uint32_t erase_victim();
 };
 
 
-class prefetchThrottleSet: public abstractSet {
+class prefetchThrottleSet: virtual public abstractSet {
 protected:
     struct prefetchThrottleLineWithTag {
         std::vector<uint8_t> spm_line;
@@ -69,101 +71,62 @@ public:
     prefetchThrottleSet(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _assoc);
     ~prefetchThrottleSet() override = default;
     bool read_spm_line(uint64_t aligned_addr, std::vector<uint8_t>& data_out) override;
+    void clear_and_write_back_dirty() override;
     void fill_spm_line(uint64_t aligned_addr, const uint8_t* data) override;
 };
 
 
-class Buffer {
+class embeddedBuffer {
 protected:
     Wrapper_nvdla* const wrapper;
+    const uint32_t spm_line_num;
+    std::vector<abstractSet*> sets;
 
 public:
     const uint32_t spm_latency;
     const uint32_t spm_line_size;   // all the sizes are in bytes
-    const uint32_t spm_line_num;
     const uint32_t assoc;
     const uint32_t num_sets;
 
-    explicit Buffer(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num, uint32_t _assoc) :
-        wrapper(wrap), spm_latency(_lat), spm_line_size(_line_size), spm_line_num(_line_num), assoc(_assoc),
-        num_sets(_line_num / _assoc) {}
-    virtual ~Buffer() = 0;
+    embeddedBuffer(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num, uint32_t _assoc);
     virtual bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id) = 0;
+    virtual ~embeddedBuffer() = default;
+
     inline virtual void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask, uint8_t stream) {
         assert(false);
     }
-    virtual void fill_spm_line(uint64_t aligned_addr, const uint8_t* data) = 0;
-    inline virtual void write_back_dirty() { assert(false); }
-};
 
+    inline virtual void clear_and_write_back_dirty() {
+        assert(false);
+    }
 
-template<typename SetType>
-class embeddedBuffer: public Buffer {
-protected:
-    static_assert(std::is_base_of<abstractSet, SetType>::value, "SetType must be a descendant of abstractSet\n");
-    std::vector<SetType> sets;
-
-public:
-    embeddedBuffer(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num, uint32_t _assoc) :
-        Buffer(wrap, _lat, _line_size, _line_num, _assoc),
-        sets(_line_num / _assoc, SetType(wrap, _lat, _line_size, _assoc)) {}
-    ~embeddedBuffer() override = default;
-
-
-    void fill_spm_line(uint64_t aligned_addr, const uint8_t* data) override {
+    inline void fill_spm_line(uint64_t aligned_addr, const uint8_t* data) {
         uint32_t set_id = (aligned_addr / spm_line_size) % num_sets;
-        sets[set_id].fill_spm_line(aligned_addr, data);
+        sets[set_id]->fill_spm_line(aligned_addr, data);
     }
 };
 
 
-class allBuffer: public embeddedBuffer<allBufferSet> {
+class allBuffer: virtual public embeddedBuffer {
 public:
-    allBuffer(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num, uint32_t _assoc) :
-            embeddedBuffer(wrap, _lat, _line_size, _line_num, _assoc) {}
-    ~allBuffer() override = default;
+    allBuffer(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num, uint32_t _assoc);
+    ~allBuffer() override;
     bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id) override;
     void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask, uint8_t stream) override;
+    void clear_and_write_back_dirty() override;
 };
 
 
-template<typename SetType>
-class prefetchBuffer: public embeddedBuffer<SetType> {
+class prefetchBuffer: virtual public embeddedBuffer {
 private:
     //! buffers for each stream (used only for reading)
     std::pair<uint64_t, std::vector<uint8_t> > read_buffers[10];
 
 public:
-    prefetchBuffer(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num, uint32_t _assoc) :
-            embeddedBuffer<SetType>(wrap, _lat, _line_size, _line_num, _assoc) {}
-    ~prefetchBuffer() override = default;
-
-
-    bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id) override {
-        uint32_t set_id = (axi_addr / embeddedBuffer<SetType>::spm_line_size) % embeddedBuffer<SetType>::num_sets;
-        uint64_t addr_base = axi_addr & ~(uint64_t)(embeddedBuffer<SetType>::spm_line_size - 1);
-        if (addr_base != read_buffers[stream_id].first) {
-            bool found = embeddedBuffer<SetType>::sets[set_id].read_spm_line(addr_base, read_buffers[stream_id].second);
-            if (!found) {
-                return false;
-            }
-            read_buffers[stream_id].first = addr_base;
-        }
-        // always in read buffer here
-#ifndef NO_DATA
-        uint64_t offset = axi_addr & (uint64_t)(embeddedBuffer<SetType>::spm_line_size - 1);
-        std::vector<uint8_t> &entry_vector = read_buffers[stream_id].second;
-        for (int i = 0; i < AXI_WIDTH / 8; i++)
-            data_out[i] = entry_vector[offset + i];
-#endif
-        return true;
-    }
-
-
-    uint32_t num_valid(uint64_t try_addr) {
-        uint32_t set_id = (try_addr / embeddedBuffer<SetType>::spm_line_size) % embeddedBuffer<SetType>::num_sets;
-        return embeddedBuffer<SetType>::sets[set_id].size();
-    };
+    prefetchBuffer(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num, uint32_t _assoc);
+    ~prefetchBuffer() override;
+    bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id) override;
+    uint32_t num_valid(uint64_t try_addr);
 };
 
 #endif //GEM5_NVDLA_EMBEDDEDBUFFER_HH

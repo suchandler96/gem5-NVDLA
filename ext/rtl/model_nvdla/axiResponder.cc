@@ -789,7 +789,7 @@ AXIResponder::generate_prefetch_request() {
             can_preftch = true;
             break;
         case BUF_MODE_PFT_CUTOFF: {
-            uint32_t used = static_cast<prefetchBuffer<prefetchThrottleSet>*>(wrapper->spm)->num_valid(to_issue_addr);
+            uint32_t used = dynamic_cast<prefetchBuffer*>(wrapper->spm)->num_valid(to_issue_addr);
             can_preftch = (used + inflight_count_for_sets[(to_issue_addr / wrapper->spm->spm_line_size) % wrapper->spm->num_sets] < wrapper->spm->assoc);
             break;
         }

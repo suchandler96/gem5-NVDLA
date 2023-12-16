@@ -52,7 +52,7 @@ double sc_time_stamp() {
   return double_t(0);
 }
 
-Buffer* Wrapper_nvdla::shared_spm = nullptr;
+embeddedBuffer* Wrapper_nvdla::shared_spm = nullptr;
 
 Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
                              bool _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num,
@@ -71,10 +71,8 @@ Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
                 spm = new allBuffer(this, _spm_latency, _spm_line_size, _spm_line_num, _assoc);
                 break;
             case BUF_MODE_PFT:
-                spm = new prefetchBuffer<allBufferSet>(this, _spm_latency, _spm_line_size, _spm_line_num, _assoc);
-                break;
             case BUF_MODE_PFT_CUTOFF:
-                spm = new prefetchBuffer<prefetchThrottleSet>(this, _spm_latency, _spm_line_size, _spm_line_num, _assoc);
+                spm = new prefetchBuffer(this, _spm_latency, _spm_line_size, _spm_line_num, _assoc);
                 break;
             default:
                 assert(false);
@@ -170,35 +168,11 @@ Wrapper_nvdla::~Wrapper_nvdla() {
 
     if (use_shared_spm) {
         if (shared_spm) {
-            switch (buf_mode) {
-                case BUF_MODE_ALL:
-                    delete static_cast<allBuffer*>(shared_spm);
-                    break;
-                case BUF_MODE_PFT:
-                    delete static_cast<prefetchBuffer<allBufferSet>*>(shared_spm);
-                    break;
-                case BUF_MODE_PFT_CUTOFF:
-                    delete static_cast<prefetchBuffer<prefetchThrottleSet>*>(shared_spm);
-                    break;
-                default:
-                    assert(false);
-            }
+            delete shared_spm;
             shared_spm = nullptr;
         }
     } else {
-        switch (buf_mode) {
-            case BUF_MODE_ALL:
-                delete static_cast<allBuffer*>(spm);
-                break;
-            case BUF_MODE_PFT:
-                delete static_cast<prefetchBuffer<allBufferSet>*>(spm);
-                break;
-            case BUF_MODE_PFT_CUTOFF:
-                delete static_cast<prefetchBuffer<prefetchThrottleSet>*>(spm);
-                break;
-            default:
-                assert(false);
-        }
+        delete spm;
     }
     exit(EXIT_SUCCESS);
 }
