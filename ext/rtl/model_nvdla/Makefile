@@ -37,102 +37,45 @@
 
 
 # here there is the code of nvdla
-DIR_FST =verilator_fst
-DIR_VCD =verilator_nvdla
-DIR_TH =verilator_threads_fst
-DIR=${DIR_VCD}
-#verilator_gcd_opt
-#make -f VNV_nvdla.mk CC=clang CXX=clang++ CXXFLAGS+="-fPIC"  VM_PARALLEL_BUILDS=1 OPT_FAST="-Os -fno-stack-protector"
-#GCC=/usr/bin/gcc-4.9
-#CPP=/usr/bin/cpp-4.9
+DIR=verilator_nvdla
 
-CC=clang
-# -fPIC --gcc-toolchain=/usr/lib/gcc/x86_64-linux-gnu/6.5.0
-CXX=clang++ -fPIC --gcc-toolchain=/usr/lib/gcc/x86_64-linux-gnu/6.5.0
-# --gcc-toolchain=/usr/lib/gcc/x86_64-linux-gnu/6.5.0 -v
-# CLANG=/home/glopez/BSC/MasterThesis/src/sw/clang-3.4/bin/clang
-# --gcc-toolchain=/usr/lib/gcc/x86_64-linux-gnu/6.5.0 -v
-CLANG=/usr/local/clang_llvm/bin/clang
+CC=clang-6.0
+CXX=clang++-6.0 -fPIC
 
 create_csbMaster_o: csbMaster.cc csbMaster.hh
 	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
-	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
-	-Wno-sign-compare -Wno-uninitialized \
-	-Wno-unused-parameter -Wno-unused-variable -Wno-shadow \
 	-c -o csbMaster.o csbMaster.cc
 
 create_axiResponder_o: axiResponder.cc axiResponder.hh
 	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
-	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
-	-Wno-sign-compare -Wno-uninitialized \
-	-Wno-unused-parameter -Wno-unused-variable -Wno-shadow \
 	-c -o axiResponder.o axiResponder.cc
 
 create_embeddedBuffer_o: embeddedBuffer.cc embeddedBuffer.hh
 	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
-	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
-	-Wno-sign-compare -Wno-uninitialized \
-	-Wno-unused-parameter -Wno-unused-variable -Wno-shadow \
 	-c -o embeddedBuffer.o embeddedBuffer.cc
 
 create_wrapper_vcd_o: create_axiResponder_o create_csbMaster_o create_embeddedBuffer_o wrapper_nvdla.cc wrapper_nvdla.hh
 	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-MMD -I$(VERILATOR_ROOT)/include/vltstd \
-	-DVL_PRINTF=printf -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=1 \
-	-Wno-sign-compare -Wno-uninitialized \
-	-Wno-unused-parameter -Wno-unused-variable -Wno-shadow \
 	-c -o wrapper_nvdla.o wrapper_nvdla.cc
 
-create_library_vcd: create_wrapper_vcd_o
+verilated_o:
 	$(CXX) -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
-	wrapper_nvdla.o csbMaster.o axiResponder.o embeddedBuffer.o\
-	 -I$(VERILATOR_ROOT)/include/vltstd \
-	 $(VERILATOR_ROOT)/include/verilated.cpp \
-	 $(VERILATOR_ROOT)/include/verilated_vcd_c.cpp \
-	 -fPIC -shared -o libVerilatorNVDLA.so \
-	 -Wl,--whole-archive $(DIR)/VNV_nvdla__ALL.a -Wl,--no-whole-archive
+	-I$(VERILATOR_ROOT)/include/vltstd \
+	$(VERILATOR_ROOT)/include/verilated.cpp -fPIC \
+	-c -o verilated.o
 
+verilated_vcd_o:
+	$(CXX) -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
+	-I$(VERILATOR_ROOT)/include/vltstd \
+	$(VERILATOR_ROOT)/include/verilated_vcd_c.cpp -fPIC \
+	-c -o verilated_vcd.o
 
-main-vcd: main.cpp
-	$(CXX) -lstdc++ -g -I$(DIR_VCD) -I$(VERILATOR_ROOT)/include main.cpp -L .  -o main-vcd -lVerilatorNVDLAVCD
+create_library_vcd: create_wrapper_vcd_o verilated_o verilated_vcd_o
+	ar rvs libVerilatorNVDLA.a csbMaster.o axiResponder.o embeddedBuffer.o wrapper_nvdla.o verilated.o verilated_vcd.o
 
+.PHONY: clean create_csbMaster_o create_axiResponder_o create_embeddedBuffer_o create_wrapper_vcd_o \
+	verilated_o verilated_vcd_o create_library_vcd create_nvdla_o
 
-main-fst-opt: main.cpp
-	$(CXX) -lstdc++ -g -I$(DIR_FST) -I$(VERILATOR_ROOT)/include main.cpp -L . -lz -o main-fst -lVerilatorNVDLAFSTOPT
-
-main-vcd-opt: main.cpp
-	$(CXX) -lstdc++ -g -I$(DIR_VCD) -I$(VERILATOR_ROOT)/include main.cpp -L .  -o main-vcd -lVerilatorNVDLAGCDOPT
-
-main-th-opt: main.cpp
-	$(CXX) -lstdc++ -g -I$(DIR_TH) -I$(VERILATOR_ROOT)/include main.cpp -L .  -o main-th -lVerilatorNVDLATHFSTOPT
-
-#g++ -g -I$(DIR) -I$(VERILATOR_ROOT)/include main.cpp -L . -o main -lVerilator
-
-main-g++: main.cpp
-	#clang++ -lstdc++ -g -I$(DIR) -I$(VERILATOR_ROOT)/include main.cpp -L . -o main -lVerilator
-	g++ -v -I$(DIR) -I$(VERILATOR_ROOT)/include main.cpp -L . -o main_g++ -libVerilatorNVDLA
-
-main-static: main.cpp
-	$(CXX) -g -I$(DIR) -I$(VERILATOR_ROOT)/include main.cpp\
-	 $(DIR)/verilated.o $(DIR)/verilated_vcd_c.o\
-	 $(DIR)/VNV_nvdla__ALL.a -fpic -o main-static
-
-main-nvdla: nvdla.cpp
-	$(CXX) -g -I$(DIR) -I$(VERILATOR_ROOT)/include nvdla.cpp\
-	 $(DIR)/verilated.o $(DIR)/verilated_vcd_c.o\
-	 $(DIR)/VNV_nvdla__ALL.a -fpic -o main-nvdla
-
-# install:
-# 	cp wrapper_nvdla.hh ..
-# 	cp libVerilatorNVDLA.so ..
-# 	cp rtl_packet_nvdla.hh ..
-
-# this is to make it visible outsite command line
-.PHONY: clean create_library_wrapper main create_nvdla_o main-nvdla 
-
-#clean:
-	#rm -f $(DIR)/*.o $(DIR)/*.d $(DIR)/*.o*
+clean:
+	rm -f *.o *.d *.so *.a
 

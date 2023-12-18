@@ -108,10 +108,11 @@ void allBufferSet::clear_and_write_back_dirty() {
             wrapper->addDMAWriteReq(line.map_it->first, line.spm_line);
             line.dirty = 0;
         }
-        addr_map.erase(line.map_it);
+        line.map_it = addr_map.end();
         line.valid = 0;
         // don't clear lru_order and the vector itself because they may be used for data coming in afterward
     }
+    addr_map.clear();
 }
 
 

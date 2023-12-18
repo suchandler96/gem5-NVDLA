@@ -77,8 +77,10 @@ $ sudo mv my_validation_nvdla_single_thread ../mnt/home/
 ## Step 4: Build gem5 in a `gem5_nvdla_env` Docker Container
 ```
 $ docker run --net=host -v ~/:/home -it --rm edwinlai99/gem5_nvdla_env:v3
-(gem5_nvdla_env)# cp /usr/local/nvdla/hw/outdir/nv_full/verilator/* /home/gem5-nvdla/ext/rtl/model_nvdla/verilator_nvdla/
-# '-r' is not necessary for the cmd above
+(gem5_nvdla_env)# cp /usr/local/nvdla/hw/outdir/nv_full/verilator/VNV_nvdla__ALL.a /home/gem5-nvdla/ext/rtl/model_nvdla/verilator_nvdla/
+(gem5_nvdla_env)# cp /usr/local/nvdla/hw/outdir/nv_full/verilator/VNV_nvdla.h /home/gem5-nvdla/ext/rtl/model_nvdla/verilator_nvdla/
+(gem5_nvdla_env)# cd /home/gem5-nvdla/ext/rtl/model_nvdla/verilator_nvdla/
+(gem5_nvdla_env)# mv VNV_nvdla__ALL.a libVNV_nvdla__ALL.a       # rename
 (gem5_nvdla_env)# cd /home/gem5-nvdla/
 # check Makefile to see the number of threads options before compilation
 (gem5_nvdla_env)# make nvdla

@@ -208,7 +208,7 @@ Below we show the codes to install dependencies from the command line.
 (gem5)# apt install libio-tee-perl libyaml-perl
 
 (gem5)# cd /home/user_name/     # this is a temp dir to hold src and build files. Putting it elsewhere is also ok.
-(gem5)# git clone https://github.com/verilator/verilator
+(gem5)# git clone https://github.com/verilator/verilator && cd verilator/
 (gem5)# unset VERILATOR_ROOT    # For bash
 (gem5)# git checkout stable     # Use most recent stable release
 (gem5)# git checkout v3.912     # Switch to specified release version
