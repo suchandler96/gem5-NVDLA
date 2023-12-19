@@ -12,17 +12,14 @@ abstractSet::~abstractSet() = default;
 
 allBufferSet::allBufferSet(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _assoc) :
         abstractSet(wrap, _lat, _line_size, _assoc) {
-    printf("allBufferSet(%#lx, %u, %u, %u)\n", (uint64_t)wrap, _lat, _line_size, _assoc);
     for (uint32_t i = 0; i < assoc; i++) {
         lru_order.emplace_back(i);
     }
-    printf("lru_order.size() = %lu\n", lru_order.size());
 
     lines.reserve(assoc);
     for (auto it = lru_order.begin(); it != lru_order.end(); it++) {
         lines.emplace_back(spm_line_size, it, addr_map.end());
     }
-    printf("lines.size() = %lu\n", lines.size());
 }
 
 
@@ -31,7 +28,6 @@ bool allBufferSet::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) {
 
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
-    printf("allBufferSet::read_spm_axi_line(%#lx, %#lx)\n", axi_addr, (uint64_t)data_out);
 
     auto addr_map_it = addr_map.find(addr_base);
     if (addr_map_it == addr_map.end())
@@ -52,24 +48,18 @@ void allBufferSet::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t
 
     uint64_t addr_base = axi_addr & ~(uint64_t)(spm_line_size - 1);
     uint64_t offset = axi_addr & (uint64_t)(spm_line_size - 1);
-    printf("allBufferSet::write_spm_axi_line_with_mask(%#lx, %#lx, %#lx)\n", axi_addr, (uint64_t)data, mask);
 
     auto addr_map_it = addr_map.find(addr_base);
     if (addr_map_it == addr_map.end()) {
-        printf("\tnot found, allocate\n");
         uint32_t to_write_vec_id = assoc;
         if (addr_map.size() >= assoc) {
-            printf("\tcurrent addr_map.size() = %lu\n", addr_map.size());
             to_write_vec_id = erase_victim();       // lru_order maintenance of erasing is done inside
-            printf("\tafter erase addr_map.size() = %lu\n", addr_map.size());
-            printf("\terase victim id %u\n", to_write_vec_id);
         } else {
             // find a currently invalid entry to write in
             for (uint32_t i = 0; i < lines.size(); i++) {
                 if (!lines[i].valid) {
                     to_write_vec_id = i;
                     lru_order.splice(lru_order.end(), lru_order, lines[i].lru_it);
-                    printf("\tfind inv entry %u\n", to_write_vec_id);
                     break;
                 }
             }
@@ -85,7 +75,6 @@ void allBufferSet::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t
     }
     auto& entry = lines[addr_map_it->second];
     entry.dirty = 1;
-    printf("\tfinal addr_map.size() = %lu\n", addr_map.size());
 #ifndef NO_DATA
     if (mask == 0xFFFFFFFFFFFFFFFF) {
         for (int i = 0; i < AXI_WIDTH / 8; i++) {
@@ -118,24 +107,18 @@ void allBufferSet::clear_and_write_back_dirty() {
 
 void allBufferSet::fill_spm_line(uint64_t aligned_addr, const uint8_t* data) {
     assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
-    printf("allBufferSet::fill_spm_line(%#lx, %#lx)\n", aligned_addr, (uint64_t)data);
 
     auto addr_map_it = addr_map.find(aligned_addr);
     if (addr_map_it == addr_map.end()) {
-        printf("\tnot found, allocate\n");
         uint32_t to_write_vec_id = assoc;
         if (addr_map.size() >= assoc) {
-            printf("\tcurrent addr_map.size() = %lu\n", addr_map.size());
             to_write_vec_id = erase_victim();       // lru_order maintenance of erasing is done inside
-            printf("\tafter erase addr_map.size() = %lu\n", addr_map.size());
-            printf("\terase victim id %u\n", to_write_vec_id);
         } else {
             // find a currently invalid entry to write in
             for (uint32_t i = 0; i < lines.size(); i++) {
                 if (!lines[i].valid) {
                     to_write_vec_id = i;
                     lru_order.splice(lru_order.end(), lru_order, lines[i].lru_it);
-                    printf("\tfind inv entry %u\n", to_write_vec_id);
                     break;
                 }
             }
@@ -148,7 +131,6 @@ void allBufferSet::fill_spm_line(uint64_t aligned_addr, const uint8_t* data) {
         entry.map_it = addr_map_it;
         entry.valid = 1;
         entry.dirty = 0;
-        printf("\tfinal addr_map.size() = %lu\n", addr_map.size());
 #ifndef NO_DATA
         entry.spm_line.assign(data, data + spm_line_size);
 #endif
@@ -249,14 +231,12 @@ allBuffer::~allBuffer() {
 
 
 bool allBuffer::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id) {
-    printf("allBuffer::read_spm_axi_line(%#lx, %#lx, %u)\n", axi_addr, (uint64_t)data_out, stream_id);
     uint32_t set_id = (axi_addr / spm_line_size) % num_sets;
     return sets[set_id]->read_spm_axi_line(axi_addr, data_out);
 }
 
 
 void allBuffer::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask, uint8_t stream) {
-    printf("allBuffer::write_spm_axi_line_with_mask(%#lx, %#lx, %#lx, %u)\n", axi_addr, (uint64_t)data, mask, stream);
     uint32_t set_id = (axi_addr / spm_line_size) % num_sets;
     sets[set_id]->write_spm_axi_line_with_mask(axi_addr, data, mask);
 }
