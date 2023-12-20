@@ -43,6 +43,25 @@ bool allBufferSet::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) {
 }
 
 
+bool allBufferSet::read_spm_line(uint64_t aligned_addr, std::vector<uint8_t>& data_out) {
+    assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
+
+    auto addr_map_it = addr_map.find(aligned_addr);
+    if (addr_map_it == addr_map.end()) {
+        return false;
+    }
+    auto& entry = lines[addr_map_it->second];
+    entry.valid = 0;
+    auto& line = entry.spm_line;
+    data_out.assign(line.begin(), line.end());
+    addr_map.erase(addr_map_it);
+    entry.map_it = addr_map.end();
+    // leave the lru_it there. It will be managed once new data is written to this line
+    // this function is called in a prefetchBuffer. So leave dirty bit untouched since it should always be 0.
+    return true;
+}
+
+
 void allBufferSet::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask) {
     assert((axi_addr & (uint64_t)(AXI_WIDTH / 8 - 1)) == 0);
 
@@ -53,7 +72,7 @@ void allBufferSet::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t
     if (addr_map_it == addr_map.end()) {
         uint32_t to_write_vec_id = assoc;
         if (addr_map.size() >= assoc) {
-            to_write_vec_id = erase_victim();       // lru_order maintenance of erasing is done inside
+            to_write_vec_id = erase_victim();   // lru_order maintenance of erasing (moving to lru back) is done inside
         } else {
             // find a currently invalid entry to write in
             for (uint32_t i = 0; i < lines.size(); i++) {
