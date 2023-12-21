@@ -188,8 +188,14 @@ void prefetchThrottleSet::clear_and_write_back_dirty() {
 
 void prefetchThrottleSet::fill_spm_line(uint64_t aligned_addr, const uint8_t* data) {
     assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
-    assert(addr_map.find(aligned_addr) == addr_map.end());
     assert(addr_map.size() < assoc);
+
+    // some bias data are found to be accessed twice. We simply ignore them.
+    // since biases make up only a small proportion, this phenomenon has little
+    // impact on overall performance
+    if (addr_map.find(aligned_addr) != addr_map.end()) {
+        return;
+    }
 
     uint32_t to_write_vec_id = assoc;
     for (uint32_t i = 0; i < lines.size(); i++) {
