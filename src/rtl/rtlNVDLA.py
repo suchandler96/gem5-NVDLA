@@ -74,3 +74,5 @@ class rtlNVDLA(rtlObject):
     enableTimingAXI = Param.Bool(False, "Enable Timing mode in AXI")
 
     use_fake_mem = Param.Bool(False, "Whether to use fake memory to simulate")
+
+    print_path = Param.String("", "The path to store output logs of NVDLA")

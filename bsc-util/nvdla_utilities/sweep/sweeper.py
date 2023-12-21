@@ -307,6 +307,7 @@ class Sweeper:
             self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cpt_dir_name)
 
             # after generating the checkpoint, we can apply it to the scripts
+            # change the checkpoint directory of all simulation points, without the need to manually change them
             for pt_dir in self.pt_dirs:
                 with open(os.path.join(pt_dir, "run.sh")) as fp:
                     run_sh_lines = fp.readlines()

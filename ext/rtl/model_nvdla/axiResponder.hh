@@ -10,6 +10,27 @@
 #ifndef __AXI_RESPONDER__
 #define __AXI_RESPONDER__
 
+#define AXI_RESP_FAST_IO
+#ifdef AXI_RESP_FAST_IO
+#define PRINT_16B(str, pos, v64, v32, v8_0, v8_1, v8_2, v4_0, v4_1) \
+    (str)[(pos)++] = v64; (str)[(pos)++] = ((uint64_t)((v32) & 0xffffffff)) + (((uint64_t)(v8_0) & 0xff) << 32) + \
+                                           (((uint64_t)(v8_1) & 0xff) << 40) + (((uint64_t)(v8_2) & 0xff) << 48) + \
+                                           (((uint64_t)(v4_0) & 0xf) << 56) + (((uint64_t)(v4_1) & 0xf) << 60)
+
+#define PRINT_RD_REQ(str, pos, dla, stream, name, tick, addr, burst) \
+    PRINT_16B(str, pos, addr, tick, stream, dla, name, 0, burst)
+#define PRINT_WR_REQ(str, pos, dla, stream, name, tick, addr) PRINT_16B(str, pos, addr, tick, stream, dla, name, 1, 0)
+#define PRINT_EB_HIT(str, pos, dla, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, 0, 2, 0)
+#define PRINT_DMA_RD_ISSUE(str, pos, dla, name, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, name, 3, 0)
+#define PRINT_DATA_USED(str, pos, dla, name, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, name, 4, 0)
+#define PRINT_PFT_BACK(str, pos, dla, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, 0, 5, 0)
+#define PRINT_AXI_BACK(str, pos, dla, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, 0, 6, 0)
+#define PRINT_DMA_BACK(str, pos, dla, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, 0, 7, 0)
+#define PRINT_DMA_PFT_ISSUE(str, pos, dla, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, 0, 8, 0)
+#define PRINT_PFT_ISSUE(str, pos, dla, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, 0, 9, 0)
+#endif
+
+
 #define AXI_BLOCK_SIZE 4096
 #define AXI_WIDTH 512
 #include <list>

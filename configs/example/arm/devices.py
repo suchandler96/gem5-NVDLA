@@ -32,6 +32,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import os.path
 
 # System components used by the bigLITTLE.py configuration script
 
@@ -187,7 +188,11 @@ class CpuCluster(SubSystem):
             else:
                 dma_ctrl_str = "dma_enable=0"
 
-            fakemem_ctrl_str = "use_fake_mem=options.use_fake_mem, freq_ratio=options.freq_ratio"
+            fakemem_ctrl_str = "use_fake_mem=options.use_fake_mem, freq_ratio=options.freq_ratio, " \
+                               "print_path=os.path.join(os.path.abspath('.'), 'axilog')"
+            assert os.path.exists(os.path.join(os.path.abspath('.'), "run.sh"))     # make sure this is a simulation dir
+            os.system("rm " + os.path.join(os.path.abspath('.'), 'axilog') +
+                      " && touch " + os.path.join(os.path.abspath('.'), 'axilog'))
 
             for i in range(4):
                 exec("cpu.accel_%d = rtlNVDLA(%s, %s, %s)" % (i, dma_ctrl_str, pft_ctrl_str, fakemem_ctrl_str))

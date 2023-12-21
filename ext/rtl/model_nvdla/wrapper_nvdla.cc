@@ -53,6 +53,8 @@ double sc_time_stamp() {
 }
 
 embeddedBuffer* Wrapper_nvdla::shared_spm = nullptr;
+uint64_t* Wrapper_nvdla::print_buffer = nullptr;
+uint32_t Wrapper_nvdla::buf_ptr = 0;
 
 Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
                              bool _dma_enable, int _spm_latency, int _spm_line_size, int _spm_line_num,
@@ -80,6 +82,11 @@ Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
 
         if (use_shared_spm) shared_spm = spm;
     }
+
+    if (!print_buffer) {
+        print_buffer = new uint64_t[PB_SIZE * 2];
+    }
+
 
     int argcc = 1;
     char* buf[] = {(char*)"aaa",(char*)"bbb"};
@@ -165,7 +172,9 @@ Wrapper_nvdla::Wrapper_nvdla(int id_nvdla, const unsigned int maxReq,
 
 Wrapper_nvdla::~Wrapper_nvdla() {
     delete dla;
-
+#ifdef AXI_RESP_FAST_IO
+    delete print_buffer;
+#endif
     if (use_shared_spm) {
         if (shared_spm) {
             delete shared_spm;
@@ -177,42 +186,15 @@ Wrapper_nvdla::~Wrapper_nvdla() {
     exit(EXIT_SUCCESS);
 }
 
-void Wrapper_nvdla::tick() {
-    
-    dla->dla_core_clk = 1;
-    dla->dla_csb_clk = 1;
-    dla->eval();
-
-    advanceTickCount();
-
-    dla->dla_core_clk = 0;
-    dla->dla_csb_clk = 0;
-    dla->eval();
-
-    advanceTickCount();
-}
-
-void Wrapper_nvdla::advanceTickCount() {
-    tickcount++;
-}
-
-uint64_t Wrapper_nvdla::getTickCount() {
-    return tickcount;
-}
-
 void Wrapper_nvdla::reset() {
     //dla->rst = 1;
     dla->dla_core_clk = 1;
     dla->dla_csb_clk = 1;
     dla->eval();
 
-    advanceTickCount();
-
     dla->dla_core_clk = 0;
     dla->dla_csb_clk = 0;
     dla->eval();
-
-    advanceTickCount();
 }
 
 void Wrapper_nvdla::init() {
@@ -234,12 +216,10 @@ void Wrapper_nvdla::init() {
         dla->dla_core_clk = 1;
         dla->dla_csb_clk = 1;
         dla->eval();
-        tickcount++;
         
         dla->dla_core_clk = 0;
         dla->dla_csb_clk = 0;
         dla->eval();
-        tickcount++;
     }
 
     dla->dla_reset_rstn = 0;
@@ -250,12 +230,10 @@ void Wrapper_nvdla::init() {
         dla->dla_core_clk = 1;
         dla->dla_csb_clk = 1;
         dla->eval();
-        tickcount++;
         
         dla->dla_core_clk = 0;
         dla->dla_csb_clk = 0;
         dla->eval();
-        tickcount++;
     }
     
     dla->dla_reset_rstn = 1;
@@ -266,12 +244,10 @@ void Wrapper_nvdla::init() {
         dla->dla_core_clk = 1;
         dla->dla_csb_clk = 1;
         dla->eval();
-        tickcount++;
         
         dla->dla_core_clk = 0;
         dla->dla_csb_clk = 0;
         dla->eval();
-        tickcount++;
     }
 }
 
@@ -331,19 +307,16 @@ void Wrapper_nvdla::clearOutput() {
     // dma_engine cannot be issued with multiple tasks at once
 }
 
-outputNVDLA& Wrapper_nvdla::tick(inputNVDLA in) {
-    
+outputNVDLA& Wrapper_nvdla::tick() {
     dla->dla_core_clk = 1;
     dla->dla_csb_clk = 1;
     dla->eval();
-
-    advanceTickCount();
 
     dla->dla_core_clk = 0;
     dla->dla_csb_clk = 0;
     dla->eval();
 
-    advanceTickCount();
+    tickcount++;    // align this tick advancement with stats.txt
 
     return output;
 }
