@@ -50,6 +50,7 @@ public:
     allBufferSet(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _assoc);
     ~allBufferSet() override = default;
     bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) override;
+    bool read_spm_line(uint64_t aligned_addr, std::vector<uint8_t>& data_out) override;
     void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask) override;
     void clear_and_write_back_dirty() override;
     void fill_spm_line(uint64_t aligned_addr, const uint8_t* data) override;
