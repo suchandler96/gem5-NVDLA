@@ -98,7 +98,9 @@ public:
     }
 
     inline virtual void clear_and_write_back_dirty() {
-        assert(false);
+        for (auto& set: sets) {
+            set->clear_and_write_back_dirty();
+        }
     }
 
     inline void fill_spm_line(uint64_t aligned_addr, const uint8_t* data) {
@@ -114,7 +116,6 @@ public:
     ~allBuffer() override;
     bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id) override;
     void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask, uint8_t stream) override;
-    void clear_and_write_back_dirty() override;
 };
 
 

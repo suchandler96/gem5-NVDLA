@@ -267,13 +267,6 @@ void allBuffer::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* d
 }
 
 
-void allBuffer::clear_and_write_back_dirty() {
-    for (auto& set: sets) {
-        set->clear_and_write_back_dirty();
-    }
-}
-
-
 prefetchBuffer::prefetchBuffer(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num, uint32_t _assoc) :
         embeddedBuffer(wrap, _lat, _line_size, _line_num, _assoc) {
     switch (wrap->buf_mode) {
