@@ -396,7 +396,7 @@ if __name__ == "__main__":
 # DMA read issue
 # printf("(%lu) DMA read req issued from NVDLA side, addr 0x%08lx\n", wrapper->tickcount, spm_line_addr);
 # 64,   (32,    8,      8,  8,      4,  4)
-# addr  tick            dla name    3
+# addr  tick            dla         3
 
 
 # read data back to NVDLA

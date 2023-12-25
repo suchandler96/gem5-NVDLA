@@ -21,7 +21,7 @@
     PRINT_16B(str, pos, addr, tick, stream, dla, name, 0, burst)
 #define PRINT_WR_REQ(str, pos, dla, stream, name, tick, addr) PRINT_16B(str, pos, addr, tick, stream, dla, name, 1, 0)
 #define PRINT_EB_HIT(str, pos, dla, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, 0, 2, 0)
-#define PRINT_DMA_RD_ISSUE(str, pos, dla, name, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, name, 3, 0)
+#define PRINT_DMA_RD_ISSUE(str, pos, dla, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, 0, 3, 0)
 #define PRINT_DATA_USED(str, pos, dla, name, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, name, 4, 0)
 #define PRINT_PFT_BACK(str, pos, dla, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, 0, 5, 0)
 #define PRINT_AXI_BACK(str, pos, dla, tick, addr) PRINT_16B(str, pos, addr, tick, 0, dla, 0, 6, 0)

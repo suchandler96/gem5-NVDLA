@@ -154,7 +154,7 @@ void allBufferSet::fill_spm_line(uint64_t aligned_addr, const uint8_t* data) {
         entry.spm_line.assign(data, data + spm_line_size);
 #endif
     } else {
-        printf("Weird: request the DRAM when it hits the embedded buffer.\n");
+        printf("(%lu) Weird: request the DRAM when it hits the embedded buffer.\n", wrapper->tickcount);
     }
 }
 

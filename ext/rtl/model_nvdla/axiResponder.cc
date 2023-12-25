@@ -492,7 +492,7 @@ AXIResponder::process_read_req() {
                         printf("(%lu) DMA read req issued from NVDLA side, addr 0x%08lx\n", wrapper->tickcount, spm_line_addr);
 #else
                         PRINT_DMA_RD_ISSUE(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla,
-                                           name[0], wrapper->tickcount, spm_line_addr);
+                                           wrapper->tickcount, spm_line_addr);
 #endif
                         map_it->second.is_bypass = (wrapper->buf_mode != BUF_MODE_ALL);
                         inflight_dma_addr_queue.push(spm_line_addr);
@@ -573,7 +573,7 @@ AXIResponder::process_read_resp() {
         printf("(%lu) read data used by nvdla#%d (returned by gem5 or already in spm), addr %#lx\n",
                 wrapper->tickcount, wrapper->id_nvdla, addr_front);
 #else
-        PRINT_DATA_USED(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla, name, wrapper->tickcount, addr_front);
+        PRINT_DATA_USED(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla, name[0], wrapper->tickcount, addr_front);
 #endif
 
         // push the front one
