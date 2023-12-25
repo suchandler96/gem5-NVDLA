@@ -39,8 +39,8 @@
 # here there is the code of nvdla
 DIR=verilator_nvdla
 
-CC=clang-6.0
-CXX=clang++-6.0 -fPIC
+CC=clang-10
+CXX=clang++-10 -fPIC
 
 csbMaster_o: csbMaster.cc csbMaster.hh
 	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \

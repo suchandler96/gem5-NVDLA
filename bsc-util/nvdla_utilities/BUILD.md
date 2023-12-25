@@ -28,8 +28,8 @@ $ docker run -it -v /home:/home nvdla/vp    # this step mounts the /home directo
      * perl -> /usr/bin/perl
      * java -> /usr/bin/java
      * SystemC -> (keep as default)
-     * verilator -> /usr/local/verilator_3.912/bin/verilator
-     * clang -> /usr/local/clang_llvm_3.4/bin/clang
+     * verilator -> verilator
+     * clang -> clang
 (nvdla/vp)# tools/bin/tmake -build cmod_top
 ```
 ## Step 2. Rebuild Compiler, Runtime and Driver
@@ -165,22 +165,16 @@ $ docker run -it -v /home:/home gcr.io/gem5-test/ubuntu-18.04_all-dependencies:v
 ## Step 2. Prepare Other Dependencies in the Docker Container
 The dependencies below are required:
 - Install through website (prebuilt binaries):
-    - clang v3.4
     - jdk 1.7 (tested with jdk 1.7.0_80)
 
 - Install through command line (git, apt, etc.):
-    - clang v6.0.0
+    - clang-10 & clang++-10
     - perl with IO-Tee, yaml packages
-    - Verilator v3.912
+    - Verilator v4.040
 
-For those to be installed from the websites (clang_llvm_3.4 and jdk 1.7), a final file structure is shown:
+For those to be installed from the websites (jdk 1.7), a final file structure is shown:
 ```
 /usr/local/
-|-- clang_llvm_3.4/
-|   |-- bin/
-|   |-- docs/
-|   |-- include/
-|   ......
 |-- jdk1.7.0_80/
     |-- bin/
     |-- db/
@@ -188,12 +182,6 @@ For those to be installed from the websites (clang_llvm_3.4 and jdk 1.7), a fina
 ```
 And the lines to append to `/root/.bashrc` in the docker container are pasted here:
 ```
-# for clang_llvm_3.4 (gem5-NVDLA uses clang_llvm 3.4 to compile NVDLA)
-export PATH=/usr/local/clang_llvm_3.4/bin:$PATH
-export LD_LIBRARY_PATH=/usr/local/clang_llvm_3.4/lib:/usr/lib/gcc/x86_64-linux-gnu/7/:$LD_LIBRARY_PATH
-export C_INCLUDE_PATH=/usr/local/clang_llvm_3.4/include:$C_INCLUDE_PATH
-export CPLUS_INCLUDE_PATH=/usr/local/clang_llvm_3.4/include:/usr/include/c++/7:/usr/include/x86_64-linux-gnu/c++/7:$CPLUS_INCLUDE_PATH
-
 # for jdk 1.7
 export JAVA_HOME=/usr/local/jdk1.7.0_80
 export JRE_HOME=${JAVA_HOME}/jre
@@ -204,35 +192,37 @@ Do remember to `source /root/.bashrc` after modification.
 
 Below we show the codes to install dependencies from the command line.
 ```
-(gem5)# apt update && apt install clang-6.0 clang++-6.0
+(gem5)# apt update && apt install clang-10 clang++-10
 (gem5)# apt install libio-tee-perl libyaml-perl
+(gem5)# ln -s /usr/bin/clang-10 /usr/bin/clang
+(gem5)# ln -s /usr/bin/clang++-10 /usr/bin/clang++
 
 (gem5)# cd /home/user_name/     # this is a temp dir to hold src and build files. Putting it elsewhere is also ok.
 (gem5)# git clone https://github.com/verilator/verilator && cd verilator/
 (gem5)# unset VERILATOR_ROOT    # For bash
 (gem5)# git checkout stable     # Use most recent stable release
-(gem5)# git checkout v3.912     # Switch to specified release version
+(gem5)# git checkout v4.040     # Switch to specified release version
 
-# ensure the clang and clang++ are v3.4 just installed
-(gem5)# export CC=clang
-(gem5)# export CXX=clang++
+# ensure the clang and clang++ are v10 just installed
+(gem5)# export CC=clang-10
+(gem5)# export CXX=clang++-10
 
 (gem5)# autoconf
-(gem5)# ./configure --prefix /usr/local/verilator_3.912
+(gem5)# ./configure --prefix /usr/local/verilator_4.040
 
 (gem5)# make -j 24
 (gem5)# make install
 
 # create symbolic link for include directory
-(gem5)# sudo ln -s /usr/local/verilator_3.912/share/verilator/include/ /usr/local/verilator_3.912/include
+(gem5)# ln -s /usr/local/verilator_4.040/share/verilator/include/ /usr/local/verilator_4.040/include
 ```
 And append the following lines to `/root/.bashrc` of the docker container:
 ```
-# for verilator 3.912 (gem5-rtl uses verilator 3.912)
-export PATH=/usr/local/verilator_3.912/bin:$PATH
-export VERILATOR_ROOT=/usr/local/verilator_3.912
-export C_INCLUDE_PATH=/usr/local/verilator_3.912/include/:$C_INCLUDE_PATH
-export CPLUS_INCLUDE_PATH=/usr/local/verilator_3.912/include/:$CPLUS_INCLUDE_PATH
+# for verilator 4.040 (gem5-NVDLA uses verilator 4.040)
+export PATH=/usr/local/verilator_4.040/bin:$PATH
+export VERILATOR_ROOT=/usr/local/verilator_4.040
+export C_INCLUDE_PATH=/usr/local/verilator_4.040/include/:$C_INCLUDE_PATH
+export CPLUS_INCLUDE_PATH=/usr/local/verilator_4.040/include/:$CPLUS_INCLUDE_PATH
 ```
 Finally, remember to `source /root/.bashrc` after modification.
 
@@ -246,18 +236,51 @@ Finally, remember to `source /root/.bashrc` after modification.
     * perl -> /usr/bin/perl
     * java -> /usr/local/jdk1.7.0_80/bin/java
     * SystemC -> (keep as default)
-    * verilator -> /usr/local/verilator_3.912/bin/verilator
-    * clang -> /usr/local/clang_llvm_3.4/bin/clang
+    * verilator -> verilator
+    * clang -> clang
 (gem5)# ./tools/bin/tmake -build vmod
-(gem5)# export CC=/usr/local/clang_llvm_3.4/bin/clang
-(gem5)# export CXX=/usr/local/clang_llvm_3.4/bin/clang++
+(gem5)# export CC=clang
+(gem5)# export CXX=clang++
+
+# The whole compilation requires more than 45GB of memory.
+# If you check out what's happening in nvdla/hw/verif/verilator/Makefile,
+# You will see we are doing heavy optimizations including:
+#   (1) verilator -O3 to the verilog -> cpp code generation phase;
+#   (2) clang -O3 -Ofast to the cpp -> .o compilation;
+#   (3) profiling-guided optimization (PGO) to the cpp -> .o compilation.
+# So the compilation done below is for generating the binary for profiling.
+# We also need a second pass to utilize profiling data.
+# If you don't want to do PGO, please uncomment the line in the Makefile annotated
+# with "without profiling-guided optimization" and comment out the others.
+# But please note in our case PGO can bring 40% performance improvement
+
+(gem5)# ./tools/bin/tmake -build verilator
+
+# If PGO is not enabled, compilation is already done here
+# Here we go on 
+(gem5)# cd verif/verilator
+(gem5)# mkdir ../traceplayer/lenet
+(gem5)# cp /home/gem5-nvdla/bsc-util/nvdla_utilities/example_usage/traces/lenet/input.txn ../traceplayer/lenet/
+(gem5)# make run TEST=cc_alexnet_conv5_relu5_int16_dtest_cvsram
+(gem5)# make run TEST=googlenet_conv2_3x3_int16
+(gem5)# make run TEST=lenet
+# Do 3 profiling tests: lenet, a CONV layer in alexnet, a CONV layer in googlenet.
+
+# gather the profiling results
+(gem5)# llvm-profdata-10 merge -output=../../LAG.profdata \
+../../outdir/nv_full/verilator/test/lenet/*.profraw \
+../../outdir/nv_full/verilator/test/cc_alexnet_conv5_relu5_int16_dtest_cvsram/*.profraw \
+../../outdir/nv_full/verilator/test/googlenet_conv2_3x3_int16/*.profraw
+
+(gem5)# vi Makefile
+# uncomment the line annotated with 'after collecting data with "llvm-profdata merge xxx"'
+# and comment out the original one.
 (gem5)# ./tools/bin/tmake -build verilator
 ```
 
 ## Step 4. Add paths of the user's own gem5-nvdla directory into `/root/.bashrc`
 ```
-# for libVerilatorNVDLA.so
-export LD_LIBRARY_PATH=/home/gem5-nvdla/ext/rtl/model_nvdla/:$LD_LIBRARY_PATH
+# for disk image
 export M5_PATH=/home/gem5_linux_images/:/home/gem5_linux_images/aarch-system-20220707:/home/gem5_linux_images/aarch-system-20220707/binaries/:$M5_PATH
 ```
 So we suggest the users put `gem5-nvdla/` and `gem5_linux_images/` right under the `~/` directory of the host machine.
