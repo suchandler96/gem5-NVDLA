@@ -252,7 +252,10 @@ Finally, remember to `source /root/.bashrc` after modification.
 # We also need a second pass to utilize profiling data.
 # If you don't want to do PGO, please uncomment the line in the Makefile annotated
 # with "without profiling-guided optimization" and comment out the others.
-# But please note in our case PGO can bring 40% performance improvement
+# But please note in our case PGO can bring 40% performance improvement.
+# We have also fixed some of the UNOPTFLAT warnings in the original NVDLA
+# vmod/, which is included in nvdla_hw.patch. If you don't want these
+# modifications, simply do `git checkout` for files under nvdla/hw/vmod/.
 
 (gem5)# ./tools/bin/tmake -build verilator
 

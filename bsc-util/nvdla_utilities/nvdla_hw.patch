@@ -12706,7 +12706,7 @@ index bf56ddf..d3f126c 100644
  read_reg 0xffff1437 0xffffffff 0x00000000 #NVDLA_CDMA.D_PERF_WT_READ_STALL_0
  write_reg 0xffff1422 0x92eabbc0 #NVDLA_CDMA.D_WGS_ADDR_LOW_0
 diff --git a/verif/verilator/Makefile b/verif/verilator/Makefile
-index aa73fac..c0cbf54 100644
+index aa73fac..bd28650 100644
 --- a/verif/verilator/Makefile
 +++ b/verif/verilator/Makefile
 @@ -11,24 +11,26 @@ include $(DEPTH)/tools/make/common.make
@@ -12905,3 +12905,261 @@ index e24becf..b899bea
  			case 0xFF:
  				printf("CMD: done\n");
  				break;
+diff --git a/vmod/nvdla/cmac/NV_NVDLA_CMAC_CORE_mac.v b/vmod/nvdla/cmac/NV_NVDLA_CMAC_CORE_mac.v
+index 677f92d..76ef6d1 100644
+--- a/vmod/nvdla/cmac/NV_NVDLA_CMAC_CORE_mac.v
++++ b/vmod/nvdla/cmac/NV_NVDLA_CMAC_CORE_mac.v
+@@ -340,14 +340,14 @@ wire      [7:0] ps_n1_in_b4;
+ wire      [7:0] ps_n1_in_b5;
+ wire      [7:0] ps_n1_in_b6;
+ wire      [7:0] ps_n1_in_b7;
+-wire      [6:0] ps_n1b0;
+-wire      [6:0] ps_n1b1;
+-wire      [6:0] ps_n1b2;
+-wire      [6:0] ps_n1b3;
+-wire      [6:0] ps_n1b4;
+-wire      [6:0] ps_n1b5;
+-wire      [6:0] ps_n1b6;
+-wire      [6:0] ps_n1b7;
++wire      [5:0] ps_n1b0; wire ps_n1b0_6;
++wire      [5:0] ps_n1b1; wire ps_n1b1_6;
++wire      [5:0] ps_n1b2; wire ps_n1b2_6;
++wire      [5:0] ps_n1b3; wire ps_n1b3_6;
++wire      [5:0] ps_n1b4; wire ps_n1b4_6;
++wire      [5:0] ps_n1b5; wire ps_n1b5_6;
++wire      [5:0] ps_n1b6; wire ps_n1b6_6;
++wire      [5:0] ps_n1b7; wire ps_n1b7_6;
+ wire      [7:0] ps_n2_in_b0;
+ wire      [7:0] ps_n2_in_b1;
+ wire      [7:0] ps_n2_in_b2;
+@@ -356,14 +356,14 @@ wire      [7:0] ps_n2_in_b4;
+ wire      [7:0] ps_n2_in_b5;
+ wire      [7:0] ps_n2_in_b6;
+ wire      [7:0] ps_n2_in_b7;
+-wire      [6:0] ps_n2b0;
+-wire      [6:0] ps_n2b1;
+-wire      [6:0] ps_n2b2;
+-wire      [6:0] ps_n2b3;
+-wire      [6:0] ps_n2b4;
+-wire      [6:0] ps_n2b5;
+-wire      [6:0] ps_n2b6;
+-wire      [6:0] ps_n2b7;
++wire      [5:0] ps_n2b0; wire ps_n2b0_6;
++wire      [5:0] ps_n2b1; wire ps_n2b1_6;
++wire      [5:0] ps_n2b2; wire ps_n2b2_6;
++wire      [5:0] ps_n2b3; wire ps_n2b3_6;
++wire      [5:0] ps_n2b4; wire ps_n2b4_6;
++wire      [5:0] ps_n2b5; wire ps_n2b5_6;
++wire      [5:0] ps_n2b6; wire ps_n2b6_6;
++wire      [5:0] ps_n2b7; wire ps_n2b7_6;
+ wire      [7:0] ps_n3_in_b0;
+ wire      [7:0] ps_n3_in_b1;
+ wire      [7:0] ps_n3_in_b2;
+@@ -372,14 +372,14 @@ wire      [7:0] ps_n3_in_b4;
+ wire      [7:0] ps_n3_in_b5;
+ wire      [7:0] ps_n3_in_b6;
+ wire      [7:0] ps_n3_in_b7;
+-wire      [6:0] ps_n3b0;
+-wire      [6:0] ps_n3b1;
+-wire      [6:0] ps_n3b2;
+-wire      [6:0] ps_n3b3;
+-wire      [6:0] ps_n3b4;
+-wire      [6:0] ps_n3b5;
+-wire      [6:0] ps_n3b6;
+-wire      [6:0] ps_n3b7;
++wire      [5:0] ps_n3b0; wire ps_n3b0_6;
++wire      [5:0] ps_n3b1; wire ps_n3b1_6;
++wire      [5:0] ps_n3b2; wire ps_n3b2_6;
++wire      [5:0] ps_n3b3; wire ps_n3b3_6;
++wire      [5:0] ps_n3b4; wire ps_n3b4_6;
++wire      [5:0] ps_n3b5; wire ps_n3b5_6;
++wire      [5:0] ps_n3b6; wire ps_n3b6_6;
++wire      [5:0] ps_n3b7; wire ps_n3b7_6;
+ wire     [15:0] ps_out_l1n0_0;
+ wire     [15:0] ps_out_l1n0_1;
+ wire     [15:0] ps_out_l1n10_0;
+@@ -8561,17 +8561,17 @@ assign ps_n0b0[6:0] = (cfg_is_wg_d1[8]) ? {1'b0, ps_n0b0_wg} : ps_n0b0_dc;
+ assign ps_n1b0[5:0] = res_tag_b0_sum_1  - res_tag_b0_sum_2  - res_tag_b0_sum_3  +
+                          res_tag_b0_sum_5  - res_tag_b0_sum_6  - res_tag_b0_sum_7  +
+                          res_tag_b0_sum_9  - res_tag_b0_sum_10 - res_tag_b0_sum_11;
+-assign ps_n1b0[6] = ps_n1b0[5];
++assign ps_n1b0_6 = ps_n1b0[5];
+ 
+ assign ps_n2b0[5:0] = res_tag_b0_sum_4  + res_tag_b0_sum_5  + res_tag_b0_sum_6  -
+                          res_tag_b0_sum_8  - res_tag_b0_sum_9  - res_tag_b0_sum_10 -
+                          res_tag_b0_sum_12 - res_tag_b0_sum_13 - res_tag_b0_sum_14;
+-assign ps_n2b0[6] = ps_n2b0[5];
++assign ps_n2b0_6 = ps_n2b0[5];
+ 
+ assign ps_n3b0[5:0] = res_tag_b0_sum_5  - res_tag_b0_sum_6  - res_tag_b0_sum_7  -
+                          res_tag_b0_sum_9  + res_tag_b0_sum_10 + res_tag_b0_sum_11 -
+                          res_tag_b0_sum_13 + res_tag_b0_sum_14 + res_tag_b0_sum_15;
+-assign ps_n3b0[6] = ps_n3b0[5];
++assign ps_n3b0_6 = ps_n3b0[5];
+ 
+ assign ps_n0b1_dc[6:0] = res_tag_b1_sum_15 + res_tag_b1_sum_14 + res_tag_b1_sum_13 + res_tag_b1_sum_12 + res_tag_b1_sum_11 + res_tag_b1_sum_10 + res_tag_b1_sum_9 + res_tag_b1_sum_8 + res_tag_b1_sum_7 + res_tag_b1_sum_6 + res_tag_b1_sum_5 + res_tag_b1_sum_4 + res_tag_b1_sum_3 + res_tag_b1_sum_2 + res_tag_b1_sum_1 + res_tag_b1_sum_0;
+ assign ps_n0b1_wg[5:0] = res_tag_b1_sum_0  + res_tag_b1_sum_1  + res_tag_b1_sum_2  +
+@@ -8582,17 +8582,17 @@ assign ps_n0b1[6:0] = (cfg_is_wg_d1[9]) ? {1'b0, ps_n0b1_wg} : ps_n0b1_dc;
+ assign ps_n1b1[5:0] = res_tag_b1_sum_1  - res_tag_b1_sum_2  - res_tag_b1_sum_3  +
+                          res_tag_b1_sum_5  - res_tag_b1_sum_6  - res_tag_b1_sum_7  +
+                          res_tag_b1_sum_9  - res_tag_b1_sum_10 - res_tag_b1_sum_11;
+-assign ps_n1b1[6] = ps_n1b1[5];
++assign ps_n1b1_6 = ps_n1b1[5];
+ 
+ assign ps_n2b1[5:0] = res_tag_b1_sum_4  + res_tag_b1_sum_5  + res_tag_b1_sum_6  -
+                          res_tag_b1_sum_8  - res_tag_b1_sum_9  - res_tag_b1_sum_10 -
+                          res_tag_b1_sum_12 - res_tag_b1_sum_13 - res_tag_b1_sum_14;
+-assign ps_n2b1[6] = ps_n2b1[5];
++assign ps_n2b1_6 = ps_n2b1[5];
+ 
+ assign ps_n3b1[5:0] = res_tag_b1_sum_5  - res_tag_b1_sum_6  - res_tag_b1_sum_7  -
+                          res_tag_b1_sum_9  + res_tag_b1_sum_10 + res_tag_b1_sum_11 -
+                          res_tag_b1_sum_13 + res_tag_b1_sum_14 + res_tag_b1_sum_15;
+-assign ps_n3b1[6] = ps_n3b1[5];
++assign ps_n3b1_6 = ps_n3b1[5];
+ 
+ assign ps_n0b2_dc[6:0] = res_tag_b2_sum_15 + res_tag_b2_sum_14 + res_tag_b2_sum_13 + res_tag_b2_sum_12 + res_tag_b2_sum_11 + res_tag_b2_sum_10 + res_tag_b2_sum_9 + res_tag_b2_sum_8 + res_tag_b2_sum_7 + res_tag_b2_sum_6 + res_tag_b2_sum_5 + res_tag_b2_sum_4 + res_tag_b2_sum_3 + res_tag_b2_sum_2 + res_tag_b2_sum_1 + res_tag_b2_sum_0;
+ assign ps_n0b2_wg[5:0] = res_tag_b2_sum_0  + res_tag_b2_sum_1  + res_tag_b2_sum_2  +
+@@ -8603,17 +8603,17 @@ assign ps_n0b2[6:0] = (cfg_is_wg_d1[10]) ? {1'b0, ps_n0b2_wg} : ps_n0b2_dc;
+ assign ps_n1b2[5:0] = res_tag_b2_sum_1  - res_tag_b2_sum_2  - res_tag_b2_sum_3  +
+                          res_tag_b2_sum_5  - res_tag_b2_sum_6  - res_tag_b2_sum_7  +
+                          res_tag_b2_sum_9  - res_tag_b2_sum_10 - res_tag_b2_sum_11;
+-assign ps_n1b2[6] = ps_n1b2[5];
++assign ps_n1b2_6 = ps_n1b2[5];
+ 
+ assign ps_n2b2[5:0] = res_tag_b2_sum_4  + res_tag_b2_sum_5  + res_tag_b2_sum_6  -
+                          res_tag_b2_sum_8  - res_tag_b2_sum_9  - res_tag_b2_sum_10 -
+                          res_tag_b2_sum_12 - res_tag_b2_sum_13 - res_tag_b2_sum_14;
+-assign ps_n2b2[6] = ps_n2b2[5];
++assign ps_n2b2_6 = ps_n2b2[5];
+ 
+ assign ps_n3b2[5:0] = res_tag_b2_sum_5  - res_tag_b2_sum_6  - res_tag_b2_sum_7  -
+                          res_tag_b2_sum_9  + res_tag_b2_sum_10 + res_tag_b2_sum_11 -
+                          res_tag_b2_sum_13 + res_tag_b2_sum_14 + res_tag_b2_sum_15;
+-assign ps_n3b2[6] = ps_n3b2[5];
++assign ps_n3b2_6 = ps_n3b2[5];
+ 
+ assign ps_n0b3_dc[6:0] = res_tag_b3_sum_15 + res_tag_b3_sum_14 + res_tag_b3_sum_13 + res_tag_b3_sum_12 + res_tag_b3_sum_11 + res_tag_b3_sum_10 + res_tag_b3_sum_9 + res_tag_b3_sum_8 + res_tag_b3_sum_7 + res_tag_b3_sum_6 + res_tag_b3_sum_5 + res_tag_b3_sum_4 + res_tag_b3_sum_3 + res_tag_b3_sum_2 + res_tag_b3_sum_1 + res_tag_b3_sum_0;
+ assign ps_n0b3_wg[5:0] = res_tag_b3_sum_0  + res_tag_b3_sum_1  + res_tag_b3_sum_2  +
+@@ -8624,17 +8624,17 @@ assign ps_n0b3[6:0] = (cfg_is_wg_d1[11]) ? {1'b0, ps_n0b3_wg} : ps_n0b3_dc;
+ assign ps_n1b3[5:0] = res_tag_b3_sum_1  - res_tag_b3_sum_2  - res_tag_b3_sum_3  +
+                          res_tag_b3_sum_5  - res_tag_b3_sum_6  - res_tag_b3_sum_7  +
+                          res_tag_b3_sum_9  - res_tag_b3_sum_10 - res_tag_b3_sum_11;
+-assign ps_n1b3[6] = ps_n1b3[5];
++assign ps_n1b3_6 = ps_n1b3[5];
+ 
+ assign ps_n2b3[5:0] = res_tag_b3_sum_4  + res_tag_b3_sum_5  + res_tag_b3_sum_6  -
+                          res_tag_b3_sum_8  - res_tag_b3_sum_9  - res_tag_b3_sum_10 -
+                          res_tag_b3_sum_12 - res_tag_b3_sum_13 - res_tag_b3_sum_14;
+-assign ps_n2b3[6] = ps_n2b3[5];
++assign ps_n2b3_6 = ps_n2b3[5];
+ 
+ assign ps_n3b3[5:0] = res_tag_b3_sum_5  - res_tag_b3_sum_6  - res_tag_b3_sum_7  -
+                          res_tag_b3_sum_9  + res_tag_b3_sum_10 + res_tag_b3_sum_11 -
+                          res_tag_b3_sum_13 + res_tag_b3_sum_14 + res_tag_b3_sum_15;
+-assign ps_n3b3[6] = ps_n3b3[5];
++assign ps_n3b3_6 = ps_n3b3[5];
+ 
+ assign ps_n0b4_dc[6:0] = res_tag_b4_sum_15 + res_tag_b4_sum_14 + res_tag_b4_sum_13 + res_tag_b4_sum_12 + res_tag_b4_sum_11 + res_tag_b4_sum_10 + res_tag_b4_sum_9 + res_tag_b4_sum_8 + res_tag_b4_sum_7 + res_tag_b4_sum_6 + res_tag_b4_sum_5 + res_tag_b4_sum_4 + res_tag_b4_sum_3 + res_tag_b4_sum_2 + res_tag_b4_sum_1 + res_tag_b4_sum_0;
+ assign ps_n0b4_wg[5:0] = res_tag_b4_sum_0  + res_tag_b4_sum_1  + res_tag_b4_sum_2  +
+@@ -8645,17 +8645,17 @@ assign ps_n0b4[6:0] = (cfg_is_wg_d1[12]) ? {1'b0, ps_n0b4_wg} : ps_n0b4_dc;
+ assign ps_n1b4[5:0] = res_tag_b4_sum_1  - res_tag_b4_sum_2  - res_tag_b4_sum_3  +
+                          res_tag_b4_sum_5  - res_tag_b4_sum_6  - res_tag_b4_sum_7  +
+                          res_tag_b4_sum_9  - res_tag_b4_sum_10 - res_tag_b4_sum_11;
+-assign ps_n1b4[6] = ps_n1b4[5];
++assign ps_n1b4_6 = ps_n1b4[5];
+ 
+ assign ps_n2b4[5:0] = res_tag_b4_sum_4  + res_tag_b4_sum_5  + res_tag_b4_sum_6  -
+                          res_tag_b4_sum_8  - res_tag_b4_sum_9  - res_tag_b4_sum_10 -
+                          res_tag_b4_sum_12 - res_tag_b4_sum_13 - res_tag_b4_sum_14;
+-assign ps_n2b4[6] = ps_n2b4[5];
++assign ps_n2b4_6 = ps_n2b4[5];
+ 
+ assign ps_n3b4[5:0] = res_tag_b4_sum_5  - res_tag_b4_sum_6  - res_tag_b4_sum_7  -
+                          res_tag_b4_sum_9  + res_tag_b4_sum_10 + res_tag_b4_sum_11 -
+                          res_tag_b4_sum_13 + res_tag_b4_sum_14 + res_tag_b4_sum_15;
+-assign ps_n3b4[6] = ps_n3b4[5];
++assign ps_n3b4_6 = ps_n3b4[5];
+ 
+ assign ps_n0b5_dc[6:0] = res_tag_b5_sum_15 + res_tag_b5_sum_14 + res_tag_b5_sum_13 + res_tag_b5_sum_12 + res_tag_b5_sum_11 + res_tag_b5_sum_10 + res_tag_b5_sum_9 + res_tag_b5_sum_8 + res_tag_b5_sum_7 + res_tag_b5_sum_6 + res_tag_b5_sum_5 + res_tag_b5_sum_4 + res_tag_b5_sum_3 + res_tag_b5_sum_2 + res_tag_b5_sum_1 + res_tag_b5_sum_0;
+ assign ps_n0b5_wg[5:0] = res_tag_b5_sum_0  + res_tag_b5_sum_1  + res_tag_b5_sum_2  +
+@@ -8666,17 +8666,17 @@ assign ps_n0b5[6:0] = (cfg_is_wg_d1[13]) ? {1'b0, ps_n0b5_wg} : ps_n0b5_dc;
+ assign ps_n1b5[5:0] = res_tag_b5_sum_1  - res_tag_b5_sum_2  - res_tag_b5_sum_3  +
+                          res_tag_b5_sum_5  - res_tag_b5_sum_6  - res_tag_b5_sum_7  +
+                          res_tag_b5_sum_9  - res_tag_b5_sum_10 - res_tag_b5_sum_11;
+-assign ps_n1b5[6] = ps_n1b5[5];
++assign ps_n1b5_6 = ps_n1b5[5];
+ 
+ assign ps_n2b5[5:0] = res_tag_b5_sum_4  + res_tag_b5_sum_5  + res_tag_b5_sum_6  -
+                          res_tag_b5_sum_8  - res_tag_b5_sum_9  - res_tag_b5_sum_10 -
+                          res_tag_b5_sum_12 - res_tag_b5_sum_13 - res_tag_b5_sum_14;
+-assign ps_n2b5[6] = ps_n2b5[5];
++assign ps_n2b5_6 = ps_n2b5[5];
+ 
+ assign ps_n3b5[5:0] = res_tag_b5_sum_5  - res_tag_b5_sum_6  - res_tag_b5_sum_7  -
+                          res_tag_b5_sum_9  + res_tag_b5_sum_10 + res_tag_b5_sum_11 -
+                          res_tag_b5_sum_13 + res_tag_b5_sum_14 + res_tag_b5_sum_15;
+-assign ps_n3b5[6] = ps_n3b5[5];
++assign ps_n3b5_6 = ps_n3b5[5];
+ 
+ assign ps_n0b6_dc[6:0] = res_tag_b6_sum_15 + res_tag_b6_sum_14 + res_tag_b6_sum_13 + res_tag_b6_sum_12 + res_tag_b6_sum_11 + res_tag_b6_sum_10 + res_tag_b6_sum_9 + res_tag_b6_sum_8 + res_tag_b6_sum_7 + res_tag_b6_sum_6 + res_tag_b6_sum_5 + res_tag_b6_sum_4 + res_tag_b6_sum_3 + res_tag_b6_sum_2 + res_tag_b6_sum_1 + res_tag_b6_sum_0;
+ assign ps_n0b6_wg[5:0] = res_tag_b6_sum_0  + res_tag_b6_sum_1  + res_tag_b6_sum_2  +
+@@ -8687,17 +8687,17 @@ assign ps_n0b6[6:0] = (cfg_is_wg_d1[14]) ? {1'b0, ps_n0b6_wg} : ps_n0b6_dc;
+ assign ps_n1b6[5:0] = res_tag_b6_sum_1  - res_tag_b6_sum_2  - res_tag_b6_sum_3  +
+                          res_tag_b6_sum_5  - res_tag_b6_sum_6  - res_tag_b6_sum_7  +
+                          res_tag_b6_sum_9  - res_tag_b6_sum_10 - res_tag_b6_sum_11;
+-assign ps_n1b6[6] = ps_n1b6[5];
++assign ps_n1b6_6 = ps_n1b6[5];
+ 
+ assign ps_n2b6[5:0] = res_tag_b6_sum_4  + res_tag_b6_sum_5  + res_tag_b6_sum_6  -
+                          res_tag_b6_sum_8  - res_tag_b6_sum_9  - res_tag_b6_sum_10 -
+                          res_tag_b6_sum_12 - res_tag_b6_sum_13 - res_tag_b6_sum_14;
+-assign ps_n2b6[6] = ps_n2b6[5];
++assign ps_n2b6_6 = ps_n2b6[5];
+ 
+ assign ps_n3b6[5:0] = res_tag_b6_sum_5  - res_tag_b6_sum_6  - res_tag_b6_sum_7  -
+                          res_tag_b6_sum_9  + res_tag_b6_sum_10 + res_tag_b6_sum_11 -
+                          res_tag_b6_sum_13 + res_tag_b6_sum_14 + res_tag_b6_sum_15;
+-assign ps_n3b6[6] = ps_n3b6[5];
++assign ps_n3b6_6 = ps_n3b6[5];
+ 
+ assign ps_n0b7_dc[6:0] = res_tag_b7_sum_15 + res_tag_b7_sum_14 + res_tag_b7_sum_13 + res_tag_b7_sum_12 + res_tag_b7_sum_11 + res_tag_b7_sum_10 + res_tag_b7_sum_9 + res_tag_b7_sum_8 + res_tag_b7_sum_7 + res_tag_b7_sum_6 + res_tag_b7_sum_5 + res_tag_b7_sum_4 + res_tag_b7_sum_3 + res_tag_b7_sum_2 + res_tag_b7_sum_1 + res_tag_b7_sum_0;
+ assign ps_n0b7_wg[5:0] = res_tag_b7_sum_0  + res_tag_b7_sum_1  + res_tag_b7_sum_2  +
+@@ -8708,17 +8708,17 @@ assign ps_n0b7[6:0] = (cfg_is_wg_d1[15]) ? {1'b0, ps_n0b7_wg} : ps_n0b7_dc;
+ assign ps_n1b7[5:0] = res_tag_b7_sum_1  - res_tag_b7_sum_2  - res_tag_b7_sum_3  +
+                          res_tag_b7_sum_5  - res_tag_b7_sum_6  - res_tag_b7_sum_7  +
+                          res_tag_b7_sum_9  - res_tag_b7_sum_10 - res_tag_b7_sum_11;
+-assign ps_n1b7[6] = ps_n1b7[5];
++assign ps_n1b7_6 = ps_n1b7[5];
+ 
+ assign ps_n2b7[5:0] = res_tag_b7_sum_4  + res_tag_b7_sum_5  + res_tag_b7_sum_6  -
+                          res_tag_b7_sum_8  - res_tag_b7_sum_9  - res_tag_b7_sum_10 -
+                          res_tag_b7_sum_12 - res_tag_b7_sum_13 - res_tag_b7_sum_14;
+-assign ps_n2b7[6] = ps_n2b7[5];
++assign ps_n2b7_6 = ps_n2b7[5];
+ 
+ assign ps_n3b7[5:0] = res_tag_b7_sum_5  - res_tag_b7_sum_6  - res_tag_b7_sum_7  -
+                          res_tag_b7_sum_9  + res_tag_b7_sum_10 + res_tag_b7_sum_11 -
+                          res_tag_b7_sum_13 + res_tag_b7_sum_14 + res_tag_b7_sum_15;
+-assign ps_n3b7[6] = ps_n3b7[5];
++assign ps_n3b7_6 = ps_n3b7[5];
+ 
+ 
+ 
+diff --git a/vmod/nvdla/sdp/NV_NVDLA_SDP_CORE_Y_core.v b/vmod/nvdla/sdp/NV_NVDLA_SDP_CORE_Y_core.v
+index d4f26ff..845b108 100644
+--- a/vmod/nvdla/sdp/NV_NVDLA_SDP_CORE_Y_core.v
++++ b/vmod/nvdla/sdp/NV_NVDLA_SDP_CORE_Y_core.v
+@@ -620,10 +620,12 @@ module SDP_Y_CORE_mgc_out_fifo_wait_core_v9 (clk, en, arst, srst, ld, vd, d, lz,
+         else 
+           count_t = n_elem[31:0];
+         count = count_t;
++`ifndef VERILATOR
+         // synopsys translate_off
+         if ( peak < count )
+           peak = count;
+         // synopsys translate_on
++`endif
+       end
+ 
+       if (ph_en) begin: PH_EN_HI
