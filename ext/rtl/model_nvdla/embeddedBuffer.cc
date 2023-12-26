@@ -154,7 +154,7 @@ void allBufferSet::fill_spm_line(uint64_t aligned_addr, const uint8_t* data) {
         entry.spm_line.assign(data, data + spm_line_size);
 #endif
     } else {
-        printf("Weird: request the DRAM when it hits the embedded buffer.\n");
+        printf("(%lu) Weird: request the DRAM when it hits the embedded buffer.\n", wrapper->tickcount);
     }
 }
 
@@ -264,13 +264,6 @@ bool allBuffer::read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t 
 void allBuffer::write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask, uint8_t stream) {
     uint32_t set_id = (axi_addr / spm_line_size) % num_sets;
     sets[set_id]->write_spm_axi_line_with_mask(axi_addr, data, mask);
-}
-
-
-void allBuffer::clear_and_write_back_dirty() {
-    for (auto& set: sets) {
-        set->clear_and_write_back_dirty();
-    }
 }
 
 

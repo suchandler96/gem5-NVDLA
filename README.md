@@ -102,7 +102,7 @@ $ python3 main.py --jsons-dir ~/nvdla/traces/lenet/jsons_tiny/ --out-dir ~/nvdla
 $ docker run --net=host -v ~/:/home -it --rm edwinlai99/gem5_nvdla_env:v3
 (gem5_nvdla_env)# cd /home/gem5-nvdla/bsc-util/nvdla_utilities/sweep/
 (gem5_nvdla_env)# python3 main.py --jsons-dir /home/nvdla/traces/lenet/jsons_tiny/ --out-dir /home/nvdla/traces/lenet/logs/ --vp-out-dir /home/nvdla/traces/lenet/ --sim-dir /home/lenet/ --model-name lenet --run-points --num-threads 24 --scheduler my_validation_nvdla_single_thread
-# wait until the simulation ends... It may take roughly 10-20 minutes depending on the computer's performance
+# wait until the simulation ends... It may take roughly 30-60 seconds depending on the computer's performance
 (gem5_nvdla_env)# exit
 
 $ cd ~/gem5-nvdla/bsc-util/nvdla_utilities/sweep/

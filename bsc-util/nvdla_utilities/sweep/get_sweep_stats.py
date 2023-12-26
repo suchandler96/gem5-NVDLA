@@ -37,11 +37,37 @@ def get_max_num_nvdla(options):
 
 
 def get_num_dma_prefetch(sweep_dir):
-    return os.popen("cd " + sweep_dir + ' && cat stdout | grep "PREFETCH (DMA)" -c').readlines()[0].strip('\n')
+    counter = 0
+    axi_path = os.path.join(sweep_dir, "axilog")
+    if os.path.exists(axi_path):
+        fp = open(axi_path, "rb")
+
+        while True:
+            int64_0 = int.from_bytes(fp.read(8), byteorder="little")
+            if not int64_0:
+                break
+            int64_1 = int.from_bytes(fp.read(8), byteorder="little")
+            if (int(int64_1) >> 56) & 0xf == 0x8:
+                counter += 1
+        fp.close()
+    return counter
 
 
 def get_num_dma(sweep_dir):
-    return os.popen("cd " + sweep_dir + ' && cat stdout | grep "DMA read req is issued:" -c').readlines()[0].strip('\n')
+    counter = 0
+    axi_path = os.path.join(sweep_dir, "axilog")
+    if os.path.exists(axi_path):
+        fp = open(axi_path, "rb")
+
+        while True:
+            int64_0 = int.from_bytes(fp.read(8), byteorder="little")
+            if not int64_0:
+                break
+            int64_1 = int.from_bytes(fp.read(8), byteorder="little")
+            if (int(int64_1) >> 56) & 0xf == 0x3:
+                counter += 1
+        fp.close()
+    return counter
 
 
 def get_host_seconds(sweep_dir):
@@ -116,45 +142,52 @@ def get_memory_cycles(sweep_dir):
     global max_num_nvdla
     item_vals_of_nvdlas = ["0" for _ in range(max_num_nvdla)]
 
-    stdout_path = os.path.join(sweep_dir, "stdout")
-    if os.path.exists(stdout_path):
-        with open(stdout_path) as fp:
-            lines = fp.readlines()
-    else:
-        lines = []
+    print_insts = []
+    axi_path = os.path.join(sweep_dir, "axilog")
+    if os.path.exists(axi_path):
+        fp = open(os.path.join(sweep_dir, "axilog"), "rb")
+        while True:
+            int64_0 = int.from_bytes(fp.read(8), byteorder="little")
+            if not int64_0:
+                break
+            int64_1 = int.from_bytes(fp.read(8), byteorder="little")
+            assert int64_1
+            print_insts.append((int(int64_0), int(int64_1)))
+        fp.close()
 
     dbb_inflight = [[(0, 0)] for _ in range(max_num_nvdla)]     # [[(cycle_id, num), ...], ...]
     cvsram_inflight = [[(0, 0)] for _ in range(max_num_nvdla)]
-    for line in lines:
-        if "read request from dla" in line:
-            req_match = re.search("\(([0-9]+)\) nvdla#([0-9]+) ([A-Z]+): read request from dla, addr 0x[0-9a-f]+ burst ([0-9]) id [0-9]", line)
-            assert req_match is not None
-            time = int(req_match.group(1)) // 2
-            nvdla = int(req_match.group(2))
-            if req_match.group(3) == "DBB":
-                to_append = (time, dbb_inflight[nvdla][-1][-1] + int(req_match.group(4)) + 1)
+
+    for print_inst in print_insts:
+        print_cmd = (print_inst[1] >> 56) & 0xf
+        if print_cmd == 0x0:      # read request from dla
+            time = print_inst[1] & 0xffffffff
+            nvdla = (print_inst[1] >> 40) & 0xff
+            name = (print_inst[1] >> 48) & 0xff
+            burst = (print_inst[1] >> 60) & 0xf
+            if name == ord('D'):
+                to_append = (time, dbb_inflight[nvdla][-1][-1] + burst + 1)
                 if dbb_inflight[nvdla][-1][0] == time:
                     dbb_inflight[nvdla].pop(-1)
                 dbb_inflight[nvdla].append(to_append)
-            elif req_match.group(3) == "CVSRAM":
-                to_append = (time, cvsram_inflight[nvdla][-1][-1] + int(req_match.group(4)) + 1)
+            elif name == ord('C'):
+                to_append = (time, cvsram_inflight[nvdla][-1][-1] + burst + 1)
                 if cvsram_inflight[nvdla][-1][0] == time:
                     cvsram_inflight[nvdla].pop(-1)
                 cvsram_inflight[nvdla].append(to_append)
+                nvdla = (print_inst[1] >> 40) & 0xff
             else:
                 assert False
-        elif "read data used by nvdla" in line:
-            # todo: add DBB or CVSRAM name printing together with axi_responder.cc, instead of address-based
-            addr_match = re.search("\(([0-9]+)\) read data used by nvdla#([0-9]+) \(returned by gem5 or already in spm\), addr 0x([5,8])[0-9a-f]{7}$", line)
-            assert addr_match is not None
-            time = int(addr_match.group(1)) // 2
-            nvdla = int(req_match.group(2))
-            if addr_match.group(3) == "8":
+        elif print_cmd == 0x4:      # read data used by nvdla
+            time = print_inst[1] & 0xffffffff
+            nvdla = (print_inst[1] >> 40) & 0xff
+            name = (print_inst[1] >> 48) & 0xff
+            if name == ord('D'):
                 to_append = (time, dbb_inflight[nvdla][-1][-1] - 1)
                 if dbb_inflight[nvdla][-1][0] == time:
                     dbb_inflight[nvdla].pop(-1)
                 dbb_inflight[nvdla].append(to_append)
-            elif addr_match.group(3) == "5":
+            elif name == ord('C'):
                 to_append = (time, cvsram_inflight[nvdla][-1][-1] - 1)
                 if cvsram_inflight[nvdla][-1][0] == time:
                     cvsram_inflight[nvdla].pop(-1)
@@ -336,3 +369,67 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+# put the encoded output here:
+# cmd_id    |<--------------------- pamrams ----------------------->|
+
+# read request
+# printf("(%lu) nvdla#%d %s: read request from dla, addr 0x%08lx burst %d id %d\n", wrapper->tickcount, wrapper->id_nvdla, name, *dla.ar_araddr, *dla.ar_arlen, *dla.ar_arid);
+# 64,   (32,    8,      8,  8,      4,  4)
+# addr  tick    stream  dla name    0   burst
+
+
+# write request from dla
+# printf("(%lu) nvdla#%d %s: write request from dla, addr 0x%08lx id %d\n", wrapper->tickcount, wrapper->id_nvdla, name, *dla.aw_awaddr, *dla.aw_awid);
+# 64,   (32,    8,      8,  8,      4,  4)
+# addr  tick    stream  dla name    1
+
+
+# spm hit
+# printf("(%lu) this spm_line_addr exists in spm, addr 0x%08lx\n", wrapper->tickcount, start_addr);
+# 64,   (32,    8,      8,  8,      4,  4)
+# addr  tick            dla         2
+
+
+# DMA read issue
+# printf("(%lu) DMA read req issued from NVDLA side, addr 0x%08lx\n", wrapper->tickcount, spm_line_addr);
+# 64,   (32,    8,      8,  8,      4,  4)
+# addr  tick            dla         3
+
+
+# read data back to NVDLA
+# printf("(%lu) read data used by nvdla#%d (returned by gem5 or already in spm), addr 0x%08lx\n", wrapper->tickcount, wrapper->id_nvdla, addr_front);
+# 64,   (32,    8,      8,  8,      4,  4)
+# addr  tick            dla name    4
+
+
+# PREFETCH AXI back
+# printf("(%lu) nvdla#%d read data returned by gem5 PREFETCH, addr 0x%08lx\n", wrapper->tickcount, wrapper->id_nvdla, addr);
+# 64,   (32,    8,      8,  8,      4,  4)
+# addr  tick            dla         5
+
+
+# normal AXI back
+# printf("(%lu) nvdla#%d read data returned by gem5, addr 0x%08lx\n", wrapper->tickcount, wrapper->id_nvdla, addr);
+# 64,   (32,    8,      8,  8,      4,  4)
+# addr  tick            dla         6
+
+
+# DMA return (including both prefetch and normal)
+# printf("(%lu) nvdla#%d AXIResponder handling DMA return data addr 0x%08lx with length %d.\n", wrapper->tickcount, wrapper->id_nvdla, addr, len);
+# 64,   (32,    8,      8,  8,      4,  4)
+# addr  tick            dla         7
+
+
+# DMA PREFETCH issue
+# printf("(%lu) nvdla#%d PREFETCH (DMA) request addr 0x%08lx issued.\n", wrapper->tickcount, wrapper->id_nvdla, spm_line_addr);
+# 64,   (32,    8,      8,  8,      4,  4)
+# addr  tick            dla         8
+
+
+# AXI PREFETCH issue
+# printf("(%lu) nvdla#%d PREFETCH request addr 0x%08lx issued.\n", wrapper->tickcount, wrapper->id_nvdla, to_issue_addr);
+# 64,   (32,    8,      8,  8,      4,  4)
+# addr  tick            dla         9

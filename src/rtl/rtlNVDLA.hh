@@ -292,6 +292,8 @@ public:
     BufferMode buffer_mode;    // control the mode of using embedded SPM / cache, whether as an all-in-one buffer or simply a prefetch buffer
     bool use_fake_mem;
 
+    std::string print_path;
+
     void try_get_dma_read_data(uint32_t size);
 };
 

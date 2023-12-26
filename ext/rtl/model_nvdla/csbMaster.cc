@@ -59,9 +59,10 @@ void CSBMaster::ext_event(int ext) {
 }
 
 int CSBMaster::eval(int noop) {
-    if (dla->nvdla2csb_wr_complete)
+    if (dla->nvdla2csb_wr_complete) {
         printf("(%lu) write complete from CSB\n",
-                wrapper->tickcount);
+               wrapper->tickcount);
+    }
 
     dla->csb2nvdla_valid = 0;
     if (opq.empty())
@@ -77,34 +78,46 @@ int CSBMaster::eval(int noop) {
     }
 
     if (!op.write && op.reading && dla->nvdla2csb_valid) {
+#ifndef AXI_RESP_FAST_IO
         if(op.wait_until == 0) {
             printf("(%lu) read response from nvdla: %08x\n",
                 wrapper->tickcount, dla->nvdla2csb_data);
         }
+#endif
 
         if ((dla->nvdla2csb_data & op.mask) != (op.data & op.mask)) {
             op.reading = 0;
             if(op.wait_until == 0) {
                 if(op.write == 0 && op.addr == 0xffff0003 && op.data == 0x0 && dla->nvdla2csb_data != 0) {
+#ifndef AXI_RESP_FAST_IO
                     printf("new interrupts come too early, so ignore this reg txn\n");
+#endif
                     opq.pop();
                 } else {
                     op.tries--;
+#ifndef AXI_RESP_FAST_IO
                     printf("(%lu) invalid response -- trying again\n",
                            wrapper->tickcount);
+#endif
                     if (!op.tries) {
+#ifndef AXI_RESP_FAST_IO
                         printf("(%lu) ERROR: timed out reading response\n",
                                wrapper->tickcount);
+#endif
                         _test_passed = 0;
                         opq.pop();
                     }
                 }
             } else if(((dla->nvdla2csb_data & op.mask) & op.data) == op.data) {
+#ifndef AXI_RESP_FAST_IO
                 printf("(%lu) Intr %0x08x has the expected bit 0x%08x\n", wrapper->tickcount, dla->nvdla2csb_data, op.data);
+#endif
                 opq.pop();
             }
         } else {
+#ifndef AXI_RESP_FAST_IO
             if(op.wait_until) printf("(%lu) Intr reg got the expected response 0x%08x\n", wrapper->tickcount, op.data);
+#endif
             opq.pop();
         }
     }
@@ -116,7 +129,9 @@ int CSBMaster::eval(int noop) {
         return 0;
 
     if (!dla->csb2nvdla_ready) {
+#ifndef AXI_RESP_FAST_IO
         printf("(%lu) CSB stalled...\n", wrapper->tickcount);
+#endif
         return 0;
     }
 
@@ -126,17 +141,21 @@ int CSBMaster::eval(int noop) {
         dla->csb2nvdla_wdat = op.data;
         dla->csb2nvdla_write = 1;
         dla->csb2nvdla_nposted = 0;
+#ifndef AXI_RESP_FAST_IO
         printf("(%lu) write to nvdla: addr %08x, data %08x\n",
                 wrapper->tickcount, op.addr, op.data);
+#endif
         opq.pop();
     } else {
         dla->csb2nvdla_valid = 1;
         dla->csb2nvdla_addr = op.addr;
         dla->csb2nvdla_write = 0;
+#ifndef AXI_RESP_FAST_IO
         if(op.wait_until == 0) {
             printf("(%lu) read from nvdla: addr %08x\n",
                    wrapper->tickcount, op.addr);
         }
+#endif
         op.reading = 1;
     }
 

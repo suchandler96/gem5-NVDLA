@@ -57,7 +57,8 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     spm_line_size(params.spm_line_size),
     spm_line_num(params.spm_size / params.spm_line_size),
     dma_enable(params.dma_enable),
-    use_fake_mem(params.use_fake_mem) {
+    use_fake_mem(params.use_fake_mem),
+    print_path(params.print_path) {
 
     switch (params.buffer_mode) {
         case 0:
@@ -236,7 +237,9 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
         uint64_t real_addr = getRealAddr(aux.first, false);         // only DRAM has DMA fetch
         if (dma_rd_engine->atEndOfBlock()) {
             dma_rd_engine->startFill(real_addr, aux.second);
+#ifndef AXI_RESP_FAST_IO
             printf("(%lu) nvdla#%d DMA read req is issued: addr 0x%08lx, len %d\n", wr->tickcount, id_nvdla, aux.first, aux.second);
+#endif
             // stats.num_dma_rd++;
             // after successfully calling DMA, pop aux
             out.dma_read_buffer.pop();
@@ -250,7 +253,9 @@ rtlNVDLA::processOutput(outputNVDLA& out) {
         if (dma_wr_engine->atEndOfBlock()) {                    // previous DMA write has been sent
             uint64_t real_addr = getRealAddr(aux.first, false);     // only DRAM has DMA write
             dma_wr_engine->startFill(real_addr, aux.second.size(), aux.second.data());
+#ifndef AXI_RESP_FAST_IO
             printf("(%lu) nvdla#%d DMA write req is issued: addr 0x%08lx, len %ld\n", wr->tickcount, id_nvdla, aux.first, aux.second.size());
+#endif
             // stats.num_dma_wr++;
             out.dma_write_buffer.pop_front();
         }
@@ -272,14 +277,20 @@ rtlNVDLA::runIterationNVDLA() {
         trace->axievent(&waiting_for_gem5_mem);
     } else if (extevent == TraceLoaderGem5::TRACE_WFI) {
         waiting = 1;
+#ifndef AXI_RESP_FAST_IO
         printf("(%lu) waiting for interrupt...\n", wr->tickcount);
+#endif
     } else if (extevent == TraceLoaderGem5::TRACE_RESET) {
         wr->init();
+#ifndef AXI_RESP_FAST_IO
         printf("nvdla#%d reset\n", id_nvdla);
+#endif
     }
 
     if (waiting && wr->dla->dla_intr) {
+#ifndef AXI_RESP_FAST_IO
         printf("(%lu) nvdla#%d interrupt!\n", wr->tickcount, id_nvdla);
+#endif
         waiting = 0;
     }
 
@@ -293,7 +304,7 @@ rtlNVDLA::runIterationNVDLA() {
         }
     }
 
-    outputNVDLA& output = wr->tick(input);
+    outputNVDLA& output = wr->tick();
 
     if (dma_enable) {
         try_get_dma_read_data(spm_line_size);
@@ -310,6 +321,16 @@ rtlNVDLA::runIterationNVDLA() {
         }
     }
     processOutput(output);
+
+#ifdef AXI_RESP_FAST_IO
+    if (Wrapper_nvdla::buf_ptr >= PB_SIZE) {
+        std::ofstream fout;
+        fout.open(print_path, std::ios::out | std::ios::app | std::ios::binary);
+        fout.write((char*)Wrapper_nvdla::print_buffer, Wrapper_nvdla::buf_ptr * sizeof(uint64_t));
+        fout.close();
+        Wrapper_nvdla::buf_ptr = 0;
+    }
+#endif
 }
 
 void
@@ -339,6 +360,16 @@ rtlNVDLA::tick() {
         } else {
             printf("NVDLA %d *** PASS\n", id_nvdla);
         }
+
+#ifdef AXI_RESP_FAST_IO
+        if (Wrapper_nvdla::buf_ptr != 0) {
+            std::ofstream fout;
+            fout.open(print_path, std::ios::out | std::ios::app | std::ios::binary);
+            fout.write((char*)Wrapper_nvdla::print_buffer, Wrapper_nvdla::buf_ptr * sizeof(uint64_t));
+            fout.close();
+            Wrapper_nvdla::buf_ptr = 0;
+        }
+#endif
 
         // we send a null packet telling we have finished
         RequestPtr req = std::make_shared<Request>(id_nvdla, 1,

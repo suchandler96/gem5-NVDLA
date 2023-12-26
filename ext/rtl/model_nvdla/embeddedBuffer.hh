@@ -22,8 +22,8 @@ public:
     abstractSet(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _assoc);
     virtual ~abstractSet() = 0;
     inline size_t size() { return addr_map.size(); }
-    inline virtual bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) { assert(false); }
-    inline virtual bool read_spm_line(uint64_t aligned_addr, std::vector<uint8_t>& data_out) { assert(false); }
+    inline virtual bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) { assert(false); return true; }
+    inline virtual bool read_spm_line(uint64_t aligned_addr, std::vector<uint8_t>& data_out) { assert(false); return true; }
     inline virtual void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask) { assert(false); }
     inline virtual void clear_and_write_back_dirty() { assert(false); }
     virtual void fill_spm_line(uint64_t aligned_addr, const uint8_t* data) = 0;
@@ -98,7 +98,9 @@ public:
     }
 
     inline virtual void clear_and_write_back_dirty() {
-        assert(false);
+        for (auto& set: sets) {
+            set->clear_and_write_back_dirty();
+        }
     }
 
     inline void fill_spm_line(uint64_t aligned_addr, const uint8_t* data) {
@@ -114,7 +116,6 @@ public:
     ~allBuffer() override;
     bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id) override;
     void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask, uint8_t stream) override;
-    void clear_and_write_back_dirty() override;
 };
 
 

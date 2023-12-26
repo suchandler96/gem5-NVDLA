@@ -39,42 +39,65 @@
 # here there is the code of nvdla
 DIR=verilator_nvdla
 
-CC=clang-6.0
-CXX=clang++-6.0 -fPIC
+CC=clang-10
+CXX=clang++-10 -fPIC
 
-create_csbMaster_o: csbMaster.cc csbMaster.hh
+csbMaster_o: csbMaster.cc csbMaster.hh
 	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-c -o csbMaster.o csbMaster.cc
 
-create_axiResponder_o: axiResponder.cc axiResponder.hh
+csbMaster_opt_o: csbMaster.cc csbMaster.hh
+	$(CXX) -fpic -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
+	-c -o csbMaster_opt.o csbMaster.cc
+
+axiResponder_o: axiResponder.cc axiResponder.hh
 	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-c -o axiResponder.o axiResponder.cc
 
-create_embeddedBuffer_o: embeddedBuffer.cc embeddedBuffer.hh
+axiResponder_opt_o: axiResponder.cc axiResponder.hh
+	$(CXX) -fpic -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
+	-c -o axiResponder_opt.o axiResponder.cc
+
+embeddedBuffer_o: embeddedBuffer.cc embeddedBuffer.hh
 	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-c -o embeddedBuffer.o embeddedBuffer.cc
 
-create_wrapper_vcd_o: create_axiResponder_o create_csbMaster_o create_embeddedBuffer_o wrapper_nvdla.cc wrapper_nvdla.hh
+embeddedBuffer_opt_o: embeddedBuffer.cc embeddedBuffer.hh
+	$(CXX) -fpic -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
+	-c -o embeddedBuffer_opt.o embeddedBuffer.cc
+
+wrapper_vcd_o: axiResponder_o csbMaster_o embeddedBuffer_o wrapper_nvdla.cc wrapper_nvdla.hh
 	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-c -o wrapper_nvdla.o wrapper_nvdla.cc
 
+wrapper_vcd_opt_o: axiResponder_opt_o csbMaster_opt_o embeddedBuffer_opt_o wrapper_nvdla.cc wrapper_nvdla.hh
+	$(CXX) -fpic -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
+	-c -o wrapper_nvdla_opt.o wrapper_nvdla.cc
+
 verilated_o:
-	$(CXX) -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
-	-I$(VERILATOR_ROOT)/include/vltstd \
-	$(VERILATOR_ROOT)/include/verilated.cpp -fPIC \
-	-c -o verilated.o
+	$(CXX) -I$(DIR) -g -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
+	$(VERILATOR_ROOT)/include/verilated.cpp -fPIC -c -o verilated.o
+
+verilated_opt_o:
+	$(CXX) -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
+	$(VERILATOR_ROOT)/include/verilated.cpp -fPIC -c -o verilated_opt.o
 
 verilated_vcd_o:
-	$(CXX) -I$(DIR) -g -I$(VERILATOR_ROOT)/include \
-	-I$(VERILATOR_ROOT)/include/vltstd \
-	$(VERILATOR_ROOT)/include/verilated_vcd_c.cpp -fPIC \
-	-c -o verilated_vcd.o
+	$(CXX) -I$(DIR) -g -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
+	$(VERILATOR_ROOT)/include/verilated_vcd_c.cpp -fPIC -c -o verilated_vcd.o
 
-create_library_vcd: create_wrapper_vcd_o verilated_o verilated_vcd_o
+verilated_vcd_opt_o:
+	$(CXX) -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
+	$(VERILATOR_ROOT)/include/verilated_vcd_c.cpp -fPIC -c -o verilated_vcd_opt.o
+
+library_vcd: wrapper_vcd_o verilated_o verilated_vcd_o
 	ar rvs libVerilatorNVDLA.a csbMaster.o axiResponder.o embeddedBuffer.o wrapper_nvdla.o verilated.o verilated_vcd.o
 
-.PHONY: clean create_csbMaster_o create_axiResponder_o create_embeddedBuffer_o create_wrapper_vcd_o \
-	verilated_o verilated_vcd_o create_library_vcd create_nvdla_o
+library_vcd_opt: wrapper_vcd_opt_o verilated_opt_o verilated_vcd_opt_o
+	ar rvs libVerilatorNVDLA.a csbMaster_opt.o axiResponder_opt.o embeddedBuffer_opt.o wrapper_nvdla_opt.o verilated_opt.o verilated_vcd_opt.o
+
+.PHONY: clean csbMaster_o csbMaster_opt_o axiResponder_o axiResponder_opt_o embeddedBuffer_o embeddedBuffer_opt_o wrapper_vcd_o wrapper_vcd_opt_o \
+	verilated_o verilated_opt_o verilated_vcd_o verilated_vcd_opt_o library_vcd library_vcd_opt
 
 clean:
 	rm -f *.o *.d *.so *.a

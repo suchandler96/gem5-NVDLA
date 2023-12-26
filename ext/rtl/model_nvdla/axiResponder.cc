@@ -253,13 +253,17 @@ void
 AXIResponder::eval_timing() {
     /* write request */
     if (*dla.aw_awvalid && *dla.aw_awready) {
+#ifndef AXI_RESP_FAST_IO
             printf("(%lu) nvdla#%d %s: write request from dla, addr 0x%08lx id %d\n",
                 wrapper->tickcount,
                 wrapper->id_nvdla,
                 name,
                 *dla.aw_awaddr,
                 *dla.aw_awid);
-
+#else
+        PRINT_WR_REQ(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla,
+                     *dla.aw_awid, name[0], wrapper->tickcount, *dla.aw_awaddr);
+#endif
         axi_aw_txn txn;
 
         txn.awid = *dla.aw_awid;
@@ -428,7 +432,7 @@ AXIResponder::process_read_req() {
         uint8_t len = *dla.ar_arlen;
         uint8_t i = 0;
 
-
+#ifndef AXI_RESP_FAST_IO
         printf("(%lu) nvdla#%d %s: read request from dla, addr 0x%08lx burst %d id %d\n",
                wrapper->tickcount,
                wrapper->id_nvdla,
@@ -436,7 +440,10 @@ AXIResponder::process_read_req() {
                *dla.ar_araddr,
                *dla.ar_arlen,
                *dla.ar_arid);
-
+#else
+        PRINT_RD_REQ(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla,
+                     *dla.ar_arid, name[0], wrapper->tickcount, *dla.ar_araddr, *dla.ar_arlen);
+#endif
 
         if (dma_enable) {
             // check whether the requested address ranges are already in spm_write_queue or spm
@@ -465,7 +472,12 @@ AXIResponder::process_read_req() {
 
                 if (data_get_in_spm) {
                     // need to maintain the order of issuing requests
+#ifndef AXI_RESP_FAST_IO
                     printf("(%lu) this spm_line_addr exists in spm, addr 0x%08lx\n", wrapper->tickcount, start_addr);
+#else
+                    PRINT_EB_HIT(wrapper->print_buffer, wrapper->buf_ptr,
+                                 wrapper->id_nvdla, wrapper->tickcount, start_addr);
+#endif
                     req_it->second.back().rvalid = 1;
                 } else {
                     // first check whether this addr has been covered by an inflight DMA request or not
@@ -476,7 +488,12 @@ AXIResponder::process_read_req() {
 
                     if (alloc_succ) {
                         // not covered, need to initiate a new DMA
+#ifndef AXI_RESP_FAST_IO
                         printf("(%lu) DMA read req issued from NVDLA side, addr 0x%08lx\n", wrapper->tickcount, spm_line_addr);
+#else
+                        PRINT_DMA_RD_ISSUE(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla,
+                                           wrapper->tickcount, spm_line_addr);
+#endif
                         map_it->second.is_bypass = (wrapper->buf_mode != BUF_MODE_ALL);
                         inflight_dma_addr_queue.push(spm_line_addr);
                         wrapper->addDMAReadReq(spm_line_addr, wrapper->spm->spm_line_size);
@@ -552,8 +569,12 @@ AXIResponder::process_read_resp() {
 
     axi_r_txn &txn = req_list_ptr->front();
     if (txn.rvalid) {  // ensures the order of response
-        printf("(%lu) read data used by nvdla#%d (returned by gem5 or already in spm), addr 0x%08lx\n",
+#ifndef AXI_RESP_FAST_IO
+        printf("(%lu) read data used by nvdla#%d (returned by gem5 or already in spm), addr %#lx\n",
                 wrapper->tickcount, wrapper->id_nvdla, addr_front);
+#else
+        PRINT_DATA_USED(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla, name[0], wrapper->tickcount, addr_front);
+#endif
 
         // push the front one
         r_fifo.push(txn);
@@ -594,7 +615,11 @@ AXIResponder::inflight_resp(uint64_t addr, const uint8_t* data) {
 #endif
     it->rvalid = 1;
     if (it->is_prefetch) {
-        printf("(%lu) nvdla#%d read data returned by gem5 PREFETCH, addr 0x%08lx\n", wrapper->tickcount, wrapper->id_nvdla, addr);
+#ifndef AXI_RESP_FAST_IO
+        printf("(%lu) nvdla#%d read data returned by gem5 PREFETCH, addr %#lx\n", wrapper->tickcount, wrapper->id_nvdla, addr);
+#else
+        PRINT_PFT_BACK(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla, wrapper->tickcount, addr);
+#endif
         //! delete this txn in inflight_req_order and inflight_req
         // first delete in inflight_req_order
         bool deleted = false;
@@ -619,7 +644,11 @@ AXIResponder::inflight_resp(uint64_t addr, const uint8_t* data) {
         }
 
     } else {
-        printf("(%lu) nvdla#%d read data returned by gem5, addr 0x%08lx\n", wrapper->tickcount, wrapper->id_nvdla, addr);
+#ifndef AXI_RESP_FAST_IO
+        printf("(%lu) nvdla#%d read data returned by gem5, addr %#lx\n", wrapper->tickcount, wrapper->id_nvdla, addr);
+#else
+        PRINT_AXI_BACK(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla, wrapper->tickcount, addr);
+#endif
     }
     #ifdef PRINT_DEBUG
     printf("Remaining %d\n", inflight_req_order.size());
@@ -632,8 +661,12 @@ void
 AXIResponder::inflight_dma_resp(const uint8_t* data, uint32_t len) {
     //! we HAVE TO assume dma is in-order. If it is out-of-order due to bus arbitration, even DMAFifo can't handle it
     uint64_t addr = inflight_dma_addr_queue.front();
-    printf("(%lu) nvdla#%d AXIResponder handling DMA return data addr 0x%08lx with length %d.\n",
+#ifndef AXI_RESP_FAST_IO
+    printf("(%lu) nvdla#%d AXIResponder handling DMA return data addr %#lx with length %d.\n",
            wrapper->tickcount, wrapper->id_nvdla, addr, len);
+#else
+    PRINT_DMA_BACK(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla, wrapper->tickcount, addr);
+#endif
 
     auto addr_it = inflight_dma_attr.find(addr);
     assert(addr_it != inflight_dma_attr.end());
@@ -658,8 +691,9 @@ AXIResponder::inflight_dma_resp(const uint8_t* data, uint32_t len) {
 void
 AXIResponder::read_for_traceLoaderGem5(uint64_t start_addr, uint32_t length) {
     uint64_t txn_start_addr = (uint64_t)start_addr & ~(uint64_t)(AXI_WIDTH / 8 - 1);
-    if (txn_start_addr != start_addr)
-        printf("this dump_mem is not aligned to AXI_WIDTH / 8, op.addr = 0x%08lx\n", start_addr);
+    if (txn_start_addr != start_addr) {
+        printf("this dump_mem is not aligned to AXI_WIDTH / 8, op.addr = %#lx\n", start_addr);
+    }
 
     for (uint64_t delta_addr = 0; txn_start_addr + delta_addr < start_addr + length; delta_addr += (AXI_WIDTH / 8)) {
         uint64_t txn_addr = txn_start_addr + delta_addr;
@@ -696,7 +730,7 @@ AXIResponder::read_response_for_traceLoaderGem5(uint64_t start_addr, uint8_t* da
 
     if (addr_front != start_addr) {
         // this should not happen
-        printf("(%lu) nvdla#%d addr_front(0x%08lx) does not match start_addr (0x%08lx)",
+        printf("(%lu) nvdla#%d addr_front(%#lx) does not match start_addr (%#lx)",
                wrapper->tickcount, wrapper->id_nvdla, addr_front, start_addr);
         abort();
     }
@@ -706,7 +740,7 @@ AXIResponder::read_response_for_traceLoaderGem5(uint64_t start_addr, uint8_t* da
     assert(!addr_front_list.empty());
     axi_r_txn& txn = addr_front_list.front();
     if (txn.rvalid) {
-        printf("(%lu) nvdla#%d memory request at addr 0x%08lx has arrived.\n", wrapper->tickcount, wrapper->id_nvdla, start_addr);
+        printf("(%lu) nvdla#%d memory request at addr %#lx has arrived.\n", wrapper->tickcount, wrapper->id_nvdla, start_addr);
 
         // get the value
         for (uint32_t i = 0; i < AXI_WIDTH / 8; i++) {
@@ -722,7 +756,7 @@ AXIResponder::read_response_for_traceLoaderGem5(uint64_t start_addr, uint8_t* da
 
         return 1;
     } else {
-        printf("(%lu) nvdla#%d still waiting for memory request at addr 0x%08lx\n", wrapper->tickcount, wrapper->id_nvdla, start_addr);
+        printf("(%lu) nvdla#%d still waiting for memory request at addr %#lx\n", wrapper->tickcount, wrapper->id_nvdla, start_addr);
         return 0;
     }
 }
@@ -748,7 +782,11 @@ AXIResponder::log_req_issue(uint64_t addr) {
             uint32_t& log_entry_issued_len = std::get<2>(*it);
             if (addr >= log_entry_addr + log_entry_issued_len) {
                 if (addr > log_entry_addr + log_entry_issued_len) {
-                    printf("nvdla#%d addr issued is beyond the log.\n", wrapper->id_nvdla);
+#ifndef AXI_RESP_FAST_IO
+                    printf("(%lu) nvdla#%d addr issued is beyond the log. addr = %#lx, log_entry_addr = %#lx, "
+                           "log_entry_issued_len = %#x\n", wrapper->tickcount, wrapper->id_nvdla, addr, log_entry_addr,
+                           log_entry_issued_len);
+#endif
                     // todo: ignore the problem currently. I think it may be caused by repetitive accesses of
                     //  inputs / biases. But now we've removed inputs from rd_only_var_log,
                     //  I suppose this shouldn't happen again.
@@ -817,8 +855,12 @@ AXIResponder::generate_prefetch_request() {
             std::tie(map_it, alloc_succ) = inflight_dma_attr.emplace(spm_line_addr, DMAAttr());
             if (alloc_succ) {
                 // not covered, need to initiate a new DMA
+#ifndef AXI_RESP_FAST_IO
                 printf("(%lu) nvdla#%d PREFETCH (DMA) request addr 0x%08lx issued.\n", wrapper->tickcount,
                        wrapper->id_nvdla, spm_line_addr);
+#else
+                PRINT_DMA_PFT_ISSUE(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla, wrapper->tickcount, spm_line_addr);
+#endif
                 map_it->second.is_bypass = false;
 
                 inflight_dma_addr_queue.push(spm_line_addr);
@@ -831,8 +873,12 @@ AXIResponder::generate_prefetch_request() {
 
             }   // else we don't need a new dma request. it is covered by a previous one
         } else {
+#ifndef AXI_RESP_FAST_IO
             printf("(%lu) nvdla#%d PREFETCH request addr 0x%08lx issued.\n", wrapper->tickcount, wrapper->id_nvdla,
                    to_issue_addr);
+#else
+            PRINT_PFT_ISSUE(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla, wrapper->tickcount, to_issue_addr);
+#endif
             inflight_req[to_issue_addr].push_back(txn);
             inflight_req_order.push_back(to_issue_addr);
 

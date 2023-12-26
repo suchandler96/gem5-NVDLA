@@ -25,11 +25,10 @@ run_little:
 	--bootscript bsc-util/bootscript_validation_rtl.rcS
 
 nvdla:
-	cd ext/rtl/model_nvdla && make create_library_vcd && cd ../../../
-	CC=clang-6.0 CXX=clang++-6.0 /usr/bin/python3 /usr/bin/scons build/ARM/gem5.opt PYTHON_CONFIG=/usr/bin/python3-config PROTOC=/usr/local/bin/protoc -j 24
-# `CC=clang-6.0 CXX=clang++-6.0 /usr/bin/python3 $(which scons) build/ARM/gem5.opt PYTHON_CONFIG=/usr/bin/python3-config PROTOC=/usr/local/bin/protoc -j 24`
-# should work, but seems to neglect $(which scons)
+	cd ext/rtl/model_nvdla && make clean && make library_vcd_opt -j24 && cd ../../../
+	CC=clang-10 CXX=clang++-10 /usr/bin/python3 /usr/bin/scons build/ARM/gem5.fast PYTHON_CONFIG=/usr/bin/python3-config PROTOC=/usr/local/bin/protoc -j 24
+
 
 nvdladbg:
-	cd ext/rtl/model_nvdla && make create_library_vcd && cd ../../../
+	cd ext/rtl/model_nvdla && make library_vcd && cd ../../../
 	CC=clang-6.0 CXX=clang++-6.0 /usr/bin/python3 /usr/bin/scons build/ARM/gem5.debug PYTHON_CONFIG=/usr/bin/python3-config PROTOC=/usr/local/bin/protoc -j 24

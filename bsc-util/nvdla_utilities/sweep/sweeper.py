@@ -296,7 +296,8 @@ class Sweeper:
         if args.machine_id == 0 and not args.skip_checkpoint:
             print("Generating checkpoint...")
             os.makedirs(os.path.join(self.gem5_nvdla_dir, "m5out"), exist_ok=True)  # in case m5out doesn't exist
-            lg = os.popen("cd " + self.gem5_nvdla_dir + " && build/ARM/gem5.opt configs/example/arm/fs_bigLITTLE_RTL.py"
+            bin_path = "build/ARM/gem5.opt" if args.gem5_binary.endswith("opt") else "build/ARM/gem5.fast"
+            lg = os.popen("cd " + self.gem5_nvdla_dir + " && " + bin_path + " configs/example/arm/fs_bigLITTLE_RTL.py"
                           " --big-cpus 0 --little-cpus 1 --cpu-type atomic"
                           " --bootscript=configs/boot/hack_back_ckpt.rcS").readlines()
             # get the exact directory of the checkpoint just generated
@@ -306,6 +307,7 @@ class Sweeper:
             self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cpt_dir_name)
 
             # after generating the checkpoint, we can apply it to the scripts
+            # change the checkpoint directory of all simulation points, without the need to manually change them
             for pt_dir in self.pt_dirs:
                 with open(os.path.join(pt_dir, "run.sh")) as fp:
                     run_sh_lines = fp.readlines()

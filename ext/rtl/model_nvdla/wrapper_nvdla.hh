@@ -131,10 +131,7 @@ public:
                   bool use_shared_spm, BufferMode mode, uint32_t _assoc);
     ~Wrapper_nvdla();
 
-    void tick();
-    outputNVDLA& tick(inputNVDLA in);
-    uint64_t getTickCount();
-    void advanceTickCount();
+    outputNVDLA& tick();
     void reset();
     void init();
 
@@ -160,6 +157,12 @@ public:
 
     //! RTL Packet
     outputNVDLA output;
+
+#ifdef AXI_RESP_FAST_IO
+    static uint64_t* print_buffer;
+    static uint32_t buf_ptr;
+#define PB_SIZE (1024 * 1024 * 2)
+#endif
 
     //! SPM & DMA
     bool use_shared_spm;

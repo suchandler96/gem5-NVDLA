@@ -66,8 +66,13 @@ def main():
     args = parser.parse_args()
 
     if not args.gem5_binary:
-        args.gem5_binary = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "../../../build/ARM/gem5.opt"))
+        fast_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../build/ARM/gem5.fast"))
+        if os.path.exists(fast_path):
+            args.gem5_binary = fast_path
+        else:
+            opt_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../build/ARM/gem5.opt"))
+            assert os.path.exists(opt_path), f"gem5.fast/.opt binary does not exist!"
+            args.gem5_binary = opt_path
 
     sweeper = Sweeper(args)
 
