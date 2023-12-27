@@ -22,3 +22,15 @@ index 3a71c9f3c..a9b8b7a08 100644
  
  def generate(env):
      if exists(env) and not gem5_scons.util.ignore_style():
+diff --git a/src/SConscript b/src/SConscript
+index d5a5b8899..15643fe2b 100644
+--- a/src/SConscript
++++ b/src/SConscript
+@@ -1442,6 +1442,7 @@ elif env['CLANG']:
+     # opt, fast, prof and perf all share the same cc flags
+     for target in ['opt', 'fast', 'prof', 'perf']:
+         ccflags[target] += ['-O3']
++    ccflags['fast'] += ['-Ofast']
+ else:
+     error('Unknown compiler, please fix compiler options')
+ 

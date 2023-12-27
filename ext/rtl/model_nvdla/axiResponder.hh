@@ -74,7 +74,7 @@ public:
 
 private:
 
-    int AXI_R_LATENCY;
+    const int AXI_R_LATENCY;    // for non-spm configuration, this fixed latency is modeled by gem5 memory system
     const static int AXI_R_DELAY = 0;
 
     struct axi_r_txn {
@@ -116,11 +116,11 @@ private:
     // map key:addr, data:txn
     std::map<uint64_t, std::list<axi_r_txn>> inflight_req;
     std::list<uint64_t> inflight_req_order;
-    unsigned int max_req_inflight;
+    const unsigned int max_req_inflight;
 
     // dma & spm
     // function together with inflight_req & inflight_req_order
-    bool dma_enable;
+    const bool dma_enable;
 
     struct DMAAttr {
         bool is_bypass;
@@ -131,8 +131,8 @@ private:
     std::vector<uint32_t> inflight_count_for_sets;  // count inflight dma requests for each embedded buffer set
 
     // prefetch
-    uint32_t pft_threshold;
-    uint32_t dma_pft_threshold;
+    const uint32_t pft_threshold;
+    const uint32_t dma_pft_threshold;
     std::list<std::tuple<uint64_t, uint32_t, uint32_t>> read_var_log;  // each tuple is (addr, length, issued_len) of a read-only variable
 
 public:

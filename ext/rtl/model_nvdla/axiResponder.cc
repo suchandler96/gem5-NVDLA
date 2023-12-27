@@ -21,21 +21,15 @@ AXIResponder::AXIResponder(struct connections _dla,
                            bool sram_,
                            const unsigned int maxReq,
                            bool _dma_enable):
-                               dla(_dla), wrapper(_wrapper), name(_name), sram(sram_), dma_enable(_dma_enable),
-                               inflight_count_for_sets(_wrapper->spm->num_sets, 0) {
+                               AXI_R_LATENCY(dma_enable ? wrapper->spm->spm_latency : 0), dla(_dla), name(_name),
+                               max_req_inflight((maxReq < 240) ? maxReq : 240), dma_enable(_dma_enable),
+                               inflight_count_for_sets(_wrapper->spm->num_sets, 0),
+                               pft_threshold(16), dma_pft_threshold(8), wrapper(_wrapper), sram(sram_) {
     *dla.aw_awready = 1;
     *dla.w_wready = 1;
     *dla.b_bvalid = 0;
     *dla.ar_arready = 1;
     *dla.r_rvalid = 0;
-
-    max_req_inflight = (maxReq < 240) ? maxReq : 240;
-
-    AXI_R_LATENCY = dma_enable ? wrapper->spm->spm_latency : 0;
-    // for non-spm configuration, this fixed latency is modeled by gem5 memory system
-
-    pft_threshold = 16;
-    dma_pft_threshold = 8;
 
     // add some latency...
     for (int i = 0; i < AXI_R_LATENCY; i++) {

@@ -212,9 +212,10 @@ def get_memory_cycles(sweep_dir):
         zero_dbb_intervals, zero_cvsram_intervals = [], []
 
         for i in range(len(dbb_inflight[nvdla]) - 1):
-            if dbb_inflight[nvdla][i][1] == 0 and (dbb_inflight[nvdla][i + 1][1] != 0 or dbb_inflight[nvdla][i + 1][0] - dbb_inflight[nvdla][i][0] > 10):
-                # normally interval between a series of DBB read for a squence of continuous addresses should be 2 cycles
-                # we use 10 to better make out those pauses for computation
+            if dbb_inflight[nvdla][i][1] == 0 and (dbb_inflight[nvdla][i + 1][1] != 0 or
+                                                   dbb_inflight[nvdla][i + 1][0] - dbb_inflight[nvdla][i][0] > 10):
+                # normally interval between a series of DBB read for a sequence of continuous addresses
+                # should be 2 cycles, but we use 10 to better make out those pauses for computation
                 zero_dbb_intervals.append((dbb_inflight[nvdla][i][0], dbb_inflight[nvdla][i + 1][0]))
 
         for i in range(len(cvsram_inflight[nvdla]) - 1):
@@ -222,12 +223,27 @@ def get_memory_cycles(sweep_dir):
                 zero_cvsram_intervals.append((cvsram_inflight[nvdla][i][0], cvsram_inflight[nvdla][i + 1][0]))
 
         # get intersect
+        last_cvsram_int_id = 0
         for interval in zero_dbb_intervals:
-            for cvsram_int in zero_cvsram_intervals:
-                max_left = max(interval[0], cvsram_int[0])
-                min_right = min(interval[1], cvsram_int[1])
-                if max_left < min_right:
-                    zero_inflight.append((max_left, min_right))
+            while last_cvsram_int_id < len(zero_cvsram_intervals):
+                cvsram_int = zero_cvsram_intervals[last_cvsram_int_id]
+                if cvsram_int[1] <= interval[0]:    # cvsram_interval is to the left of dbb_interval
+                    last_cvsram_int_id += 1
+                    continue
+                elif cvsram_int[0] >= interval[1]:  # cvsram_interval is to the right of dbb_interval
+                    break                           # go to next dbb_interval
+                else:                               # must have an intersection
+                    try_cvsram_id = last_cvsram_int_id
+                    while try_cvsram_id < len(zero_cvsram_intervals):
+                        try_cvsram_int = zero_cvsram_intervals[try_cvsram_id]
+                        if try_cvsram_int[0] >= interval[1]:    # try_cvsram_interval is to the right of dbb_interval
+                            break
+                        max_left = max(interval[0], try_cvsram_int[0])
+                        min_right = min(interval[1], try_cvsram_int[1])
+                        assert max_left < min_right
+                        zero_inflight.append((max_left, min_right))
+                        try_cvsram_id += 1
+                    break
 
         zero_time = 0
         for interval in zero_inflight:
