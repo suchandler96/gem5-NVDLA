@@ -21,7 +21,7 @@ AXIResponder::AXIResponder(struct connections _dla,
                            bool sram_,
                            const unsigned int maxReq,
                            bool _dma_enable):
-                               AXI_R_LATENCY(dma_enable ? wrapper->spm->spm_latency : 0), dla(_dla), name(_name),
+                               AXI_R_LATENCY(_dma_enable ? _wrapper->spm->spm_latency : 0), dla(_dla), name(_name),
                                max_req_inflight((maxReq < 240) ? maxReq : 240), dma_enable(_dma_enable),
                                inflight_count_for_sets(_wrapper->spm->num_sets, 0),
                                pft_threshold(16), dma_pft_threshold(8), wrapper(_wrapper), sram(sram_) {

@@ -37,7 +37,7 @@ $ mkdir nvdla                   # to put testcases in the steps afterwards
 $ cd gem5-nvdla/
 $ mkdir ext/rtl/model_nvdla/verilator_nvdla
 $ mkdir mnt
-$ git apply ban_git_hook_install.patch      # to prevent a git_hook bug in case of dubious ownership of the repo
+$ git apply ban_git_hook_install_Ofast.patch      # to prevent a git_hook bug in case of dubious ownership of the repo
 $ docker pull edwinlai99/advp:v1
 $ docker pull edwinlai99/gem5_nvdla_env:v3
 ```
@@ -119,6 +119,16 @@ Some results close to the table below are desired:
 | 3        | TRUE       | FALSE                   | FALSE        | TRUE       | 73459           | 31553            |
 
 For other workloads provided in our examples, steps 5-6 should be done again for that workload. If a new NN is to be compiled, Please also refer to the "Compile a Single NN" and "Compile a Pipelined Multibatch NN" sections. For users who want to customize our toolchain, please refer to `bsc-util/nvdla_utilities/BUILD.md`.
+
+Our framework provides far better simulation performance (18x-22x simulation speed) than gem5-rtl and the original NVDLA verilator verification flow, approaching the performance of its C-model. Under an ideal memory setting, Resnet-50 can be simulated within 2 hours. Our optimizations include:
+- Reduce IO using a compressed log format and IO buffer (`ext/rtl/model_nvdla/verilator_nvdla/axiResponder.hh`);
+- Adopt later version of clang and verilator to compile NVDLA RTL model;
+- Reduce some UNOPTFLAT warnings at the verilog code level;
+- Apply `-O3` to `.v` -> `.cpp` compilation using verilator;
+- Apply `-O3 -Ofast` to `.cpp` -> `.a` compilation using clang;
+- Apply profiling-guided optimization (PGO) to `.cpp` -> `.a` compilation using clang (extra 40% improvement);
+- Apply `-Ofast` to the compilation of `gem5.fast`;
+- Apply PGO to gem5 compilation (extra 10% improvement).
 
 # Compile a Single NN
 This section provides the process to generate the files in `bsc-util/nvdla_utilities/example_usage/lenet/`.
