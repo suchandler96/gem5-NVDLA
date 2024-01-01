@@ -14,15 +14,40 @@ class Data:
         self.offset = None
         self.addr = None        # offset 0x80000000 by default
         self.size = None
+        self.width = None
+        self.height = None
+        self.channel = None
+        self.line_stride = None
+        self.surf_stride = None
+        self.plane_stride = None
+
+        """ inferred compilation-time info """
+        self.true_occupy_space = None   # for regular data blocks, it will be self.size
+        self.hyper_data = None      # for strided tensors: hyper data addr; remain None for ordinary data blocks
 
         """runtime info"""
         self.num_access = 0     # calculated by the number of accesses of last addr aligned to 0x40
-        self.liveness = [None, None]    # (rw_id of first access of first element, rw_id of last access pf last element)
+        self.liveness = [None, None]    # (rw_id of first access of first element, rw_id of last access of last element)
 
     def valid(self):
         if self.addr_id <= 0 or (self.addr_id == 0 and self.offset == 0 and self.size == 0):
             return False
         return True
+
+    def is_strided(self):
+        if self.height * self.line_stride == 0:
+            return False
+        num_segment = (self.size - 1) // (self.height * self.line_stride) + 1
+        return self.surf_stride > self.height * self.line_stride and num_segment > 1
+
+    def infer(self):
+        if self.is_strided():  # this is a strided tensor
+            num_segment = (self.size - 1) // (self.height * self.line_stride) + 1
+            assert num_segment > 1
+            self.true_occupy_space = self.size + (num_segment - 1) * (self.surf_stride - self.height * self.line_stride)
+            print("Strided Tensor detected")
+        else:
+            self.true_occupy_space = self.size
 
 
 class Surface:
@@ -30,6 +55,23 @@ class Surface:
         self.weights = []
         self.activations = []
         self.unknowns = []
+
+
+class HyperData:
+    def __init__(self, first_blk_key, first_blk):
+        # for strided tensors: multiple tensors are interleaved. They need to be allocated as a whole
+        self.addr = first_blk.addr
+        self.bundled_data_blk_keys = [first_blk_key]
+        self.bundled_data_size = first_blk.true_occupy_space
+        # |<------bundled_data_size------->|
+        # |<-true_occupy_space#0->|
+        #          |<-true_occupy_space#1->|
+        # |--------........--------........|
+
+    def insert_data(self, blk_key, blk):
+        self.bundled_data_blk_keys.append(blk_key)
+        current_addr_max = blk.addr + blk.true_occupy_space
+        self.bundled_data_size = max(self.bundled_data_size, current_addr_max - self.addr)
 
 
 class Workload:
@@ -49,6 +91,8 @@ class Workload:
         self.sorted_addr = None     # = [addr, ...]
         self.raw_addr_log = None    # = [['r' or 'w', addr], ...]
         self.rd_only_vars = []      # = [[addr_id, offset], ...]
+
+        self.hyper_data = {}        # = {hyper_data_addr: HyperData}
 
         with open(os.path.join(self.in_dir, "qemu_log")) as fp:
             lines = fp.readlines()
@@ -105,6 +149,37 @@ class Workload:
             if act not in self.inputs and act not in self.outputs:
                 self.intermediate_act.append(act)
 
+        # here we have known all the activation tensors
+        # continue to infer information about bundled strided tensors
+        # because they must be activations
+        # find all those pairs that have intersection with each other
+        sorted_acts = []
+        for act in self.activations:
+            if self.data[act].is_strided():
+                sorted_acts.append(act)
+        sorted_acts.sort(key=lambda x: self.data[x].addr)
+        for i in range(len(sorted_acts)):
+            i_blk = self.data[sorted_acts[i]]
+            for j in range(i + 1, len(sorted_acts)):
+                j_blk = self.data[sorted_acts[j]]
+                max_l = max(i_blk.addr, j_blk.addr)
+                min_r = min(i_blk.addr + i_blk.true_occupy_space, j_blk.addr + j_blk.true_occupy_space)
+                if max_l < min_r:
+                    # first check whether i_blk.addr is included in any hyper_data
+                    covered = False
+                    for hyper_data_addr, hyper_data_blk in self.hyper_data.items():
+                        covered = sorted_acts[i] in hyper_data_blk.bundled_data_blk_keys
+                        if covered:
+                            if sorted_acts[j] not in hyper_data_blk.bundled_data_blk_keys:
+                                hyper_data_blk.insert_data(sorted_acts[j], j_blk)
+                                j_blk.hyper_data = hyper_data_addr
+                            break
+                    if not covered:
+                        self.hyper_data[i_blk.addr] = HyperData(sorted_acts[i], i_blk)
+                        i_blk.hyper_data = i_blk.addr       # use its own addr as the key
+                        self.hyper_data[i_blk.addr].insert_data(sorted_acts[j], j_blk)
+                        j_blk.hyper_data = i_blk.addr
+
         rd_only_addr2desc = {}
         for w in self.weights:
             rd_only_addr2desc[self.data[w].addr] = w
@@ -117,7 +192,9 @@ class Workload:
         # do liveness analysis for each Data object
         for _, data_blk in self.data.items():
             first = data_blk.addr
-            last = last_aligned(data_blk.addr, data_blk.size, 0x40)
+            last = last_aligned(data_blk.addr, data_blk.true_occupy_space, 0x40)
+            # Use true_occupy_space here instead of bundled_data_size because this strided tensor is already dead.
+            # No need to focus on its bundled peers
             assert first in self.addr_log
             assert last in self.addr_log
             data_blk.liveness = (self.addr_log[first][0][0], self.addr_log[last][-1][0])
@@ -225,6 +302,7 @@ def construct_surfaces(lines):
             assert len(data_start_mark) == 0
             if " ]" in line:    # the space before "]" differentiates from the [] for reporting time
                 logging_data = False
+                temp_data.infer()
                 if temp_data.valid():
                     key = (temp_data.addr_id, temp_data.offset)
                     if key not in data.keys():
@@ -247,6 +325,18 @@ def construct_surfaces(lines):
                         temp_data.offset = int(kv_match.group(2), 16)
                     elif kv_match.group(1) == "size":
                         temp_data.size = int(kv_match.group(2))
+                    elif kv_match.group(1) == "width":
+                        temp_data.width = int(kv_match.group(2), 16)
+                    elif kv_match.group(1) == "height":
+                        temp_data.height = int(kv_match.group(2), 16)
+                    elif kv_match.group(1) == "channel":
+                        temp_data.channel = int(kv_match.group(2), 16)
+                    elif kv_match.group(1) == "line_stride":
+                        temp_data.line_stride = int(kv_match.group(2))
+                    elif kv_match.group(1) == "surf_stride":
+                        temp_data.surf_stride = int(kv_match.group(2))
+                    elif kv_match.group(1) == "plane_stride":
+                        temp_data.plane_stride = int(kv_match.group(2))
 
         if len(op_start_mark) != 0:
             logging_surf = True

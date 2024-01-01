@@ -844,27 +844,29 @@ AXIResponder::generate_prefetch_request() {
 
             // first check whether this addr has been covered by an inflight DMA request or not
             uint64_t spm_line_addr = to_issue_addr & ~((uint64_t) (wrapper->spm->spm_line_size - 1));
-            std::map<uint64_t, DMAAttr>::iterator map_it;
-            bool alloc_succ;
-            std::tie(map_it, alloc_succ) = inflight_dma_attr.emplace(spm_line_addr, DMAAttr());
-            if (alloc_succ) {
-                // not covered, need to initiate a new DMA
+            if (!wrapper->spm->check_has_line(spm_line_addr)) {
+                std::map<uint64_t, DMAAttr>::iterator map_it;
+                bool alloc_succ;
+                std::tie(map_it, alloc_succ) = inflight_dma_attr.emplace(spm_line_addr, DMAAttr());
+                if (alloc_succ) {
+                    // not covered, need to initiate a new DMA
 #ifndef AXI_RESP_FAST_IO
-                printf("(%lu) nvdla#%d PREFETCH (DMA) request addr 0x%08lx issued.\n", wrapper->tickcount,
-                       wrapper->id_nvdla, spm_line_addr);
+                    printf("(%lu) nvdla#%d PREFETCH (DMA) request addr 0x%08lx issued.\n", wrapper->tickcount,
+                           wrapper->id_nvdla, spm_line_addr);
 #else
-                PRINT_DMA_PFT_ISSUE(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla, wrapper->tickcount, spm_line_addr);
+                    PRINT_DMA_PFT_ISSUE(wrapper->print_buffer, wrapper->buf_ptr, wrapper->id_nvdla, wrapper->tickcount,
+                                        spm_line_addr);
 #endif
-                map_it->second.is_bypass = false;
+                    map_it->second.is_bypass = false;
 
-                inflight_dma_addr_queue.push(spm_line_addr);
-                wrapper->addDMAReadReq(spm_line_addr, wrapper->spm->spm_line_size);
-                inflight_count_for_sets[(spm_line_addr / wrapper->spm->spm_line_size) % wrapper->spm->num_sets]++;
+                    inflight_dma_addr_queue.push(spm_line_addr);
+                    wrapper->addDMAReadReq(spm_line_addr, wrapper->spm->spm_line_size);
+                    inflight_count_for_sets[(spm_line_addr / wrapper->spm->spm_line_size) % wrapper->spm->num_sets]++;
 
-                log_entry_issued_len += spm_line_addr + wrapper->spm->spm_line_size - to_issue_addr;
-                // here we don't add dma prefetch to inflight_req and inflight_order
-                // because as long as spm can get the prefetched data, we don't bother axi responder to check it
-
+                    log_entry_issued_len += spm_line_addr + wrapper->spm->spm_line_size - to_issue_addr;
+                    // here we don't add dma prefetch to inflight_req and inflight_order
+                    // because as long as spm can get the prefetched data, we don't bother axi responder to check it
+                }
             }   // else we don't need a new dma request. it is covered by a previous one
         } else {
 #ifndef AXI_RESP_FAST_IO

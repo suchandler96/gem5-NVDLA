@@ -24,6 +24,10 @@ public:
     inline size_t size() { return addr_map.size(); }
     inline virtual bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out) { assert(false); return true; }
     inline virtual bool read_spm_line(uint64_t aligned_addr, std::vector<uint8_t>& data_out) { assert(false); return true; }
+    inline bool check_has_line(uint64_t aligned_addr) {
+        assert((aligned_addr & (uint64_t)(spm_line_size - 1)) == 0);
+        return addr_map.find(aligned_addr) != addr_map.end();
+    }
     inline virtual void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask) { assert(false); }
     inline virtual void clear_and_write_back_dirty() { assert(false); }
     virtual void fill_spm_line(uint64_t aligned_addr, const uint8_t* data) = 0;
@@ -90,8 +94,12 @@ public:
     const uint32_t num_sets;
 
     embeddedBuffer(Wrapper_nvdla* wrap, uint32_t _lat, uint32_t _line_size, uint32_t _line_num, uint32_t _assoc);
-    virtual bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id) = 0;
     virtual ~embeddedBuffer() = default;
+    virtual bool read_spm_axi_line(uint64_t axi_addr, uint8_t* data_out, uint8_t stream_id) = 0;
+    inline bool check_has_line(uint64_t aligned_addr) {
+        uint32_t set_id = (aligned_addr / spm_line_size) % num_sets;
+        return sets[set_id]->check_has_line(aligned_addr);
+    }
 
     inline virtual void write_spm_axi_line_with_mask(uint64_t axi_addr, const uint8_t* data, uint64_t mask, uint8_t stream) {
         assert(false);

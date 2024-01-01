@@ -37,7 +37,7 @@ class BaseParam:
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         raise NotImplementedError
 
     @classmethod
@@ -61,7 +61,7 @@ class LittleCPUClockParam(BaseParam):
             point_dir, "run.sh", {"little-cpu-clock": self.curr_sweep_value()})
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -87,7 +87,7 @@ class FreqRatioParam(BaseParam):
             point_dir, "run.sh", {"freq-ratio": self.curr_sweep_value()})
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -113,7 +113,7 @@ class DDRTypeParam(BaseParam):
             point_dir, "run.sh", {"ddr-type": self.curr_sweep_value()})
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -139,7 +139,7 @@ class NumNVDLAParam(BaseParam):
             point_dir, "run.sh", {"numNVDLA": self.curr_sweep_value()})
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -171,7 +171,7 @@ class DMAEnableParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -210,7 +210,7 @@ class BufferModeParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -241,7 +241,7 @@ class EmbedSPMSizeParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -272,7 +272,7 @@ class EmbedSPMAssocParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -303,7 +303,7 @@ class EmbedSPMLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -335,7 +335,7 @@ class AddAccelPrivateCacheParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -367,7 +367,7 @@ class AccelPrCacheSizeParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -399,7 +399,7 @@ class AccelPrCacheAssocParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -431,7 +431,7 @@ class AccelPrCacheTagLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -463,7 +463,7 @@ class AccelPrCacheDatLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -495,7 +495,7 @@ class AccelPrCacheRespLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -527,7 +527,7 @@ class AccelPrCacheMshrParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -559,7 +559,7 @@ class AccelPrCacheTgtsPerMshrParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -591,7 +591,7 @@ class AccelPrCacheWrBufParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -623,7 +623,7 @@ class AccelPrCacheClusParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -655,7 +655,7 @@ class AddAccelSharedCacheParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -687,7 +687,7 @@ class AccelShCacheSizeParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -719,7 +719,7 @@ class AccelShCacheAssocParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -751,7 +751,7 @@ class AccelShCacheTagLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -783,7 +783,7 @@ class AccelShCacheDatLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -815,7 +815,7 @@ class AccelShCacheRespLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -847,7 +847,7 @@ class AccelShCacheMshrParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -879,7 +879,7 @@ class AccelShCacheTgtsPerMshrParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -911,7 +911,7 @@ class AccelShCacheWrBufParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -943,7 +943,7 @@ class AccelShCacheClusParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -974,7 +974,7 @@ class PftEnableParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -1005,7 +1005,7 @@ class PftThresholdParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -1037,7 +1037,7 @@ class UseFakeMemParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -1068,7 +1068,7 @@ class SharedSPMParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -1099,7 +1099,7 @@ class CVSRAMEnableParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -1132,7 +1132,7 @@ class CVSRAMSizeParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -1163,7 +1163,7 @@ class CVSRAMBandwidthParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:
@@ -1206,7 +1206,7 @@ class RemapperParam(BaseParam):
         return True
 
     @classmethod
-    def get(self, point_dir):
+    def get(cls, point_dir):
         run_sh_path = os.path.join(point_dir, "run.sh")
         assert os.path.exists(run_sh_path)
         with open(run_sh_path, "r") as fp:

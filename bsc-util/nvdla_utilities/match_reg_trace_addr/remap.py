@@ -244,10 +244,23 @@ class ActPinRemapper(SingleAccelCVSRAMRemapper):
             for act in self.workload.intermediate_act:
                 data_blk = self.workload.data[act]
                 fp.write(str(data_blk.liveness[0]) + " " + str(data_blk.liveness[1]) + " " + str(data_blk.size) + " " +
+                         str(data_blk.line_stride * data_blk.height) + " " + str(data_blk.surf_stride) + " " +
                          str(data_blk.num_access) + " " + hex(data_blk.addr) + " ")
                 last_aligned_addr = last_aligned(data_blk.addr, data_blk.size, 0x40)
                 for id_rw in self.workload.addr_log[last_aligned_addr]:
                     fp.write(id_rw[1] + " ")
+                fp.write("\n")
+
+            fp.write("-----\n")
+
+            for hyp_tensor_addr, hyp_tensor in self.workload.hyper_data.items():
+                fp.write(str(hyp_tensor.bundled_data_size) + " ")
+                for related_data_key in hyp_tensor.bundled_data_blk_keys:
+                    try:
+                        idx = self.workload.intermediate_act.index(related_data_key)
+                        fp.write(str(idx) + " ")
+                    except ValueError as e:
+                        print("did not find element ", related_data_key, " in self.workload.intermediate_act")
                 fp.write("\n")
 
         # call the gurobi solver
@@ -272,9 +285,17 @@ class ActPinRemapper(SingleAccelCVSRAMRemapper):
             if words[0] == '1':
                 data_blk = self.workload.data[self.workload.intermediate_act[line_id]]
                 self.mapping[data_blk.addr] = self.cvsram_base_addrs[0] + int(words[1])
-                ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
-                                                data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
-                                                linewidth=1, edgecolor='black'))
+                if not data_blk.is_strided():
+                    ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
+                                                    data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
+                                                    linewidth=1, edgecolor='black'))
+                else:
+                    # we need to draw several rectangles for strided tensors
+                    num_segment = (data_blk.size - 1) // (data_blk.height * data_blk.line_stride) + 1
+                    for stride in range(num_segment):
+                        ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1]) + stride * data_blk.surf_stride),
+                                                        data_blk.liveness[1] - data_blk.liveness[0], data_blk.height * data_blk.line_stride,
+                                                        linewidth=1, edgecolor='black'))
 
         ylabels = map(lambda t: '0x%x' % int(t), ax1.get_yticks())
         ax1.set_yticklabels(ylabels)
@@ -295,16 +316,31 @@ class MixPinRemapper(SingleAccelCVSRAMRemapper):
     def compute_remap_decision(self):
         w_and_acts_file = os.path.join(self.in_dir, "weight_and_im_acts")
         with open(w_and_acts_file, "w") as fp:
-            for w in self.workload.weights:
-                data_blk = self.workload.data[w]
-                fp.write("0 " + str(self.last_tick) + " " + str(data_blk.size) + " 1 " + hex(data_blk.addr) + " r\n")
             for act in self.workload.intermediate_act:
                 data_blk = self.workload.data[act]
                 fp.write(str(data_blk.liveness[0]) + " " + str(data_blk.liveness[1]) + " " + str(data_blk.size) + " " +
+                         str(data_blk.line_stride * data_blk.height) + " " + str(data_blk.surf_stride) + " " +
                          str(data_blk.num_access) + " " + hex(data_blk.addr) + " ")
                 last_aligned_addr = last_aligned(data_blk.addr, data_blk.size, 0x40)
                 for id_rw in self.workload.addr_log[last_aligned_addr]:
                     fp.write(id_rw[1] + " ")
+                fp.write("\n")
+            for w in self.workload.weights:
+                data_blk = self.workload.data[w]
+                fp.write("0 " + str(self.last_tick) + " " + str(data_blk.size) +
+                         " 0 " + "0 "
+                         " 1 " + hex(data_blk.addr) + " r\n")
+
+            fp.write("-----\n")
+
+            for hyp_tensor_addr, hyp_tensor in self.workload.hyper_data.items():
+                fp.write(str(hyp_tensor.bundled_data_size) + " ")
+                for related_data_key in hyp_tensor.bundled_data_blk_keys:
+                    try:
+                        idx = self.workload.intermediate_act.index(related_data_key)
+                        fp.write(str(idx) + " ")
+                    except ValueError as e:
+                        print("did not find element ", related_data_key, " in self.workload.intermediate_act")
                 fp.write("\n")
 
         # call the gurobi solver
@@ -340,9 +376,17 @@ class MixPinRemapper(SingleAccelCVSRAMRemapper):
                     ax1.add_patch(patches.Rectangle((0, int(words[1])), self.last_tick, data_blk.size,
                                                     linewidth=1, edgecolor='black'))
                 else:
-                    ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
-                                                    data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
-                                                    linewidth=1, edgecolor='black'))
+                    if not data_blk.is_strided():
+                        ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
+                                                        data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
+                                                        linewidth=1, edgecolor='black'))
+                    else:
+                        # we need to draw several rectangles for strided tensors
+                        num_segment = (data_blk.size - 1) // (data_blk.height * data_blk.line_stride) + 1
+                        for stride in range(num_segment):
+                            ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1]) + stride * data_blk.surf_stride),
+                                                            data_blk.liveness[1] - data_blk.liveness[0], data_blk.height * data_blk.line_stride,
+                                                            linewidth=1, edgecolor='black'))
             if is_w:
                 collect_w_cnt += 1
             else:

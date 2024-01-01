@@ -47,7 +47,7 @@ csbMaster_o: csbMaster.cc csbMaster.hh
 	-c -o csbMaster.o csbMaster.cc
 
 csbMaster_opt_o: csbMaster.cc csbMaster.hh
-	$(CXX) -fpic -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
+	$(CXX) -fpic -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-c -o csbMaster_opt.o csbMaster.cc
 
 axiResponder_o: axiResponder.cc axiResponder.hh
@@ -55,7 +55,7 @@ axiResponder_o: axiResponder.cc axiResponder.hh
 	-c -o axiResponder.o axiResponder.cc
 
 axiResponder_opt_o: axiResponder.cc axiResponder.hh
-	$(CXX) -fpic -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
+	$(CXX) -fpic -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-c -o axiResponder_opt.o axiResponder.cc
 
 embeddedBuffer_o: embeddedBuffer.cc embeddedBuffer.hh
@@ -63,7 +63,7 @@ embeddedBuffer_o: embeddedBuffer.cc embeddedBuffer.hh
 	-c -o embeddedBuffer.o embeddedBuffer.cc
 
 embeddedBuffer_opt_o: embeddedBuffer.cc embeddedBuffer.hh
-	$(CXX) -fpic -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
+	$(CXX) -fpic -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-c -o embeddedBuffer_opt.o embeddedBuffer.cc
 
 wrapper_vcd_o: axiResponder_o csbMaster_o embeddedBuffer_o wrapper_nvdla.cc wrapper_nvdla.hh
@@ -71,7 +71,7 @@ wrapper_vcd_o: axiResponder_o csbMaster_o embeddedBuffer_o wrapper_nvdla.cc wrap
 	-c -o wrapper_nvdla.o wrapper_nvdla.cc
 
 wrapper_vcd_opt_o: axiResponder_opt_o csbMaster_opt_o embeddedBuffer_opt_o wrapper_nvdla.cc wrapper_nvdla.hh
-	$(CXX) -fpic -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
+	$(CXX) -fpic -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
 	-c -o wrapper_nvdla_opt.o wrapper_nvdla.cc
 
 verilated_o:
@@ -79,7 +79,7 @@ verilated_o:
 	$(VERILATOR_ROOT)/include/verilated.cpp -fPIC -c -o verilated.o
 
 verilated_opt_o:
-	$(CXX) -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
+	$(CXX) -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
 	$(VERILATOR_ROOT)/include/verilated.cpp -fPIC -c -o verilated_opt.o
 
 verilated_vcd_o:
@@ -87,7 +87,7 @@ verilated_vcd_o:
 	$(VERILATOR_ROOT)/include/verilated_vcd_c.cpp -fPIC -c -o verilated_vcd.o
 
 verilated_vcd_opt_o:
-	$(CXX) -I$(DIR) -O3 -Ofast -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
+	$(CXX) -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
 	$(VERILATOR_ROOT)/include/verilated_vcd_c.cpp -fPIC -c -o verilated_vcd_opt.o
 
 library_vcd: wrapper_vcd_o verilated_o verilated_vcd_o
