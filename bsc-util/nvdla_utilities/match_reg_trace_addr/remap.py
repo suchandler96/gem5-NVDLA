@@ -240,28 +240,7 @@ class ActPinRemapper(SingleAccelCVSRAMRemapper):
 
     def compute_remap_decision(self):
         itm_acts_file = os.path.join(self.in_dir, "intermediate_acts")
-        with open(itm_acts_file, "w") as fp:
-            for act in self.workload.intermediate_act:
-                data_blk = self.workload.data[act]
-                fp.write(str(data_blk.liveness[0]) + " " + str(data_blk.liveness[1]) + " " + str(data_blk.size) + " " +
-                         str(data_blk.line_stride * data_blk.height) + " " + str(data_blk.surf_stride) + " " +
-                         str(data_blk.num_access) + " " + hex(data_blk.addr) + " ")
-                last_aligned_addr = last_aligned(data_blk.addr, data_blk.size, 0x40)
-                for id_rw in self.workload.addr_log[last_aligned_addr]:
-                    fp.write(id_rw[1] + " ")
-                fp.write("\n")
-
-            fp.write("-----\n")
-
-            for hyp_tensor_addr, hyp_tensor in self.workload.hyper_data.items():
-                fp.write(str(hyp_tensor.bundled_data_size) + " ")
-                for related_data_key in hyp_tensor.bundled_data_blk_keys:
-                    try:
-                        idx = self.workload.intermediate_act.index(related_data_key)
-                        fp.write(str(idx) + " ")
-                    except ValueError as e:
-                        print("did not find element ", related_data_key, " in self.workload.intermediate_act")
-                fp.write("\n")
+        write_solver_input(itm_acts_file, self.workload, log_weights=False)
 
         # call the gurobi solver
         gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
@@ -271,39 +250,11 @@ class ActPinRemapper(SingleAccelCVSRAMRemapper):
                 os.path.join(self.out_dir, self.testcase_str + "_gurobi_stdout")]
 
     def collect_remap_decision(self):
-        # read results from the solver and draw the CVSRAM occupation figure
-        occ_fig = plt.figure()
-        ax1 = occ_fig.add_subplot("111")
-        plt.xlim(xmin=0, xmax=len(self.workload.raw_addr_log))
-        plt.ylim(ymin=0, ymax=self.cvsram_sizes[0])
-
+        gurobi_in_path = os.path.join(self.in_dir, "intermediate_acts")
         gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
-        with open(gurobi_out_path) as fp:
-            out_lines = fp.readlines()
-        for line_id, line in enumerate(out_lines):
-            words = line.split()
-            if words[0] == '1':
-                data_blk = self.workload.data[self.workload.intermediate_act[line_id]]
-                self.mapping[data_blk.addr] = self.cvsram_base_addrs[0] + int(words[1])
-                if not data_blk.is_strided():
-                    ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
-                                                    data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
-                                                    linewidth=1, edgecolor='black'))
-                else:
-                    # we need to draw several rectangles for strided tensors
-                    num_segment = (data_blk.size - 1) // (data_blk.height * data_blk.line_stride) + 1
-                    for stride in range(num_segment):
-                        ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1]) + stride * data_blk.surf_stride),
-                                                        data_blk.liveness[1] - data_blk.liveness[0], data_blk.height * data_blk.line_stride,
-                                                        linewidth=1, edgecolor='black'))
-
-        ylabels = map(lambda t: '0x%x' % int(t), ax1.get_yticks())
-        ax1.set_yticklabels(ylabels)
-        ax1.ticklabel_format(style='sci', scilimits=(-1, 2), axis='x')
-        plt.title("Buffer Allocation Result on CVSRAM size = 0x%x Bytes" % self.cvsram_sizes[0])
-        plt.xlabel("Logical Order")
-        plt.ylabel("CVSRAM Address")
-        occ_fig.savefig(gurobi_out_path + "_vis.png", dpi=300)
+        relative_map = collect_gurobi_results(self.workload, self.cvsram_sizes[0], gurobi_out_path, gurobi_in_path)
+        for desc, rel_addr in relative_map.items():
+            self.mapping[self.workload.data[desc].addr] = self.cvsram_base_addrs[0] + rel_addr
 
 
 class MixPinRemapper(SingleAccelCVSRAMRemapper):
@@ -315,33 +266,7 @@ class MixPinRemapper(SingleAccelCVSRAMRemapper):
 
     def compute_remap_decision(self):
         w_and_acts_file = os.path.join(self.in_dir, "weight_and_im_acts")
-        with open(w_and_acts_file, "w") as fp:
-            for act in self.workload.intermediate_act:
-                data_blk = self.workload.data[act]
-                fp.write(str(data_blk.liveness[0]) + " " + str(data_blk.liveness[1]) + " " + str(data_blk.size) + " " +
-                         str(data_blk.line_stride * data_blk.height) + " " + str(data_blk.surf_stride) + " " +
-                         str(data_blk.num_access) + " " + hex(data_blk.addr) + " ")
-                last_aligned_addr = last_aligned(data_blk.addr, data_blk.size, 0x40)
-                for id_rw in self.workload.addr_log[last_aligned_addr]:
-                    fp.write(id_rw[1] + " ")
-                fp.write("\n")
-            for w in self.workload.weights:
-                data_blk = self.workload.data[w]
-                fp.write("0 " + str(self.last_tick) + " " + str(data_blk.size) +
-                         " 0 " + "0 "
-                         " 1 " + hex(data_blk.addr) + " r\n")
-
-            fp.write("-----\n")
-
-            for hyp_tensor_addr, hyp_tensor in self.workload.hyper_data.items():
-                fp.write(str(hyp_tensor.bundled_data_size) + " ")
-                for related_data_key in hyp_tensor.bundled_data_blk_keys:
-                    try:
-                        idx = self.workload.intermediate_act.index(related_data_key)
-                        fp.write(str(idx) + " ")
-                    except ValueError as e:
-                        print("did not find element ", related_data_key, " in self.workload.intermediate_act")
-                fp.write("\n")
+        write_solver_input(w_and_acts_file, self.workload, log_weights=True)
 
         # call the gurobi solver
         gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
@@ -351,55 +276,11 @@ class MixPinRemapper(SingleAccelCVSRAMRemapper):
                 os.path.join(self.out_dir, self.testcase_str + "_gurobi_stdout")]
 
     def collect_remap_decision(self):
-        # read results from the solver and draw the CVSRAM occupation figure
-        occ_fig = plt.figure()
-        ax1 = occ_fig.add_subplot("111")
-        plt.xlim(xmin=0, xmax=len(self.workload.raw_addr_log))
-        plt.ylim(ymin=0, ymax=self.cvsram_sizes[0])
-
-        collect_w_cnt, collect_a_cnt = 0, 0
         gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
-        with open(os.path.join(self.in_dir, "weight_and_im_acts")) as fp:
-            in_lines = fp.readlines()
-
-        with open(gurobi_out_path) as fp:
-            out_lines = fp.readlines()
-        for line_id, line in enumerate(out_lines):
-            words = line.split()
-            attrs = in_lines[line_id].strip().split()
-            is_w = attrs[3] == "1"      # weights will only be used once
-            if words[0] == '1':
-                desc = self.workload.weights[collect_w_cnt] if is_w else self.workload.intermediate_act[collect_a_cnt]
-                data_blk = self.workload.data[desc]
-                self.mapping[data_blk.addr] = self.cvsram_base_addrs[0] + int(words[1])
-                if is_w:
-                    ax1.add_patch(patches.Rectangle((0, int(words[1])), self.last_tick, data_blk.size,
-                                                    linewidth=1, edgecolor='black'))
-                else:
-                    if not data_blk.is_strided():
-                        ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
-                                                        data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
-                                                        linewidth=1, edgecolor='black'))
-                    else:
-                        # we need to draw several rectangles for strided tensors
-                        num_segment = (data_blk.size - 1) // (data_blk.height * data_blk.line_stride) + 1
-                        for stride in range(num_segment):
-                            ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1]) + stride * data_blk.surf_stride),
-                                                            data_blk.liveness[1] - data_blk.liveness[0], data_blk.height * data_blk.line_stride,
-                                                            linewidth=1, edgecolor='black'))
-            if is_w:
-                collect_w_cnt += 1
-            else:
-                collect_a_cnt += 1
-
-        ylabels = map(lambda t: '0x%x' % int(t), ax1.get_yticks())
-        ax1.set_yticklabels(ylabels)
-        ax1.ticklabel_format(style='sci', scilimits=(-1, 2), axis='x')
-        plt.title("Buffer Allocation Result on CVSRAM size = 0x%x Bytes" % self.cvsram_sizes[0])
-        plt.xlabel("Logical Order")
-        plt.ylabel("CVSRAM Address")
-        plt.tight_layout()
-        occ_fig.savefig(gurobi_out_path + "_vis.png", dpi=300)
+        gurobi_in_path = os.path.join(self.in_dir, "weight_and_im_acts")
+        relative_map = collect_gurobi_results(self.workload, self.cvsram_sizes[0], gurobi_out_path, gurobi_in_path)
+        for desc, rel_addr in relative_map.items():
+            self.mapping[self.workload.data[desc].addr] = self.cvsram_base_addrs[0] + rel_addr
 
 
 class PipelineRemapper(BaseRemapper):
@@ -475,6 +356,7 @@ class PipelineRemapper(BaseRemapper):
         self.all_activations.sort(key=lambda x: self.pipeline_stages[x[-3]].data[(x[-2], x[-1])].size, reverse=True)
 
     def remap_weights(self):
+        # weights are not strided tensors
         next_avail_aligned = self.weight_base_addr
         for weight_desc in self.all_weights:
             # weight_desc: (stage_id, addr_id, offset)
@@ -490,13 +372,35 @@ class PipelineRemapper(BaseRemapper):
         next_avail_aligned = self.activation_base_addr
         activation_map = {}
         # {(batch_id, stage_id, addr_id, offset) or (stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
-        for act_desc in self.all_activations:
+
+        mapped = [False for _ in self.all_activations]
+        for act_id, act_desc in enumerate(self.all_activations):
+            if mapped[act_id]:
+                continue
             # for all the activations (outputs of the previous stage and inputs of the next stage are counted ONCE)
             # act_desc: (batch_id, stage_id, addr_id, offset)   (for input / output activations)
             #           (          stage_id, addr_id, offset)   (for intermediate activations)
-            activation_map[act_desc] = (next_avail_aligned, False)     # False means it isn't mapped to CVSRAM
-            aligned_size = self.aligned_ceil(self.pipeline_stages[act_desc[-3]].data[(act_desc[-2], act_desc[-1])].size)
-            next_avail_aligned += aligned_size
+            stage = self.pipeline_stages[act_desc[-3]]
+            data_blk = stage.data[(act_desc[-2], act_desc[-1])]
+            if data_blk.hyper_data_addr is not None:
+                for strided_data_key in stage.hyper_data[data_blk.hyper_data_addr].bundled_data_blk_keys:
+                    strided_data_blk = stage.data[strided_data_key]
+                    if len(act_desc) == 3:
+                        global_key = (act_desc[0], strided_data_key[0], strided_data_key[1])
+                    elif len(act_desc) == 4:
+                        global_key = (act_desc[0], act_desc[1], strided_data_key[0], strided_data_key[1])
+                    else:
+                        assert False
+                    activation_map[global_key] = (next_avail_aligned + strided_data_blk.addr -
+                                                  data_blk.hyper_data_addr, False)
+                    mapped[self.all_activations.index(global_key)] = True
+                assert mapped[act_id]
+                next_avail_aligned += self.aligned_ceil(stage.hyper_data[data_blk.hyper_data_addr].bundled_data_size)
+            else:
+                activation_map[act_desc] = (next_avail_aligned, False)     # False means it isn't mapped to CVSRAM
+                aligned_size = self.aligned_ceil(data_blk.size)
+                next_avail_aligned += aligned_size
+                mapped[act_id] = True
 
         # match the outputs of the previous stage with the inputs of the next stage
         # for inter-stage tensors, only their output-side were added to self.all_activations
@@ -655,16 +559,7 @@ class PipelineActPinRemapper(CVSRAMRemapper, PipelineRemapper):
         cmds = []
         for stage_id in range(len(self.in_dirs)):
             itm_acts_file = os.path.join(self.in_dirs[stage_id], "intermediate_acts")
-            with open(itm_acts_file, "w") as fp:
-                stage = self.pipeline_stages[stage_id]
-                for act in stage.intermediate_act:
-                    data_blk = stage.data[act]
-                    fp.write(str(data_blk.liveness[0]) + " " + str(data_blk.liveness[1]) + " " + str(data_blk.size) +
-                             " " + str(data_blk.num_access) + " " + hex(data_blk.addr) + " ")
-                    last_aligned_addr = last_aligned(data_blk.addr, data_blk.size, 0x40)
-                    for id_rw in stage.addr_log[last_aligned_addr]:
-                        fp.write(id_rw[1] + " ")
-                    fp.write("\n")
+            write_solver_input(itm_acts_file, self.pipeline_stages[stage_id], log_weights=False)
 
             # call the gurobi solver
             stage_out_dir = os.path.join(self.out_dir, "stage_" + str(stage_id + 1))
@@ -685,36 +580,104 @@ class PipelineActPinRemapper(CVSRAMRemapper, PipelineRemapper):
         # read results from the solver and draw the CVSRAM occupation figure
         for stage_id in range(self.num_stages):
             stage = self.pipeline_stages[stage_id]
-
-            occ_fig = plt.figure()
-            ax1 = occ_fig.add_subplot("111")
-            plt.xlim(xmin=0, xmax=len(stage.raw_addr_log))
-            plt.ylim(ymin=0, ymax=self.cvsram_sizes[stage_id])
-
             stage_out_dir = os.path.join(self.out_dir, "stage_" + str(stage_id + 1))
             gurobi_out_path = os.path.join(stage_out_dir, self.testcase_str + "_alloc_result")
-            with open(gurobi_out_path) as fp:
-                out_lines = fp.readlines()
-            for line_id, line in enumerate(out_lines):
-                words = line.split()
-                if words[0] == '1':
-                    in_stage_key = stage.intermediate_act[line_id]
-                    assert len(in_stage_key) == 2
-                    global_key = (stage_id, in_stage_key[0], in_stage_key[1])
-                    data_blk = stage.data[in_stage_key]
-                    self.intra_act_map[global_key] = (self.cvsram_base_addrs[stage_id] + int(words[1]), True)
-
-                    ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
-                                                    data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
-                                                    linewidth=1, edgecolor='black'))
-
-            ylabels = map(lambda t: '0x%x' % int(t), ax1.get_yticks())
-            ax1.set_yticklabels(ylabels)
-            ax1.ticklabel_format(style='sci', scilimits=(-1, 2), axis='x')
-            plt.title("Buffer Allocation Result on CVSRAM size = 0x%x Bytes" % self.cvsram_sizes[0])
-            plt.xlabel("Logical Order")
-            plt.ylabel("CVSRAM Address")
-            occ_fig.savefig(gurobi_out_path + "_vis.png", dpi=300)
+            gurobi_in_path = os.path.join(self.in_dirs[stage_id], "intermediate_acts")
+            relative_map = collect_gurobi_results(stage, self.cvsram_sizes[stage_id], gurobi_out_path, gurobi_in_path)
+            for desc, rel_addr in relative_map.items():
+                assert len(desc) == 2
+                global_key = (stage_id, desc[0], desc[1])
+                self.intra_act_map[global_key] = (self.cvsram_base_addrs[stage_id] + rel_addr, True)
 
     def write_to_files(self):
         PipelineRemapper.write_to_files(self)
+
+
+def write_solver_input(file_path, workload, log_weights):
+    with open(file_path, "w") as fp:
+        for act in workload.intermediate_act:
+            data_blk = workload.data[act]
+            fp.write(str(data_blk.liveness[0]) + " " + str(data_blk.liveness[1]) + " " + str(data_blk.size) + " " +
+                     str(data_blk.line_stride * data_blk.height) + " " + str(data_blk.surf_stride) + " " +
+                     str(data_blk.num_access) + " " + hex(data_blk.addr) + " ")
+            last_aligned_addr = last_aligned(data_blk.addr, data_blk.true_occupy_space, 0x40)
+            for id_rw in workload.addr_log[last_aligned_addr]:
+                fp.write(id_rw[1] + " ")
+            fp.write("\n")
+
+        if log_weights:
+            last_tick = len(workload.raw_addr_log) - 1
+            for w in workload.weights:
+                data_blk = workload.data[w]
+                fp.write("0 " + str(last_tick) + " " + str(data_blk.size) +
+                         " 0 " + "0 " + "1 " + hex(data_blk.addr) + " r\n")
+
+        fp.write("-----\n")
+
+        for hyp_tensor_addr, hyp_tensor in workload.hyper_data.items():
+            fp.write(str(hyp_tensor.bundled_data_size) + " ")
+            for related_data_key in hyp_tensor.bundled_data_blk_keys:
+                try:
+                    idx = workload.intermediate_act.index(related_data_key)
+                    fp.write(str(idx) + " ")
+                except ValueError as e:
+                    print("did not find element ", related_data_key, " in self.workload.intermediate_act")
+            fp.write("\n")
+
+
+def collect_gurobi_results(workload, cvsram_size, gurobi_out_path, gurobi_in_path):
+    # read results from the solver and draw the CVSRAM occupation figure
+    occ_fig = plt.figure()
+    ax1 = occ_fig.add_subplot("111")
+    plt.xlim(xmin=0, xmax=len(workload.raw_addr_log))
+    plt.ylim(ymin=0, ymax=cvsram_size)
+
+    collect_w_cnt, collect_a_cnt = 0, 0
+
+    with open(gurobi_in_path) as fp:
+        in_lines = fp.readlines()
+
+    with open(gurobi_out_path) as fp:
+        out_lines = fp.readlines()
+
+    relative_mapping = {}   # {data_desc(inside a pipeline stage): mapping position in a CVSRAM}
+    for line_id, line in enumerate(out_lines):
+        words = line.split()
+        attrs = in_lines[line_id].strip().split()
+        is_w = attrs[5] == "1"      # weights will only be used once
+        if words[0] == '1':
+            desc = workload.weights[collect_w_cnt] if is_w else workload.intermediate_act[collect_a_cnt]
+            data_blk = workload.data[desc]
+            relative_mapping[desc] = int(words[1])
+            if is_w:
+                ax1.add_patch(patches.Rectangle((0, int(words[1])), len(workload.raw_addr_log) - 1, data_blk.size,
+                                                linewidth=1, edgecolor='black'))
+            else:
+                if not data_blk.is_strided():
+                    ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
+                                                    data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
+                                                    linewidth=1, edgecolor='black'))
+                else:
+                    # we need to draw several rectangles for strided tensors
+                    num_segment = (data_blk.size - 1) // (data_blk.height * data_blk.line_stride) + 1
+                    for stride in range(num_segment):
+                        ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1]) +
+                                                         stride * data_blk.surf_stride),
+                                                        data_blk.liveness[1] - data_blk.liveness[0],
+                                                        data_blk.height * data_blk.line_stride,
+                                                        linewidth=1, edgecolor='black'))
+        if is_w:
+            collect_w_cnt += 1
+        else:
+            collect_a_cnt += 1
+
+    ylabels = map(lambda t: '0x%x' % int(t), ax1.get_yticks())
+    ax1.set_yticklabels(ylabels)
+    ax1.ticklabel_format(style='sci', scilimits=(-1, 2), axis='x')
+    plt.title("Buffer Allocation Result on CVSRAM size = 0x%x Bytes" % cvsram_size)
+    plt.xlabel("Logical Order")
+    plt.ylabel("CVSRAM Address")
+    plt.tight_layout()
+    occ_fig.savefig(gurobi_out_path + "_vis.png", dpi=300)
+
+    return relative_mapping

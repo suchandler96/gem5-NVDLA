@@ -23,7 +23,7 @@ class Data:
 
         """ inferred compilation-time info """
         self.true_occupy_space = None   # for regular data blocks, it will be self.size
-        self.hyper_data = None      # for strided tensors: hyper data addr; remain None for ordinary data blocks
+        self.hyper_data_addr = None     # for strided tensors: hyper data addr; remain None for ordinary data blocks
 
         """runtime info"""
         self.num_access = 0     # calculated by the number of accesses of last addr aligned to 0x40
@@ -172,13 +172,13 @@ class Workload:
                         if covered:
                             if sorted_acts[j] not in hyper_data_blk.bundled_data_blk_keys:
                                 hyper_data_blk.insert_data(sorted_acts[j], j_blk)
-                                j_blk.hyper_data = hyper_data_addr
+                                j_blk.hyper_data_addr = hyper_data_addr
                             break
                     if not covered:
                         self.hyper_data[i_blk.addr] = HyperData(sorted_acts[i], i_blk)
-                        i_blk.hyper_data = i_blk.addr       # use its own addr as the key
+                        i_blk.hyper_data_addr = i_blk.addr       # use its own addr as the key
                         self.hyper_data[i_blk.addr].insert_data(sorted_acts[j], j_blk)
-                        j_blk.hyper_data = i_blk.addr
+                        j_blk.hyper_data_addr = i_blk.addr
 
         rd_only_addr2desc = {}
         for w in self.weights:
