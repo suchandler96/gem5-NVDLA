@@ -122,13 +122,15 @@ class CVSRAMRemapper(BaseRemapper):
     def change_ram_type_to_cvsram(self, raw_lines, modified_lines, line_id, modify_status):
         line = raw_lines[line_id]
         # use regex to get the register
-        reg_match = re.search(r'#(0x[0-9a-f]{1,2}0[0-9a-f]{2})', line)
+        reg_match = re.search(r'#\s?(0x[0-9a-f]{1,2}0[0-9a-f]{2})', line)
         reg = int(reg_match.group(1), 16)
         ram_type_reg, ram_type_bit = self.assoc_reg_bits[reg]
 
         explore_id = line_id - 1
         while explore_id >= 0:
-            ram_reg_match = re.search(r'#(0x[0-9a-f]{1,2}0[0-9a-f]{2})', raw_lines[explore_id])
+            ram_reg_match = re.search(r'#\s?(0x[0-9a-f]{1,2}0[0-9a-f]{2})', raw_lines[explore_id])
+            if ram_reg_match is None:
+                break
             if ram_reg_match.group(0)[2] != reg_match.group(0)[2] or \
                     ram_reg_match.group(0)[3] != reg_match.group(0)[3]:
                 # only explore registers in the same reg group and continuous lines
@@ -144,7 +146,9 @@ class CVSRAMRemapper(BaseRemapper):
 
         explore_id = line_id + 1
         while explore_id < len(raw_lines):
-            ram_reg_match = re.search(r'#(0x[0-9a-f]{1,2}0[0-9a-f]{2})', raw_lines[explore_id])
+            ram_reg_match = re.search(r'#\s?(0x[0-9a-f]{1,2}0[0-9a-f]{2})', raw_lines[explore_id])
+            if ram_reg_match is None:
+                break
             if ram_reg_match.group(0)[2] != reg_match.group(0)[2] or \
                     ram_reg_match.group(0)[3] != reg_match.group(0)[3]:
                 # only explore registers in the same reg group and continuous lines

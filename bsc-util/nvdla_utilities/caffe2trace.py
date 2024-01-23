@@ -29,9 +29,16 @@ def parse_args():
         "--out-dir", default="/home/nvdla/traces/lenet/",
         help="directory to put the generated sc.log, register txn and mem traces")
     parser.add_argument(
+        "--image", default="",
+        help="Path to the image for nvdla_runtime to perform inference.")
+    parser.add_argument(
+        "--true-data", action="store_true", default=False, help="Whether to get true data from sc.log")
+    parser.add_argument(
+        "--dump-results", action="store_true", default=False,
+        help="Whether to dump results to check results in translated input.txn")
+    parser.add_argument(
         "--convert-only", action="store_true", default=False, help="Whether to assume the presence of sc.log "
-        "and only do processing only"
-    )
+        "and only do processing only")
 
     args = parser.parse_args()
     return args
@@ -43,6 +50,12 @@ def check_dependence(options):
     assert os.path.exists(options.nvdla_compiler)
     assert os.path.exists(options.qemu_bin)
     assert os.path.exists(options.qemu_lua)
+
+    if options.true_data:
+        assert options.image != "" and os.path.exists(options.image)
+
+    if options.dump_results:
+        assert options.true_data
 
 
 def get_loadable(options):
@@ -73,6 +86,12 @@ def set_environ_var():
 
 
 def run_qemu(options):
+    image_str = ""
+    if options.true_data:   # prepare real input data if necessary
+        path_name, file_name = os.path.split(os.path.abspath(options.image))
+        image_str = " --image " + file_name + " "
+        os.system("cp " + os.path.abspath(options.image) + " /usr/local/nvdla/")
+
     if not os.path.exists("/usr/bin/expect"):
         # install expect
         os.system("apt update")
@@ -102,12 +121,12 @@ send "mount -t 9p -o trans=virtio r /mnt && cd /mnt\\r"
 expect "# "
 send "insmod drm.ko && insmod opendla_1.ko\\r"
 expect "# "
-send "./nvdla_runtime --loadable %(loadable)s\\r"
+send "./nvdla_runtime --loadable %(loadable)s %(image)s\\r"
 
 # poweroff the Guest VM
 expect "# "
 send "shutdown -h now\\r"
-''' % {"bin": options.qemu_bin, "lua": options.qemu_lua, "loadable": options.model_name + ".nvdla"}
+''' % {"bin": options.qemu_bin, "lua": options.qemu_lua, "loadable": options.model_name + ".nvdla", "image": image_str}
     qemu_run_template.format(options.qemu_bin, options.qemu_lua)
     with open("/usr/local/nvdla/qemu_run.exp", "w") as f:
         f.write(qemu_run_template)
@@ -126,20 +145,11 @@ def process_log(options):
     nvdla_utilities_dir = os.path.dirname(os.path.abspath(__file__))
     if not os.path.exists(os.path.join(nvdla_utilities_dir, "NVDLAUtil")):
         os.system("cd " + nvdla_utilities_dir + " && g++ -std=c++11 NVDLAUtil.cpp -o NVDLAUtil")
-    os.system("cd " + nvdla_utilities_dir + " && ./NVDLAUtil -i " + os.path.join(options.out_dir, "sc.log") +
-              " --print-reg-txn -f parse-vp-log --change-addr > " + os.path.join(options.out_dir, "input.txn"))
-    os.system("cd " + nvdla_utilities_dir + " && ./NVDLAUtil -i " + os.path.join(options.out_dir, "sc.log") +
-              " --print-mem-rd -f parse-vp-log --change-addr > " + os.path.join(options.out_dir, "VP_mem_rd"))
-    os.system("cd " + nvdla_utilities_dir + " && ./NVDLAUtil -i " + os.path.join(options.out_dir, "sc.log") +
-              " --print-mem-wr -f parse-vp-log --change-addr > " + os.path.join(options.out_dir, "VP_mem_wr"))
-    os.system("cd " + nvdla_utilities_dir + " && ./NVDLAUtil -i " + os.path.join(options.out_dir, "sc.log") +
-              " --print-mem-rd --print-mem-wr -f parse-vp-log --change-addr > " + os.path.join(options.out_dir,
-                                                                                               "VP_mem_rd_wr"))
+    workload = Workload(options.out_dir, options.true_data, options.dump_results)
     os.system("cd " + nvdla_utilities_dir + " && python3 fix_txn_discontinuous.py --vp-out-dir " + options.out_dir +
               " --name try_input")
     os.system("cd " + options.out_dir + " && mv input.txn bkp_input.txn")
     os.system("cd " + options.out_dir + " && mv try_input.txn input.txn")
-    workload = Workload(options.out_dir)
     workload.write_rd_only_var_log(os.path.join(options.out_dir, "rd_only_var_log"))
 
     # the nvdla/vp docker image has perl v5.22.1 installed, ok

@@ -80,7 +80,6 @@ rtlNVDLA::rtlNVDLA(const rtlNVDLAParams &params) :
     assert(assoc > 0);
 
     initNVDLA(params.use_shared_spm);
-    startMemRegion = 0xC0000000;
     cyclesNVDLA = 0;
     std::cout << std::hex << "NVDLA " << id_nvdla
               << " Base Addr DRAM: " << baseAddrDRAM
@@ -575,8 +574,8 @@ rtlNVDLA::getRealAddr(uint64_t addr, bool sram) {
         // Base addr is 0x5000_0000
         real_addr = (addr - 0x50000000) + baseAddrSRAM;
     } else {
-        // Base addr is 0x8000_0000
-        real_addr = (addr - 0x80000000) + baseAddrDRAM;
+        // Base addr is 0xc000_0000
+        real_addr = (addr - 0xc0000000) + baseAddrDRAM;
     }
     return real_addr;
 }
@@ -586,14 +585,9 @@ rtlNVDLA::getAddrNVDLA(uint64_t addr, bool sram) {
     uint64_t real_addr;
 
     if (sram) {
-        // Base addr is 0x5000_0000
-        //baseAddrDRAM
         real_addr = (addr - baseAddrSRAM) + 0x50000000;
-        //real_addr = (addr - 0xC0000000) + 0x50000000;
     } else {
-        // Base addr is 0x8000_0000
-        // 0xA0000000
-        real_addr = (addr - baseAddrDRAM) + 0x80000000;
+        real_addr = (addr - baseAddrDRAM) + 0xc0000000;
     }
     return real_addr;
 }

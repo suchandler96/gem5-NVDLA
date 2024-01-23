@@ -12692,6 +12692,80 @@ index a5d574b..8e704de 100644
  write_reg 0xffff141a 0x0 #NVDLA_CDMA.D_WEIGHT_FORMAT_0
  read_reg 0xffff141a 0x00000001 0x00000000 #NVDLA_CDMA.D_WEIGHT_FORMAT_0
  write_reg 0xffff143a 0x7841af46 #NVDLA_CDMA.D_CYA_0
+diff --git a/verif/traces/traceplayer/conv_8x8_fc_int16/input.txn b/verif/traces/traceplayer/conv_8x8_fc_int16/input.txn
+index c867edc..d889e81 100644
+--- a/verif/traces/traceplayer/conv_8x8_fc_int16/input.txn
++++ b/verif/traces/traceplayer/conv_8x8_fc_int16/input.txn
+@@ -1,7 +1,7 @@
+ # load_mem(addr, offset,  file)
+ # write_reg(reg_addr, reg_data, misc_bits)
+-load_mem 0x80000000 0x1000 input_feature_map.dat #0x1000 (4KB)  8*8*32*2
+-load_mem 0x80100000 0x10000 input_weight.dat #0x2400(18KB)  16 kernels, each kernel is 3*3*32*2
++load_mem 0xc0000000 0x1000 input_feature_map.dat #0x1000 (4KB)  8*8*32*2
++load_mem 0xc0100000 0x10000 input_weight.dat #0x2400(18KB)  16 kernels, each kernel is 3*3*32*2
+ write_reg 0xffff1401 0x0 #NVDLA_CDMA.S_POINTER_0CONSUMER: GROUP_0, PRODUCER: GROUP_0
+ read_reg 0xffff1401 0x00010001 0x00000000 #NVDLA_CDMA.S_POINTER_0CONSUMER: GROUP_0, PRODUCER: GROUP_0
+ write_reg 0xffff1402 0x3000f #NVDLA_CDMA.S_ARBITER_0ARB_WEIGHT=15, ARB_WMB=3
+@@ -20,8 +20,8 @@ write_reg 0xffff140b 0x1 #NVDLA_CDMA.D_DAIN_RAM_TYPE_0MC
+ read_reg 0xffff140b 0x00000001 0x00000001 #NVDLA_CDMA.D_DAIN_RAM_TYPE_0MC
+ write_reg 0xffff140c 0x0 #NVDLA_CDMA.D_DAIN_ADDR_HIGH_0_0
+ read_reg 0xffff140c 0x000000ff 0x00000000 #NVDLA_CDMA.D_DAIN_ADDR_HIGH_0_0
+-write_reg 0xffff140d 0x80000000 #NVDLA_CDMA.D_DAIN_ADDR_LOW_0_00MB
+-read_reg 0xffff140d 0xffffffe0 0x80000000 #NVDLA_CDMA.D_DAIN_ADDR_LOW_0_00MB
++write_reg 0xffff140d 0xc0000000 #NVDLA_CDMA.D_DAIN_ADDR_LOW_0_00MB
++read_reg 0xffff140d 0xffffffe0 0xc0000000 #NVDLA_CDMA.D_DAIN_ADDR_LOW_0_00MB
+ write_reg 0xffff140e 0x0 #NVDLA_CDMA.D_DAIN_ADDR_HIGH_1_0
+ read_reg 0xffff140e 0x000000ff 0x00000000 #NVDLA_CDMA.D_DAIN_ADDR_HIGH_1_0
+ write_reg 0xffff140f 0x0 #NVDLA_CDMA.D_DAIN_ADDR_LOW_1_0
+@@ -50,8 +50,8 @@ write_reg 0xffff141d 0x1 #NVDLA_CDMA.D_WEIGHT_RAM_TYPE_0MC
+ read_reg 0xffff141d 0x00000001 0x00000001 #NVDLA_CDMA.D_WEIGHT_RAM_TYPE_0MC
+ write_reg 0xffff141e 0x0 #NVDLA_CDMA.D_WEIGHT_ADDR_HIGH_0
+ read_reg 0xffff141e 0x000000ff 0x00000000 #NVDLA_CDMA.D_WEIGHT_ADDR_HIGH_0
+-write_reg 0xffff141f 0x80100000 #NVDLA_CDMA.D_WEIGHT_ADDR_LOW_01MB
+-read_reg 0xffff141f 0xffffffe0 0x80100000 #NVDLA_CDMA.D_WEIGHT_ADDR_LOW_01MB
++write_reg 0xffff141f 0xc0100000 #NVDLA_CDMA.D_WEIGHT_ADDR_LOW_01MB
++read_reg 0xffff141f 0xffffffe0 0xc0100000 #NVDLA_CDMA.D_WEIGHT_ADDR_LOW_01MB
+ write_reg 0xffff1420 0x10000 #NVDLA_CDMA.D_WEIGHT_BYTES_0
+ read_reg 0xffff1420 0xffffff80 0x00010000 #NVDLA_CDMA.D_WEIGHT_BYTES_0
+ write_reg 0xffff1421 0x0 #NVDLA_CDMA.D_WGS_ADDR_HIGH_0
+@@ -138,8 +138,8 @@ write_reg 0xffff2404 0x0 #NVDLA_CACC.D_DATAOUT_SIZE_0_0
+ read_reg 0xffff2404 0x1fff1fff 0x00000000 #NVDLA_CACC.D_DATAOUT_SIZE_0_0
+ write_reg 0xffff2405 0xf #NVDLA_CACC.D_DATAOUT_SIZE_1_0
+ read_reg 0xffff2405 0x00001fff 0x0000000f #NVDLA_CACC.D_DATAOUT_SIZE_1_0
+-write_reg 0xffff2406 0x80400000 #NVDLA_CACC.D_DATAOUT_ADDR_0
+-read_reg 0xffff2406 0xffffffe0 0x80400000 #NVDLA_CACC.D_DATAOUT_ADDR_0
++write_reg 0xffff2406 0xc0400000 #NVDLA_CACC.D_DATAOUT_ADDR_0
++read_reg 0xffff2406 0xffffffe0 0xc0400000 #NVDLA_CACC.D_DATAOUT_ADDR_0
+ write_reg 0xffff2407 0x0 #NVDLA_CACC.D_BATCH_NUMBER_0
+ read_reg 0xffff2407 0x0000001f 0x00000000 #NVDLA_CACC.D_BATCH_NUMBER_0
+ write_reg 0xffff2408 0x20 #NVDLA_CACC.D_LINE_STRIDE_0
+@@ -172,8 +172,8 @@ write_reg 0xffff2c10 0x0 #NVDLA_SDP.D_DATA_CUBE_HEIGHT_0
+ read_reg 0xffff2c10 0x00001fff 0x00000000 #NVDLA_SDP.D_DATA_CUBE_HEIGHT_0
+ write_reg 0xffff2c11 0xf #NVDLA_SDP.D_DATA_CUBE_CHANNEL_0
+ read_reg 0xffff2c11 0x00001fff 0x0000000f #NVDLA_SDP.D_DATA_CUBE_CHANNEL_0
+-write_reg 0xffff2c12 0x80400000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_04MB
+-read_reg 0xffff2c12 0xffffffe0 0x80400000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_04MB
++write_reg 0xffff2c12 0xc0400000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_04MB
++read_reg 0xffff2c12 0xffffffe0 0xc0400000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_04MB
+ write_reg 0xffff2c13 0x0 #NVDLA_SDP.D_DST_BASE_ADDR_HIGH_0
+ read_reg 0xffff2c13 0x000000ff 0x00000000 #NVDLA_SDP.D_DST_BASE_ADDR_HIGH_0
+ write_reg 0xffff2c14 0x20 #NVDLA_SDP.D_DST_LINE_STRIDE_0
+@@ -238,4 +238,4 @@ wait
+ read_reg 0xffff0003 0x00000001 0x00000001 #NVDLA_GLB.S_INTR_STATUS_0.SDP_DONE_STATUS0mask #data
+ write_reg 0xffff0003 0xffffffff #NVDLA_GLB.S_INTR_STATUS_0clear interrupts
+ read_reg 0xffff0003 0x00000001 0x00000000 #NVDLA_GLB.S_INTR_STATUS_0.CDMA_DAT_DONE_STATUS0mask #data
+-dump_mem 0x80400000 0x20 output_feature_map.dat
++dump_mem 0xc0400000 0x20 output_feature_map.dat
+diff --git a/verif/traces/traceplayer/conv_8x8_fc_int16/output_feature_map.dat b/verif/traces/traceplayer/conv_8x8_fc_int16/output_feature_map.dat
+index 55c15f0..505219e 100644
+--- a/verif/traces/traceplayer/conv_8x8_fc_int16/output_feature_map.dat
++++ b/verif/traces/traceplayer/conv_8x8_fc_int16/output_feature_map.dat
+@@ -1,4 +1,4 @@
+-dumped memory,start_address=0x80400000 size=0x20
++dumped memory,start_address=0xc0400000 size=0x20
+ memory type:dram
+ ==============================
+ 
 diff --git a/verif/traces/traceplayer/googlenet_conv2_3x3_int16/input.txn b/verif/traces/traceplayer/googlenet_conv2_3x3_int16/input.txn
 index bf56ddf..d3f126c 100644
 --- a/verif/traces/traceplayer/googlenet_conv2_3x3_int16/input.txn
@@ -12705,6 +12779,249 @@ index bf56ddf..d3f126c 100644
  write_reg 0xffff1437 0x0 #NVDLA_CDMA.D_PERF_WT_READ_STALL_0
  read_reg 0xffff1437 0xffffffff 0x00000000 #NVDLA_CDMA.D_PERF_WT_READ_STALL_0
  write_reg 0xffff1422 0x92eabbc0 #NVDLA_CDMA.D_WGS_ADDR_LOW_0
+diff --git a/verif/traces/traceplayer/pdp_max_pooling_int16/input.txn b/verif/traces/traceplayer/pdp_max_pooling_int16/input.txn
+index 717da37..aeb5a19 100644
+--- a/verif/traces/traceplayer/pdp_max_pooling_int16/input.txn
++++ b/verif/traces/traceplayer/pdp_max_pooling_int16/input.txn
+@@ -56,17 +56,17 @@ write_reg 0xffff3405 0x3f #NVDLA_PDP.D_DATA_CUBE_IN_CHANNEL_0
+ read_reg 0xffff3405 0x00001fff 0x0000003f #NVDLA_PDP.D_DATA_CUBE_IN_CHANNEL_0
+ write_reg 0xffff3005 0x3f #NVDLA_PDP_RDMA.D_DATA_CUBE_IN_CHANNEL_0
+ read_reg 0xffff3005 0x00001fff 0x0000003f #NVDLA_PDP_RDMA.D_DATA_CUBE_IN_CHANNEL_0
+-load_mem 0x80000000 0x2000 input_feature_map.dat 
+-write_reg 0xffff3007 0x80000000 #NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_LOW_0
+-read_reg 0xffff3007 0xffffffe0 0x80000000 #NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_LOW_0
++load_mem 0xc0000000 0x2000 input_feature_map.dat 
++write_reg 0xffff3007 0xc0000000 #NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_LOW_0
++read_reg 0xffff3007 0xffffffe0 0xc0000000 #NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_LOW_0
+ write_reg 0xffff3008 0x0 #NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_HIGH_0
+ read_reg 0xffff3008 0xffffffff 0x00000000 #NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_HIGH_0
+-write_reg 0xffff3418 0x80000000 #NVDLA_PDP.D_SRC_BASE_ADDR_LOW_0
+-read_reg 0xffff3418 0xffffffe0 0x80000000 #NVDLA_PDP.D_SRC_BASE_ADDR_LOW_0
++write_reg 0xffff3418 0xc0000000 #NVDLA_PDP.D_SRC_BASE_ADDR_LOW_0
++read_reg 0xffff3418 0xffffffe0 0xc0000000 #NVDLA_PDP.D_SRC_BASE_ADDR_LOW_0
+ write_reg 0xffff3419 0x0 #NVDLA_PDP.D_SRC_BASE_ADDR_HIGH_0
+ read_reg 0xffff3419 0xffffffff 0x00000000 #NVDLA_PDP.D_SRC_BASE_ADDR_HIGH_0
+-write_reg 0xffff341c 0x80100000 #NVDLA_PDP.D_DST_BASE_ADDR_LOW_0
+-read_reg 0xffff341c 0xffffffe0 0x80100000 #NVDLA_PDP.D_DST_BASE_ADDR_LOW_0
++write_reg 0xffff341c 0xc0100000 #NVDLA_PDP.D_DST_BASE_ADDR_LOW_0
++read_reg 0xffff341c 0xffffffe0 0xc0100000 #NVDLA_PDP.D_DST_BASE_ADDR_LOW_0
+ write_reg 0xffff341d 0x0 #NVDLA_PDP.D_DST_BASE_ADDR_HIGH_0
+ read_reg 0xffff341d 0xffffffff 0x00000000 #NVDLA_PDP.D_DST_BASE_ADDR_HIGH_0
+ write_reg 0xffff3002 0x1 #NVDLA_PDP_RDMA.D_OP_ENABLE_0
+@@ -75,4 +75,4 @@ write_reg 0xffff3402 0x1 #NVDLA_PDP.D_OP_ENABLE_0
+ read_reg 0xffff3402 0x00000001 0x00000001 #NVDLA_PDP.D_OP_ENABLE_0
+ wait
+ write_reg 0xffff0003 0xffffffff #NVDLA_GLB.S_INTR_STATUS_0
+-dump_mem 0x80100000 0x1880 output_feature_map.dat 
++dump_mem 0xc0100000 0x1880 output_feature_map.dat 
+diff --git a/verif/traces/traceplayer/pdp_max_pooling_int16/output_feature_map.dat b/verif/traces/traceplayer/pdp_max_pooling_int16/output_feature_map.dat
+index 2e3c15d..25be0f9 100644
+--- a/verif/traces/traceplayer/pdp_max_pooling_int16/output_feature_map.dat
++++ b/verif/traces/traceplayer/pdp_max_pooling_int16/output_feature_map.dat
+@@ -1,4 +1,4 @@
+-dumped memory,start_address=0x80100000 size=0x1880
++dumped memory,start_address=0xc0100000 size=0x1880
+ memory type:dram
+ ==============================
+ 
+diff --git a/verif/traces/traceplayer/sanity1/input.txn b/verif/traces/traceplayer/sanity1/input.txn
+index e2d4730..ecf787c 100644
+--- a/verif/traces/traceplayer/sanity1/input.txn
++++ b/verif/traces/traceplayer/sanity1/input.txn
+@@ -1,6 +1,6 @@
+ # load_mem(addr, offset,  file)
+ # write_reg(reg_addr, reg_data, misc_bits)
+-load_mem 0x80000000 0x1000 sample_surf.dat 
++load_mem 0xc0000000 0x1000 sample_surf.dat 
+ write_reg 0xffff100b 0x800 #NVDLA_BDMA.CFG_DST_SURF_0
+ read_reg 0xffff100b 0xffffffe0 0x00000800 #NVDLA_BDMA.CFG_DST_SURF_0
+ write_reg 0xffff1008 0x100 #NVDLA_BDMA.CFG_DST_LINE_0
+@@ -19,12 +19,12 @@ write_reg 0xffff1005 0x3 #NVDLA_BDMA.CFG_CMD_0
+ read_reg 0xffff1005 0x00000003 0x00000003 #NVDLA_BDMA.CFG_CMD_0
+ write_reg 0xffff1001 0x0 #NVDLA_BDMA.CFG_SRC_ADDR_HIGH_080000000>>32=0x0
+ read_reg 0xffff1001 0x000000ff 0x00000000 #NVDLA_BDMA.CFG_SRC_ADDR_HIGH_080000000>>32=0x0
+-write_reg 0xffff1000 0x80000000 #NVDLA_BDMA.CFG_SRC_ADDR_LOW_080000000&32'b1=0x8000
+-read_reg 0xffff1000 0xffffffe0 0x80000000 #NVDLA_BDMA.CFG_SRC_ADDR_LOW_080000000&32'b1=0x8000
++write_reg 0xffff1000 0xc0000000 #NVDLA_BDMA.CFG_SRC_ADDR_LOW_0c0000000&32'b1=0xc000
++read_reg 0xffff1000 0xffffffe0 0xc0000000 #NVDLA_BDMA.CFG_SRC_ADDR_LOW_080000000&32'b1=0xc000
+ write_reg 0xffff1003 0x0 #NVDLA_BDMA.CFG_DST_ADDR_HIGH_081000000>>32=0x0
+ read_reg 0xffff1003 0x000000ff 0x00000000 #NVDLA_BDMA.CFG_DST_ADDR_HIGH_081000000>>32=0x0
+-write_reg 0xffff1002 0x81000000 #NVDLA_BDMA.CFG_DST_ADDR_LOW_081000000&32'b1=0x8100
+-read_reg 0xffff1002 0xffffffe0 0x81000000 #NVDLA_BDMA.CFG_DST_ADDR_LOW_081000000&32'b1=0x8100
++write_reg 0xffff1002 0xc1000000 #NVDLA_BDMA.CFG_DST_ADDR_LOW_0c1000000&32'b1=0xc100
++read_reg 0xffff1002 0xffffffe0 0xc1000000 #NVDLA_BDMA.CFG_DST_ADDR_LOW_081000000&32'b1=0xc100
+ write_reg 0xffff100c 0x1 #NVDLA_BDMA.CFG_OP_0
+ read_reg 0xffff100c 0x00000001 0x00000001 #NVDLA_BDMA.CFG_OP_0
+ write_reg 0xffff100d 0x1 #NVDLA_BDMA.CFG_LAUNCH0_0
+diff --git a/verif/traces/traceplayer/sanity2/input.txn b/verif/traces/traceplayer/sanity2/input.txn
+index 3ea26e9..1647ed1 100644
+--- a/verif/traces/traceplayer/sanity2/input.txn
++++ b/verif/traces/traceplayer/sanity2/input.txn
+@@ -1,6 +1,6 @@
+ # load_mem(addr, offset,  file)
+ # write_reg(reg_addr, reg_data, misc_bits)
+-load_mem 0x80000000 0x1000 sample_surf.dat 
++load_mem 0xc0000000 0x1000 sample_surf.dat 
+ write_reg 0xffff100b 0x800 #NVDLA_BDMA.CFG_DST_SURF_0
+ read_reg 0xffff100b 0xffffffe0 0x00000800 #NVDLA_BDMA.CFG_DST_SURF_0
+ write_reg 0xffff1008 0x100 #NVDLA_BDMA.CFG_DST_LINE_0
+@@ -17,14 +17,14 @@ write_reg 0xffff1004 0x7 #NVDLA_BDMA.CFG_LINE_0
+ read_reg 0xffff1004 0x00001fff 0x00000007 #NVDLA_BDMA.CFG_LINE_0
+ write_reg 0xffff1005 0x3 #NVDLA_BDMA.CFG_CMD_0
+ read_reg 0xffff1005 0x00000003 0x00000003 #NVDLA_BDMA.CFG_CMD_0
+-write_reg 0xffff1001 0x0 #NVDLA_BDMA.CFG_SRC_ADDR_HIGH_080000000>>32=0x0
+-read_reg 0xffff1001 0x000000ff 0x00000000 #NVDLA_BDMA.CFG_SRC_ADDR_HIGH_080000000>>32=0x0
+-write_reg 0xffff1000 0x80000000 #NVDLA_BDMA.CFG_SRC_ADDR_LOW_080000000&32'b1=0x8000
+-read_reg 0xffff1000 0xffffffe0 0x80000000 #NVDLA_BDMA.CFG_SRC_ADDR_LOW_080000000&32'b1=0x8000
+-write_reg 0xffff1003 0x0 #NVDLA_BDMA.CFG_DST_ADDR_HIGH_081000000>>32=0x0
+-read_reg 0xffff1003 0x000000ff 0x00000000 #NVDLA_BDMA.CFG_DST_ADDR_HIGH_081000000>>32=0x0
+-write_reg 0xffff1002 0x81000000 #NVDLA_BDMA.CFG_DST_ADDR_LOW_081000000&32'b1=0x8100
+-read_reg 0xffff1002 0xffffffe0 0x81000000 #NVDLA_BDMA.CFG_DST_ADDR_LOW_081000000&32'b1=0x8100
++write_reg 0xffff1001 0x0 #NVDLA_BDMA.CFG_SRC_ADDR_HIGH_0c0000000>>32=0x0
++read_reg 0xffff1001 0x000000ff 0x00000000 #NVDLA_BDMA.CFG_SRC_ADDR_HIGH_0c0000000>>32=0x0
++write_reg 0xffff1000 0xc0000000 #NVDLA_BDMA.CFG_SRC_ADDR_LOW_080000000&32'b1=0xc000
++read_reg 0xffff1000 0xffffffe0 0xc0000000 #NVDLA_BDMA.CFG_SRC_ADDR_LOW_0c0000000&32'b1=0xc000
++write_reg 0xffff1003 0x0 #NVDLA_BDMA.CFG_DST_ADDR_HIGH_0c1000000>>32=0x0
++read_reg 0xffff1003 0x000000ff 0x00000000 #NVDLA_BDMA.CFG_DST_ADDR_HIGH_0c1000000>>32=0x0
++write_reg 0xffff1002 0xc1000000 #NVDLA_BDMA.CFG_DST_ADDR_LOW_0c1000000&32'b1=0xc100
++read_reg 0xffff1002 0xffffffe0 0xc1000000 #NVDLA_BDMA.CFG_DST_ADDR_LOW_0c1000000&32'b1=0xc100
+ write_reg 0xffff100c 0x1 #NVDLA_BDMA.CFG_OP_0
+ read_reg 0xffff100c 0x00000001 0x00000001 #NVDLA_BDMA.CFG_OP_0
+ write_reg 0xffff100d 0x1 #NVDLA_BDMA.CFG_LAUNCH0_0
+diff --git a/verif/traces/traceplayer/sanity3/golden_output_memory.dat b/verif/traces/traceplayer/sanity3/golden_output_memory.dat
+index 55c15f0..505219e 100644
+--- a/verif/traces/traceplayer/sanity3/golden_output_memory.dat
++++ b/verif/traces/traceplayer/sanity3/golden_output_memory.dat
+@@ -1,4 +1,4 @@
+-dumped memory,start_address=0x80400000 size=0x20
++dumped memory,start_address=0xc0400000 size=0x20
+ memory type:dram
+ ==============================
+ 
+diff --git a/verif/traces/traceplayer/sanity3/input.txn b/verif/traces/traceplayer/sanity3/input.txn
+index 2b31af7..ee78f0c 100644
+--- a/verif/traces/traceplayer/sanity3/input.txn
++++ b/verif/traces/traceplayer/sanity3/input.txn
+@@ -1,7 +1,7 @@
+ # load_mem(addr, offset,  file)
+ # write_reg(reg_addr, reg_data, misc_bits)
+-load_mem 0x80000000 0x00001000 sample_surf.dat #0x1000 (4KB)  8*8*32*2
+-load_mem 0x80100000 0x00010000 weight.dat #0x2400(18KB)  16 kernels, each kernel is 3*3*32*2
++load_mem 0xc0000000 0x00001000 sample_surf.dat #0x1000 (4KB)  8*8*32*2
++load_mem 0xc0100000 0x00010000 weight.dat #0x2400(18KB)  16 kernels, each kernel is 3*3*32*2
+ write_reg 0xffff1401 0x0 #NVDLA_CDMA.S_POINTER_0CONSUMER: GROUP_0, PRODUCER: GROUP_0
+ read_reg 0xffff1401 0xffffffff 0x00000000 #NVDLA_CDMA.S_POINTER_0CONSUMER: GROUP_0, PRODUCER: GROUP_0
+ write_reg 0xffff1402 0x3000f #NVDLA_CDMA.S_ARBITER_0ARB_WEIGHT=15, ARB_WMB=3
+@@ -20,8 +20,8 @@ write_reg 0xffff140b 0x1 #NVDLA_CDMA.D_DAIN_RAM_TYPE_0MC
+ read_reg 0xffff140b 0xffffffff 0x00000001 #NVDLA_CDMA.D_DAIN_RAM_TYPE_0MC
+ write_reg 0xffff140c 0x0 #NVDLA_CDMA.D_DAIN_ADDR_HIGH_0_0
+ read_reg 0xffff140c 0xffffffff 0x00000000 #NVDLA_CDMA.D_DAIN_ADDR_HIGH_0_0
+-write_reg 0xffff140d 0x80000000 #NVDLA_CDMA.D_DAIN_ADDR_LOW_0_00MB
+-read_reg 0xffff140d 0xffffffff 0x80000000 #NVDLA_CDMA.D_DAIN_ADDR_LOW_0_00MB
++write_reg 0xffff140d 0xc0000000 #NVDLA_CDMA.D_DAIN_ADDR_LOW_0_00MB
++read_reg 0xffff140d 0xffffffff 0xc0000000 #NVDLA_CDMA.D_DAIN_ADDR_LOW_0_00MB
+ write_reg 0xffff140e 0x0 #NVDLA_CDMA.D_DAIN_ADDR_HIGH_1_0
+ read_reg 0xffff140e 0xffffffff 0x00000000 #NVDLA_CDMA.D_DAIN_ADDR_HIGH_1_0
+ write_reg 0xffff140f 0x0 #NVDLA_CDMA.D_DAIN_ADDR_LOW_1_0
+@@ -50,8 +50,8 @@ write_reg 0xffff141d 0x1 #NVDLA_CDMA.D_WEIGHT_RAM_TYPE_0MC
+ read_reg 0xffff141d 0xffffffff 0x00000001 #NVDLA_CDMA.D_WEIGHT_RAM_TYPE_0MC
+ write_reg 0xffff141e 0x0 #NVDLA_CDMA.D_WEIGHT_ADDR_HIGH_0
+ read_reg 0xffff141e 0xffffffff 0x00000000 #NVDLA_CDMA.D_WEIGHT_ADDR_HIGH_0
+-write_reg 0xffff141f 0x80100000 #NVDLA_CDMA.D_WEIGHT_ADDR_LOW_01MB
+-read_reg 0xffff141f 0xffffffff 0x80100000 #NVDLA_CDMA.D_WEIGHT_ADDR_LOW_01MB
++write_reg 0xffff141f 0xc0100000 #NVDLA_CDMA.D_WEIGHT_ADDR_LOW_01MB
++read_reg 0xffff141f 0xffffffff 0xc0100000 #NVDLA_CDMA.D_WEIGHT_ADDR_LOW_01MB
+ write_reg 0xffff1420 0x10000 #NVDLA_CDMA.D_WEIGHT_BYTES_0
+ read_reg 0xffff1420 0xffffffff 0x00010000 #NVDLA_CDMA.D_WEIGHT_BYTES_0
+ write_reg 0xffff1421 0x0 #NVDLA_CDMA.D_WGS_ADDR_HIGH_0
+@@ -138,8 +138,8 @@ write_reg 0xffff2404 0x0 #NVDLA_CACC.D_DATAOUT_SIZE_0_0
+ read_reg 0xffff2404 0xffffffff 0x00000000 #NVDLA_CACC.D_DATAOUT_SIZE_0_0
+ write_reg 0xffff2405 0xf #NVDLA_CACC.D_DATAOUT_SIZE_1_0
+ read_reg 0xffff2405 0xffffffff 0x0000000f #NVDLA_CACC.D_DATAOUT_SIZE_1_0
+-write_reg 0xffff2406 0x80400000 #NVDLA_CACC.D_DATAOUT_ADDR_0
+-read_reg 0xffff2406 0xffffffff 0x80400000 #NVDLA_CACC.D_DATAOUT_ADDR_0
++write_reg 0xffff2406 0xc0400000 #NVDLA_CACC.D_DATAOUT_ADDR_0
++read_reg 0xffff2406 0xffffffff 0xc0400000 #NVDLA_CACC.D_DATAOUT_ADDR_0
+ write_reg 0xffff2407 0x0 #NVDLA_CACC.D_BATCH_NUMBER_0
+ read_reg 0xffff2407 0xffffffff 0x00000000 #NVDLA_CACC.D_BATCH_NUMBER_0
+ write_reg 0xffff2408 0x20 #NVDLA_CACC.D_LINE_STRIDE_0
+@@ -172,8 +172,8 @@ write_reg 0xffff2c10 0x0 #NVDLA_SDP.D_DATA_CUBE_HEIGHT_0
+ read_reg 0xffff2c10 0xffffffff 0x00000000 #NVDLA_SDP.D_DATA_CUBE_HEIGHT_0
+ write_reg 0xffff2c11 0xf #NVDLA_SDP.D_DATA_CUBE_CHANNEL_0
+ read_reg 0xffff2c11 0xffffffff 0x0000000f #NVDLA_SDP.D_DATA_CUBE_CHANNEL_0
+-write_reg 0xffff2c12 0x80400000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_04MB
+-read_reg 0xffff2c12 0xffffffff 0x80400000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_04MB
++write_reg 0xffff2c12 0xc0400000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_04MB
++read_reg 0xffff2c12 0xffffffff 0xc0400000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_04MB
+ write_reg 0xffff2c13 0x0 #NVDLA_SDP.D_DST_BASE_ADDR_HIGH_0
+ read_reg 0xffff2c13 0xffffffff 0x00000000 #NVDLA_SDP.D_DST_BASE_ADDR_HIGH_0
+ write_reg 0xffff2c14 0x20 #NVDLA_SDP.D_DST_LINE_STRIDE_0
+@@ -234,4 +234,4 @@ read_reg 0xffff0003 0xffffffff 0x0
+ wait
+ write_reg 0xffff0003 0xffffffff #NVDLA_GLB.S_INTR_STATUS_0clear interrupts
+ read_reg 0xffff0003 0xffffffff 0x0
+-dump_mem 0x80400000 0x20 golden_output_memory.dat
++dump_mem 0xc0400000 0x20 golden_output_memory.dat
+diff --git a/verif/traces/traceplayer/sdp_relu_int16/input.txn b/verif/traces/traceplayer/sdp_relu_int16/input.txn
+index 4ca7927..bed2de7 100644
+--- a/verif/traces/traceplayer/sdp_relu_int16/input.txn
++++ b/verif/traces/traceplayer/sdp_relu_int16/input.txn
+@@ -1,14 +1,14 @@
+ # load_mem(addr, offset,  file)
+ # write_reg(reg_addr, reg_data, misc_bits)
+-load_mem 0x80200000 0x1000 input_feature_map.dat 
++load_mem 0xc0200000 0x1000 input_feature_map.dat 
+ write_reg 0xffff2803 0x7 #NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH_0
+ read_reg 0xffff2803 0x00001fff 0x00000007 #NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH_0
+ write_reg 0xffff2804 0x7 #NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT_0
+ read_reg 0xffff2804 0x00001fff 0x00000007 #NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT_0
+ write_reg 0xffff2805 0x1f #NVDLA_SDP_RDMA.D_DATA_CUBE_CHANNEL_0
+ read_reg 0xffff2805 0x00001fff 0x0000001f #NVDLA_SDP_RDMA.D_DATA_CUBE_CHANNEL_0
+-write_reg 0xffff2806 0x80200000 #NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW_0
+-read_reg 0xffff2806 0xffffffe0 0x80200000 #NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW_0
++write_reg 0xffff2806 0xc0200000 #NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW_0
++read_reg 0xffff2806 0xffffffe0 0xc0200000 #NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW_0
+ write_reg 0xffff2807 0x0 #NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_HIGH_0
+ read_reg 0xffff2807 0xffffffff 0x00000000 #NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_HIGH_0
+ write_reg 0xffff2808 0x100 #NVDLA_SDP_RDMA.D_SRC_LINE_STRIDE_0
+@@ -17,8 +17,8 @@ write_reg 0xffff2809 0x800 #NVDLA_SDP_RDMA.D_SRC_SURFACE_STRIDE_0
+ read_reg 0xffff2809 0xffffffe0 0x00000800 #NVDLA_SDP_RDMA.D_SRC_SURFACE_STRIDE_0
+ write_reg 0xffff280a 0x1b #NVDLA_SDP_RDMA.D_BRDMA_CFG_0BRDMA_DATA_MODE=PER_ELEMENT, BRDMA_DATA_SIZE=TWO_BYTE, BRDMA_DATA_USE=ALU, BRDMA_DISABLE=YES
+ read_reg 0xffff280a 0x0000003f 0x0000001b #NVDLA_SDP_RDMA.D_BRDMA_CFG_0BRDMA_DATA_MODE=PER_ELEMENT, BRDMA_DATA_SIZE=TWO_BYTE, BRDMA_DATA_USE=ALU, BRDMA_DISABLE=YES
+-write_reg 0xffff280b 0x80300000 #NVDLA_SDP_RDMA.D_BS_BASE_ADDR_LOW_0
+-read_reg 0xffff280b 0xffffffe0 0x80300000 #NVDLA_SDP_RDMA.D_BS_BASE_ADDR_LOW_0
++write_reg 0xffff280b 0xc0300000 #NVDLA_SDP_RDMA.D_BS_BASE_ADDR_LOW_0
++read_reg 0xffff280b 0xffffffe0 0xc0300000 #NVDLA_SDP_RDMA.D_BS_BASE_ADDR_LOW_0
+ write_reg 0xffff280c 0x0 #NVDLA_SDP_RDMA.D_BS_BASE_ADDR_HIGH_0
+ read_reg 0xffff280c 0xffffffff 0x00000000 #NVDLA_SDP_RDMA.D_BS_BASE_ADDR_HIGH_0
+ write_reg 0xffff281c 0x54 #NVDLA_SDP_RDMA.D_FEATURE_MODE_CFG_0FLYING_MODE=0(OFF), WINOGRAD=0(OFF), INT16
+@@ -43,8 +43,8 @@ write_reg 0xffff2c10 0x7 #NVDLA_SDP.D_DATA_CUBE_HEIGHT_0
+ read_reg 0xffff2c10 0x00001fff 0x00000007 #NVDLA_SDP.D_DATA_CUBE_HEIGHT_0
+ write_reg 0xffff2c11 0x1f #NVDLA_SDP.D_DATA_CUBE_CHANNEL_0
+ read_reg 0xffff2c11 0x00001fff 0x0000001f #NVDLA_SDP.D_DATA_CUBE_CHANNEL_0
+-write_reg 0xffff2c12 0x80800000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_08MB
+-read_reg 0xffff2c12 0xffffffe0 0x80800000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_08MB
++write_reg 0xffff2c12 0xc0800000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_08MB
++read_reg 0xffff2c12 0xffffffe0 0xc0800000 #NVDLA_SDP.D_DST_BASE_ADDR_LOW_08MB
+ write_reg 0xffff2c13 0x0 #NVDLA_SDP.D_DST_BASE_ADDR_HIGH_0
+ read_reg 0xffff2c13 0xffffffff 0x00000000 #NVDLA_SDP.D_DST_BASE_ADDR_HIGH_0
+ write_reg 0xffff2c14 0x100 #NVDLA_SDP.D_DST_LINE_STRIDE_0
+@@ -85,4 +85,4 @@ write_reg 0xffff2c0e 0x1 #NVDLA_SDP.D_OP_ENABLE_0
+ read_reg 0xffff2c0e 0x00000001 0x00000001 #NVDLA_SDP.D_OP_ENABLE_0
+ wait
+ write_reg 0xffff0003 0xffffffff #NVDLA_GLB.S_INTR_STATUS_0
+-dump_mem 0x80800000 0x1000 output_feature_map.dat 
++dump_mem 0xc0800000 0x1000 output_feature_map.dat 
+diff --git a/verif/traces/traceplayer/sdp_relu_int16/output_feature_map.dat b/verif/traces/traceplayer/sdp_relu_int16/output_feature_map.dat
+index f983830..4740f0c 100644
+--- a/verif/traces/traceplayer/sdp_relu_int16/output_feature_map.dat
++++ b/verif/traces/traceplayer/sdp_relu_int16/output_feature_map.dat
+@@ -1,4 +1,4 @@
+-dumped memory,start_address=0x80800000 size=0x1000
++dumped memory,start_address=0xc0800000 size=0x1000
+ memory type:dram
+ ==============================
+ 
 diff --git a/verif/verilator/Makefile b/verif/verilator/Makefile
 index aa73fac..bd28650 100644
 --- a/verif/verilator/Makefile
@@ -12741,7 +13058,7 @@ index aa73fac..bd28650 100644
  run: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/$(TEST)/trace.bin $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla
  	cd $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/$(TEST) && ../../VNV_nvdla trace.bin
 diff --git a/verif/verilator/input_txn_to_verilator.pl b/verif/verilator/input_txn_to_verilator.pl
-index 0c2f7e0..079a706 100755
+index 0c2f7e0..f33667d 100755
 --- a/verif/verilator/input_txn_to_verilator.pl
 +++ b/verif/verilator/input_txn_to_verilator.pl
 @@ -1,11 +1,13 @@
@@ -12785,10 +13102,29 @@ index 0c2f7e0..079a706 100755
      elsif($values[0] =~ /write_reg/) {
        if($size != 3) { die "\nERROR: in write_reg command: $input_line\n" };
  
+@@ -131,14 +143,14 @@ while(<$inf>)
+            my $line = $_;
+            next if ($line !~ m/^ ?0x/);
+            $line =~ s/ ?0x//g;
+-           #assuming 32 bytes per line. 1st byte on line goes to addr0
+-           # So we split into groups of 8 nums (4 bytes) then reverse each byte
++           # allowing each line to have x bytes, 0 < x <= 32.
++           # each byte is in 2 hex chars
+            my @bytes = ($line =~ m/([0-9a-z]{2})/g);
+-           die "Can't parse $line into 32 groups of 2 hex numbers. Got ".scalar(@bytes)." groups" if (scalar(@bytes) != 32);
++           die "$line is ill-formatted. Got ".scalar(@bytes)." groups of 2 hex numbers" if (scalar(@bytes) == 0 || scalar(@bytes) > 32);
+            foreach my $byte (@bytes) {
+              print $ouf pack("C", hex($byte));
+            }
+-           $totbytes += 32;
++           $totbytes += scalar(@bytes);
+            if ($totbytes == hex($offset)) {
+              print "okay, that's all the bytes I expected -- I'm stopping here\n";
+              last;
 diff --git a/verif/verilator/nvdla.cpp b/verif/verilator/nvdla.cpp
 old mode 100644
 new mode 100755
-index e24becf..b899bea
+index e24becf..f518cbb
 --- a/verif/verilator/nvdla.cpp
 +++ b/verif/verilator/nvdla.cpp
 @@ -40,6 +40,7 @@ class CSBMaster {
@@ -12905,6 +13241,15 @@ index e24becf..b899bea
  			case 0xFF:
  				printf("CMD: done\n");
  				break;
+@@ -580,7 +624,7 @@ public:
+ 		AXIResponder<uint64_t> *axi;
+ 		if ((op.addr & 0xF0000000) == 0x50000000)
+ 			axi = axi_cvsram;
+-		else if ((op.addr & 0xF0000000) == 0x80000000)
++		else if ((op.addr & 0xF0000000) == 0xc0000000)
+ 			axi = axi_dbb;
+ 		else {
+ 			printf("AXI event to bad offset\n");
 diff --git a/vmod/nvdla/cmac/NV_NVDLA_CMAC_CORE_mac.v b/vmod/nvdla/cmac/NV_NVDLA_CMAC_CORE_mac.v
 index 677f92d..76ef6d1 100644
 --- a/vmod/nvdla/cmac/NV_NVDLA_CMAC_CORE_mac.v

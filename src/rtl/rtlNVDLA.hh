@@ -212,7 +212,6 @@ class rtlNVDLA : public rtlObject
     uint64_t baseAddrDRAM;
     uint64_t baseAddrSRAM;
 
-    uint32_t startMemRegion;
     uint32_t startBaseTrace;
     char *ptrTrace;
 

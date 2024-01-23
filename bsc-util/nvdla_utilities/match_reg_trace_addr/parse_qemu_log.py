@@ -12,7 +12,7 @@ class Data:
         self.attr = None        # weight, activation, unknown
         self.addr_id = None
         self.offset = None
-        self.addr = None        # offset 0x80000000 by default
+        self.addr = None        # offset 0xc0000000 by default
         self.size = None
         self.width = None
         self.height = None
@@ -75,7 +75,7 @@ class HyperData:
 
 
 class Workload:
-    def __init__(self, in_dir):
+    def __init__(self, in_dir, use_real_data=False, dump_results=False):
         self.in_dir = in_dir        # each workload corresponds to a directory of log files
         self.data = {}              # {(addr_id, offset): class Data}
         self.surfaces = []          # [class Surface, ...]
@@ -94,6 +94,14 @@ class Workload:
 
         self.hyper_data = {}        # = {hyper_data_addr: HyperData}
 
+        self.txn_lines = []         # for self.sclog2traces() to store translated contents of input.txn
+        self.use_real_data = use_real_data  # (does not contain dump_mem instructions)
+        self.dump_results = dump_results    # whether to dump results for checking correctness
+
+        # sanity check
+        if self.dump_results:
+            assert self.use_real_data
+
         with open(os.path.join(self.in_dir, "qemu_log")) as fp:
             lines = fp.readlines()
 
@@ -102,14 +110,17 @@ class Workload:
 
         # figure out the attributes of "unknown"
         mem_trace_path = os.path.join(self.in_dir, "VP_mem_rd_wr")
-        assert os.path.exists(mem_trace_path)
+        need_convert_from_sc_log = False
+        if not os.path.exists(mem_trace_path):      # memory trace files not yet generated
+            need_convert_from_sc_log = True
+            self.sclog2traces()                     # not yet prepended load_mem & dump instructions
 
         self.addr_log, self.sorted_addr, self.raw_addr_log = parse_rd_wr_trace(mem_trace_path)
 
         # set data_blk.addr and determine "unknown"
         for _, data_blk in self.data.items():
             if data_blk.addr_id != -1:
-                data_blk.addr = (self.addr_base_map[data_blk.addr_id] + data_blk.offset) - 0xc0000000 + 0x80000000
+                data_blk.addr = (self.addr_base_map[data_blk.addr_id] + data_blk.offset)
                 if data_blk.attr == "unknown":
                     addr_log_entry = self.addr_log[data_blk.addr]
                     read_only = True
@@ -189,6 +200,75 @@ class Workload:
             if 'r' in rw_and_addr[0] and rw_and_addr[1] in rd_only_addr2desc.keys():
                 self.rd_only_vars.append(rd_only_addr2desc[rw_and_addr[1]])
 
+        if need_convert_from_sc_log and self.use_real_data:
+            # care about self.weights and self.inputs
+            memory = {}     # {64B-aligned addr, [uint32_t]}
+            to_prepend_txn_lines = []
+            to_append_txn_lines = []
+            txn_len = None
+            with open(os.path.join(self.in_dir, "sc.log")) as fp:
+                sclog_lines = fp.readlines()
+            for line in sclog_lines:
+                if "Info: nvdla.dbb_adaptor: GP: iswrite" in line:
+                    info_match = re.search("addr=([0-9a-zA-Z]+) len=([0-9]+) data=0x ([0-9a-fA-FX_ ]+) resp", line)
+                    assert info_match is not None
+                    addr = int(info_match.group(1), 16)
+                    data_len = int(info_match.group(2))
+                    if txn_len is not None:
+                        assert txn_len == data_len
+                    else:
+                        txn_len = data_len
+                    assert info_match.group(3).count(' ') == data_len // 4 - 1
+                    uint32_ts = info_match.group(3).replace("X", "0").replace("_", "").split()
+                    contents = [int(uint32_t, 16) for uint32_t in uint32_ts]
+                    assert addr not in memory or memory[addr] == contents
+                    memory[addr] = contents
+
+            to_get_data = self.weights + self.inputs + self.outputs if self.dump_results else self.weights + self.inputs
+            for data_blk_key in to_get_data:
+                data_blk = self.data[data_blk_key]
+                # assume input is not strided tensor
+                # weight cannot be strided tensor
+                file_name = "0x%08x" % data_blk.addr + ".dat"
+                if data_blk_key in self.outputs:
+                    file_name = "golden_" + file_name
+                file_lines = []
+                bytes_in_this_line = 0
+                file_line = ""
+                assert data_blk.hyper_data_addr is None
+                for addr in range(data_blk.addr, data_blk.addr + data_blk.size, txn_len):
+                    # assume each entry has length txn_len
+                    contents = memory[addr]
+                    this_txn_len = min(txn_len, data_blk.addr + data_blk.size - addr)
+                    for byte_id in range(0, this_txn_len):
+                        int_id = byte_id // 4
+                        offset = (byte_id % 4) * 8
+                        byte = (contents[int_id] >> offset) & 0xff
+                        file_line += "0x%02x " % byte
+                        if bytes_in_this_line == 31:
+                            bytes_in_this_line = 0
+                            file_lines.append(file_line.strip() + "\n")
+                            file_line = ""
+                        else:
+                            bytes_in_this_line += 1
+                if bytes_in_this_line != 0:     # have some remaining
+                    file_lines.append(file_line.strip() + "\n")
+                    bytes_in_this_line = 0
+                    file_line = ""
+                with open(os.path.join(self.in_dir, file_name), "w") as fp:
+                    fp.writelines(file_lines)
+                if data_blk_key in self.outputs:
+                    to_append_txn_lines.append("dump_mem " + "0x%08x" % data_blk.addr + " " + hex(data_blk.size) +
+                                               " " + file_name + "\t#actual_len = " + hex(data_blk.size) + "\n")
+                else:
+                    to_prepend_txn_lines.append("load_mem " + "0x%08x" % data_blk.addr + " " + hex(data_blk.size) +
+                                                " " + file_name + "\t#actual_len = " + hex(data_blk.size) + "\n")
+            self.txn_lines = to_prepend_txn_lines + self.txn_lines + to_append_txn_lines
+
+        if need_convert_from_sc_log:
+            with open(os.path.join(self.in_dir, "input.txn"), "w") as fp:
+                fp.writelines(self.txn_lines)
+
         # do liveness analysis for each Data object
         for _, data_blk in self.data.items():
             first = data_blk.addr
@@ -257,6 +337,90 @@ class Workload:
                         self.data[desc].liveness[0] = time_stamp
                 else:
                     assert False
+
+    def sclog2traces(self):
+        txn_lines = []
+        rd_lines = []
+        wr_lines = []
+        rw_lines = []
+        with open(os.path.join(self.in_dir, "sc.log")) as fp:
+            sclog_lines = fp.readlines()
+
+        csb_inputting = False
+        csb_reg = 0x0
+        csb_data = 0
+        csb_is_write = 0x0
+        for sclog_line in sclog_lines:
+            if len(sclog_line) < 2:     # the line is empty
+                continue
+            if "NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr:" in sclog_line:
+                continue
+            if "NV_NVDLA_csb_master::nvdla2csb_b_transport, csb req to" in sclog_line:
+                assert not csb_inputting
+                csb_inputting = True
+            elif "NV_NVDLA_csb_master.cpp:" in sclog_line:
+                assert csb_inputting
+                info = re.search("NV_NVDLA_csb_master.cpp: [0-9]+:([A-Za-z ]+): ([0-9a-zA-Z]+)", sclog_line)
+                if info is not None:
+                    key = info.group(1)
+                    val = info.group(2)
+                    if key == "Addr":
+                        csb_reg = int(val, 16)
+                    elif key == "Data":
+                        csb_data = int(val, 16)
+                    elif key == "Is write":
+                        csb_is_write = int(val, 16)
+                    elif key == "nposted":
+                        csb_nposted = int(val, 16)
+                        assert csb_nposted == 0x0
+                        if csb_is_write != 0:   # the end for csb write_reg log
+                            csb_inputting = False
+                            out_addr = 0xffff0000 + (0x0000ffff & ((csb_reg - 0) >> 2))
+                            # write bit will be corrected by txn2verilator
+                            txn_lines.append("write_reg 0x%x 0x%08x\t\t\t#0x%04x\n" % (out_addr, csb_data, csb_reg))
+                else:
+                    exp = re.search("Err bit: ([0-9a-zA-Z]+) Data: ([0-9a-zA-Z]+)", sclog_line)
+                    # unique for csb read_reg response
+                    assert exp is not None, "Unresolved csb line: " + sclog_line
+                    assert int(exp.group(1), 16) == 0
+                    csb_exp_data = int(exp.group(2), 16)
+                    csb_inputting = False
+                    out_addr = 0xffff0000 + (0x0000ffff & ((csb_reg - 0) >> 2))
+                    if csb_reg == 0x000c and csb_exp_data != 0:
+                        txn_lines.append("until 0xffff0003 0x%08x\n" % csb_exp_data)
+                    elif csb_reg == 0xa004:
+                        txn_lines.append("read_reg 0x%08x 0x00000000 0x%08x\t#0x%04x\n"
+                                         % (out_addr, csb_exp_data, csb_reg))
+                    else:
+                        txn_lines.append("read_reg 0x%08x 0xffffffff 0x%08x\t#0x%04x\n"
+                                         % (out_addr, csb_exp_data, csb_reg))
+
+            elif "NvdlaAxiAdaptor::axi_rd_wr_thread, send" in sclog_line:
+                if "done" in sclog_line:
+                    continue
+                if "read request" in sclog_line:
+                    axi_is_write = False
+                elif "write request" in sclog_line:
+                    axi_is_write = True
+                else:
+                    assert False, "Unresolved axi line: " + sclog_line
+                addr_match = re.search("address=([0-9a-zA-Z]+)", sclog_line)
+                assert addr_match is not None
+                axi_addr = int(addr_match.group(1), 16)
+                if axi_is_write:
+                    wr_lines.append(hex(axi_addr) + "\n")
+                    rw_lines.append("w " + hex(axi_addr) + "\n")
+                else:
+                    rd_lines.append(hex(axi_addr) + "\n")
+                    rw_lines.append("r " + hex(axi_addr) + "\n")
+
+        self.txn_lines = txn_lines
+        with open(os.path.join(self.in_dir, "VP_mem_rd_wr"), "w") as fp:
+            fp.writelines(rw_lines)
+        with open(os.path.join(self.in_dir, "VP_mem_rd"), "w") as fp:
+            fp.writelines(rd_lines)
+        with open(os.path.join(self.in_dir, "VP_mem_wr"), "w") as fp:
+            fp.writelines(wr_lines)
 
     def print_workload_info(self):
         for key, val in self.data.items():

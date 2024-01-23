@@ -143,14 +143,14 @@ while(<$inf>)
            my $line = $_;
            next if ($line !~ m/^ ?0x/);
            $line =~ s/ ?0x//g;
-           #assuming 32 bytes per line. 1st byte on line goes to addr0
-           # So we split into groups of 8 nums (4 bytes) then reverse each byte
+           # allowing each line to have x bytes, 0 < x <= 32.
+           # each byte is in 2 hex chars
            my @bytes = ($line =~ m/([0-9a-z]{2})/g);
-           die "Can't parse $line into 32 groups of 2 hex numbers. Got ".scalar(@bytes)." groups" if (scalar(@bytes) != 32);
+           die "$line is ill-formatted. Got ".scalar(@bytes)." groups of 2 hex numbers" if (scalar(@bytes) == 0 || scalar(@bytes) > 32);
            foreach my $byte (@bytes) {
              print $ouf pack("C", hex($byte));
            }
-           $totbytes += 32;
+           $totbytes += scalar(@bytes);
            if ($totbytes == hex($offset)) {
              print "okay, that's all the bytes I expected -- I'm stopping here\n";
              last;
