@@ -229,7 +229,8 @@ class BufferModeParam(BaseParam):
 
 class EmbedSPMSizeParam(BaseParam):
     def __init__(self, name, sweep_vals):
-        BaseParam.__init__(self, name, sweep_vals)
+        new_sweep_vals = [re.sub(r"([0-9])KB", r"\1kB", val) for val in sweep_vals]
+        BaseParam.__init__(self, name, new_sweep_vals)
 
     def apply(self, point_dir):
         change_config_file(
@@ -354,7 +355,8 @@ class AddAccelPrivateCacheParam(BaseParam):
 
 class AccelPrCacheSizeParam(BaseParam):
     def __init__(self, name, sweep_vals):
-        BaseParam.__init__(self, name, sweep_vals)
+        new_sweep_vals = [re.sub(r"([0-9])KB", r"\1kB", val) for val in sweep_vals]
+        BaseParam.__init__(self, name, new_sweep_vals)
 
     def apply(self, point_dir):
         change_config_file(
@@ -674,7 +676,8 @@ class AddAccelSharedCacheParam(BaseParam):
 
 class AccelShCacheSizeParam(BaseParam):
     def __init__(self, name, sweep_vals):
-        BaseParam.__init__(self, name, sweep_vals)
+        new_sweep_vals = [re.sub(r"([0-9])KB", r"\1kB", val) for val in sweep_vals]
+        BaseParam.__init__(self, name, new_sweep_vals)
 
     def apply(self, point_dir):
         change_config_file(
@@ -1118,7 +1121,8 @@ class CVSRAMEnableParam(BaseParam):
 
 class CVSRAMSizeParam(BaseParam):
     def __init__(self, name, sweep_vals):
-        BaseParam.__init__(self, name, sweep_vals, changes_trace_bin=True)
+        new_sweep_vals = [re.sub(r"([0-9])KB", r"\1kB", val) for val in sweep_vals]
+        BaseParam.__init__(self, name, new_sweep_vals, changes_trace_bin=True)
 
     def apply(self, point_dir):
         change_config_file(

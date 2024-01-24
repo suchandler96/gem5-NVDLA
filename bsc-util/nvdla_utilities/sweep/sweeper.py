@@ -227,7 +227,7 @@ class Sweeper:
         print("---Created data point: %d.---" % self.num_data_points)
 
     def parallel_remap_compute(self):
-        pool = mp.Pool(mp.cpu_count())
+        pool = mp.Pool(mp.cpu_count() // 2)
         for _, cmds in self.mapper_comps:
             for cmd in cmds:
                 pool.apply_async(shell_run_cmd, args=(cmd, ))

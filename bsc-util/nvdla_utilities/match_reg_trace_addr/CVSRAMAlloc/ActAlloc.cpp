@@ -16,9 +16,9 @@
 
 
 struct AtomicTensor {
-    uint32_t use_start;
-    uint32_t use_end;
-    uint32_t size;
+    uint64_t use_start;
+    uint64_t use_end;
+    uint64_t size;
     uint32_t num_access;
 
     AtomicTensor(uint32_t start, uint32_t end, uint32_t size, uint32_t accesses) :
@@ -27,10 +27,10 @@ struct AtomicTensor {
 
 
 struct TensorAllocInfo {
-    uint32_t use_start;
-    uint32_t use_end;
-    uint32_t size;
-    uint32_t dram_addr;
+    uint64_t use_start;
+    uint64_t use_end;
+    uint64_t size;
+    uint64_t dram_addr;
     uint32_t num_access;
 
     uint32_t line_stride_aligned;
@@ -39,8 +39,8 @@ struct TensorAllocInfo {
 
     TensorAllocInfo(uint32_t start, uint32_t end, uint32_t size, uint32_t dram_addr, uint32_t line_stride,
                     uint32_t surf_stride, uint32_t accesses) :
-        use_start(start), use_end(end), size(size), dram_addr(dram_addr), line_stride_aligned(line_stride),
-        surf_stride_aligned(surf_stride), num_access(accesses) {}
+        use_start(start), use_end(end), size(size), dram_addr(dram_addr), num_access(accesses),
+        line_stride_aligned(line_stride), surf_stride_aligned(surf_stride) {}
 
     bool is_strided() const {
         if (line_stride_aligned == 0) {
@@ -53,20 +53,25 @@ struct TensorAllocInfo {
 
 
 struct HyperTensor {
+    uint64_t bundled_size;
     std::vector<uint32_t> tensors;
+    explicit HyperTensor(uint64_t _bundled_size) : bundled_size(_bundled_size) {}
 };
 
 
 class NoChangeTimeoutCallback: public GRBCallback {
 public:
     time_t timeout_time;
+    time_t abs_timeout_time;
     double epsilon;
 
     double last_gap;
     time_t last_time;
+    time_t init_time;
 
-    explicit NoChangeTimeoutCallback(time_t _time = 45, double _epsilon = 0.01):
-            timeout_time(_time), epsilon(_epsilon), last_gap(-1), last_time(time(nullptr)) {}
+    explicit NoChangeTimeoutCallback(time_t _time = 45, time_t abs_timeout = 600, double _epsilon = 0.01):
+            timeout_time(_time), abs_timeout_time(abs_timeout), epsilon(_epsilon), last_gap(-1),
+            last_time(time(nullptr)), init_time(time(nullptr)) {}
 
 protected:
     void callback() override {
@@ -79,6 +84,9 @@ protected:
                     std::cout << "gap has not changed for more than " << timeout_time << " seconds. Abort.\n";
                     abort();
                 }
+            } else if (time(nullptr) - init_time > abs_timeout_time) {
+                std::cout << "has consumed over " << abs_timeout_time << " seconds, abort\n";
+                abort();
             } else {
                 last_gap = this_gap;
                 last_time = time(nullptr);
@@ -91,10 +99,10 @@ protected:
 class AllocProblem {
 private:
     char* out_file;
-    uint32_t align;
-    uint32_t mem_size;
-    uint32_t M_size;    // possibly larger than mem_size
-    uint32_t M_pos{0};  // possibly larger than mem_size
+    uint64_t align;
+    uint64_t mem_size;
+    uint64_t M_size;    // possibly larger than mem_size
+    uint64_t M_pos{0};  // possibly larger than mem_size
     std::vector<AtomicTensor> atom_tensors;
     std::vector<TensorAllocInfo> tensors;
     std::vector<HyperTensor> hyp_tensors;
@@ -102,7 +110,6 @@ private:
 public:
     AllocProblem(int argc, char** argv) {
         assert(argc >= 4);
-        align = (argc >= 5) ? atoi(argv[4]) : 0x0100;
 
         std::ifstream fin(argv[1], std::ios::in);
         out_file = argv[2];
@@ -116,14 +123,9 @@ public:
                 break;
             }
             std::stringstream line_stream(line);
-            uint32_t start, end, accesses;
+            uint64_t start, end, accesses;
             uint64_t size, dram_addr, orig_line_stride, orig_surf_stride;
             line_stream >> std::dec >> start >> end >> size >> orig_line_stride >> orig_surf_stride >> accesses >> std::hex >> dram_addr;
-            size = (size - 1) / align + 1;
-            dram_addr = (dram_addr - 1) / align + 1;
-            orig_line_stride = (orig_line_stride - 1) / align + 1;
-            orig_surf_stride = (orig_surf_stride - 1) / align + 1;
-            M_size = size > M_size ? size : M_size;
 
             tensors.emplace_back(start, end, size, dram_addr, orig_line_stride, orig_surf_stride, accesses);
         }
@@ -133,15 +135,12 @@ public:
             if (line.size() < 2) { // an empty line
                 continue;
             }
-            hyp_tensors.emplace_back();
-            auto& hyp_tensor = hyp_tensors.back();
 
             // here each line represents a hyper-tensor
             uint64_t bundled_size;
             line_stream >> std::dec >> bundled_size;
-            bundled_size = (bundled_size - 1) / align + 1;
-            M_size = bundled_size > M_size ? bundled_size : M_size;
-            M_pos = bundled_size;
+            hyp_tensors.emplace_back(bundled_size);
+            auto& hyp_tensor = hyp_tensors.back();
             uint32_t tensor_id;
             while (line_stream >> std::dec >> tensor_id) {
                 hyp_tensor.tensors.emplace_back(tensor_id);
@@ -150,20 +149,17 @@ public:
 
         // construct atomic_tensors using tensors
         for (auto& tensor: tensors) {
-            std::cout << tensor.is_strided() << std::endl;
             if (tensor.is_strided()) {
                 uint32_t num_segment = (tensor.size - 1) / tensor.line_stride_aligned + 1;
                 assert(num_segment > 1);
                 for (uint32_t i = 0; i < num_segment; i++) {
                     atom_tensors.emplace_back(tensor.use_start, tensor.use_end, tensor.line_stride_aligned, tensor.num_access);
                     tensor.atomic_tensors.emplace_back(atom_tensors.size() - 1);
-                    M_size = tensor.line_stride_aligned > M_size ? tensor.line_stride_aligned : M_size;
                     // std::cout << "Atomic Tensor emplaced: " << atom_tensors.size() - 1 << ", size: " << tensor.line_stride_aligned <<"\n";
                 }
             } else {
                 atom_tensors.emplace_back(tensor.use_start, tensor.use_end, tensor.size, tensor.num_access);
                 tensor.atomic_tensors.emplace_back(atom_tensors.size() - 1);
-                M_size = tensor.size > M_size ? tensor.size : M_size;
             }
         }
 
@@ -174,6 +170,70 @@ public:
                     overlap.emplace_back(i, j);
 
         mem_size = atoi(argv[3]);
+
+        // First, get the log2 value of the first atomic tensor
+        uint64_t log_divider = 1;
+        while (true) {
+            if ((atom_tensors[0].size >> log_divider) << log_divider == atom_tensors[0].size) {
+                log_divider++;
+            } else {
+                break;
+            }
+        }
+        log_divider--;
+
+        // Second, sweep through all the atomic tensors
+        for (auto& atom_tensor: atom_tensors) {
+            uint64_t this_log_divider = 1;
+            while (true) {
+                if ((atom_tensor.size >> this_log_divider) << this_log_divider == atom_tensor.size) {
+                    this_log_divider++;
+                } else {
+                    break;
+                }
+            }
+            this_log_divider--;
+            log_divider = log_divider < this_log_divider ? log_divider : this_log_divider;
+        }
+
+        // Third, sweep through the difference between DRAM addresses of tensors of the same hyper tensor
+        for (auto& hyper_tensor: hyp_tensors) {
+            for (size_t tensor_id = 0; tensor_id < hyper_tensor.tensors.size() - 1; tensor_id++) {
+                int64_t dram_addr_diff = tensors[hyper_tensor.tensors[tensor_id]].dram_addr - tensors[hyper_tensor.tensors[tensor_id + 1]].dram_addr;
+                dram_addr_diff = dram_addr_diff < 0 ? -dram_addr_diff : dram_addr_diff;
+                uint64_t this_log_divider = 1;
+                while (true) {
+                    if ((dram_addr_diff >> this_log_divider) << this_log_divider == dram_addr_diff) {
+                        this_log_divider++;
+                    } else {
+                        break;
+                    }
+                }
+                this_log_divider--;
+                log_divider = log_divider < this_log_divider ? log_divider : this_log_divider;
+            }
+        }
+        align = (1 << log_divider);
+
+        for (auto& tensor: tensors) {
+            tensor.size = (tensor.size - 1) / align + 1;
+            tensor.dram_addr = (tensor.dram_addr - 1) / align + 1;
+            tensor.line_stride_aligned = (tensor.line_stride_aligned - 1) / align + 1;
+            tensor.surf_stride_aligned = (tensor.surf_stride_aligned - 1) / align + 1;
+            M_size = tensor.size > M_size ? tensor.size : M_size;
+        }
+
+        for (auto& atomic_tensor: atom_tensors) {
+            atomic_tensor.size = (atomic_tensor.size - 1) / align + 1;
+            M_size = atomic_tensor.size > M_size ? atomic_tensor.size : M_size;
+        }
+
+        for (auto& hyper_tensor: hyp_tensors) {
+            hyper_tensor.bundled_size = (hyper_tensor.bundled_size - 1) / align + 1;
+            M_size = hyper_tensor.bundled_size > M_size ? hyper_tensor.bundled_size : M_size;
+            M_pos = hyper_tensor.bundled_size > M_pos ? hyper_tensor.bundled_size : M_pos;
+        }
+
         assert((mem_size / align) * align == mem_size);
         mem_size /= align;
         M_pos = M_pos > mem_size ? M_pos : mem_size;
@@ -218,15 +278,15 @@ public:
             // cannot exceed bound
             for (uint32_t i = 0; i < atom_tensors.size(); i++) {
                 model.addConstr(pos[i] + atom_tensors[i].size - (M_size + M_pos) * (1 - sel[i]) <= mem_size);
-                std::cout << "pos[" << i << "] + " << atom_tensors[i].size << " - " << (M_size + M_pos) << " * (1 - sel[" << i << "]) <= " << mem_size << "\n";
+                // std::cout << "pos[" << i << "] + " << atom_tensors[i].size << " - " << (M_size + M_pos) << " * (1 - sel[" << i << "]) <= " << mem_size << "\n";
             }
-            std::cout << "\n";
+            // std::cout << "\n";
             // either i is beneath j
             for (uint32_t i = 0; i < overlap.size(); i++) {
                 uint32_t first = overlap[i].first;
                 model.addConstr(pos[first] + atom_tensors[first].size - M_pos * bij[i] -
                                 M_size * (1 - sij[i]) <= pos[overlap[i].second]);
-                std::cout << "pos[" << first << "] + " << atom_tensors[first].size << " - " << M_pos << " * bij[" << i << "] - " << M_size << " * (1 - " << "sij[" << i << "]) <= pos[" << overlap[i].second << "]\n";
+                // std::cout << "pos[" << first << "] + " << atom_tensors[first].size << " - " << M_pos << " * bij[" << i << "] - " << M_size << " * (1 - " << "sij[" << i << "]) <= pos[" << overlap[i].second << "]\n";
             }
 
             // or j is beneath i
@@ -249,18 +309,17 @@ public:
                     // require either all of them are selected, or none are selected
                     for (uint32_t i = 1; i < tensor.atomic_tensors.size(); i++) {
                         model.addConstr(sel[tensor.atomic_tensors[0]] == sel[tensor.atomic_tensors[i]]);
-                        std::cout << "sel[" << tensor.atomic_tensors[0] << "] == sel[" << tensor.atomic_tensors[i] << "]\n";
+                        // std::cout << "sel[" << tensor.atomic_tensors[0] << "] == sel[" << tensor.atomic_tensors[i] << "]\n";
                     }
 
                     // require they are positioned according to surf_stride
                     for (uint32_t i = 1; i < tensor.atomic_tensors.size(); i++) {
                         model.addConstr(pos[tensor.atomic_tensors[0]] + i * tensor.surf_stride_aligned == pos[tensor.atomic_tensors[i]]);
-                        std::cout << "pos[" << tensor.atomic_tensors[0] << "] + " << i << " * " << tensor.surf_stride_aligned << " == pos[" << tensor.atomic_tensors[i] << "]\n";
+                        // std::cout << "pos[" << tensor.atomic_tensors[0] << "] + " << i << " * " << tensor.surf_stride_aligned << " == pos[" << tensor.atomic_tensors[i] << "]\n";
                     }
                 }
             }
 
-            // std::cout << "\n";
             // for tensors from the same hyper_tensor
             for (auto& hyp_tensor : hyp_tensors) {
                 for (uint32_t i = 1; i < hyp_tensor.tensors.size(); i++) {
@@ -269,13 +328,13 @@ public:
                     // require either all of its tensors are selected, or none are selected
                     model.addConstr(sel[tensors[hyp_tensor.tensors[0]].atomic_tensors[0]] ==
                                     sel[tensors[tensor_id].atomic_tensors[0]]);
-                    std::cout << std::dec << "sel[" << tensors[hyp_tensor.tensors[0]].atomic_tensors[0] << "] == sel[" << tensors[tensor_id].atomic_tensors[0] << "]\n";
+                    // std::cout << std::dec << "sel[" << tensors[hyp_tensor.tensors[0]].atomic_tensors[0] << "] == sel[" << tensors[tensor_id].atomic_tensors[0] << "]\n";
 
                     // require the relative positions of tensors in the same hyper-tensor to be the same with original
                     model.addConstr(pos[tensors[tensor_id].atomic_tensors[0]] -
                                     pos[tensors[hyp_tensor.tensors[0]].atomic_tensors[0]] ==
                                     tensors[tensor_id].dram_addr - tensors[hyp_tensor.tensors[0]].dram_addr);
-                    std::cout << "pos[" << tensors[tensor_id].atomic_tensors[0] << "] - pos[" << tensors[hyp_tensor.tensors[0]].atomic_tensors[0] << "] == 0x" << std::hex << tensors[tensor_id].dram_addr << " - 0x" << tensors[hyp_tensor.tensors[0]].dram_addr << "\n";
+                    // std::cout << "pos[" << tensors[tensor_id].atomic_tensors[0] << "] - pos[" << tensors[hyp_tensor.tensors[0]].atomic_tensors[0] << "] == 0x" << std::hex << tensors[tensor_id].dram_addr << " - 0x" << tensors[hyp_tensor.tensors[0]].dram_addr << "\n";
                 }
             }
 
@@ -288,9 +347,6 @@ public:
                 auto main_atom_id = tensor.atomic_tensors[0];
                 fout << int(sel[main_atom_id].get(GRB_DoubleAttr_X)) << " " << int(pos[main_atom_id].get(GRB_DoubleAttr_X)) * align << "\n";
             }
-//            for (uint32_t i = 0; i < sel.size(); i++) {
-//                fout << int(sel[i].get(GRB_DoubleAttr_X)) << " " << int(pos[i].get(GRB_DoubleAttr_X)) * align << "\n";
-//            }
 
             std::cout << "Obj: " << model.get(GRB_DoubleAttr_ObjVal) << std::endl;
 

@@ -23,7 +23,6 @@ class BaseRemapper:
 
         """ mapping parameters """
         self.alignment = 0x1000
-        self.align_mask = 0xfffffffffffff000
 
     def testcase_init(self, out_dir, sim_dir, testcase_str):
         self.out_dir = out_dir
@@ -32,7 +31,7 @@ class BaseRemapper:
         self.testcase_str = testcase_str
 
     def aligned_ceil(self, addr):
-        return ((addr - 0x1) & self.align_mask) + self.alignment
+        return ((addr - 0x1) // self.alignment + 1) * self.alignment
 
     """
     @output: if not None, it's the shell command to be executed to do some heavy math during remap decision.
@@ -604,7 +603,7 @@ def write_solver_input(file_path, workload, log_weights):
             fp.write(str(data_blk.liveness[0]) + " " + str(data_blk.liveness[1]) + " " + str(data_blk.size) + " " +
                      str(data_blk.line_stride * data_blk.height) + " " + str(data_blk.surf_stride) + " " +
                      str(data_blk.num_access) + " " + hex(data_blk.addr) + " ")
-            last_aligned_addr = last_aligned(data_blk.addr, data_blk.true_occupy_space, 0x40)
+            last_aligned_addr = last_aligned(data_blk.addr, data_blk.true_occupy_space, workload.axi_width)
             for id_rw in workload.addr_log[last_aligned_addr]:
                 fp.write(id_rw[1] + " ")
             fp.write("\n")

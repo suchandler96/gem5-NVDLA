@@ -75,7 +75,7 @@ class HyperData:
 
 
 class Workload:
-    def __init__(self, in_dir, use_real_data=False, dump_results=False):
+    def __init__(self, in_dir, use_real_data=False, dump_results=False, axi_width=0x40):
         self.in_dir = in_dir        # each workload corresponds to a directory of log files
         self.data = {}              # {(addr_id, offset): class Data}
         self.surfaces = []          # [class Surface, ...]
@@ -84,6 +84,8 @@ class Workload:
         self.activations = []
         self.intermediate_act = []  # [(addr_id, offset), ...]
         self.weights = []
+
+        self.axi_width = axi_width  # in bytes
 
         self.addr_base_map = {}     # {addr_base_id: addr_base_val}; addr_base_val starts from 0xc0000000
 
@@ -101,6 +103,7 @@ class Workload:
         # sanity check
         if self.dump_results:
             assert self.use_real_data
+        assert self.axi_width == 0x40 or self.axi_width == 0x20
 
         with open(os.path.join(self.in_dir, "qemu_log")) as fp:
             lines = fp.readlines()
@@ -122,7 +125,8 @@ class Workload:
             if data_blk.addr_id != -1:
                 data_blk.addr = (self.addr_base_map[data_blk.addr_id] + data_blk.offset)
                 if data_blk.attr == "unknown":
-                    addr_log_entry = self.addr_log[data_blk.addr]
+                    to_query_addr = self.get_data_blk_to_query_addr(data_blk)
+                    addr_log_entry = self.addr_log[to_query_addr]
                     read_only = True
                     for visit_pair in addr_log_entry:
                         if visit_pair[1] == 'w':
@@ -154,7 +158,7 @@ class Workload:
                     assert False
             surface.unknowns = []
 
-        self.inputs, self.outputs = get_inout_data_blks(self.data, self.addr_log)
+        self.get_inout_data_blks()
 
         for act in self.activations:
             if act not in self.inputs and act not in self.outputs:
@@ -193,7 +197,8 @@ class Workload:
 
         rd_only_addr2desc = {}
         for w in self.weights:
-            rd_only_addr2desc[self.data[w].addr] = w
+            to_query_addr = self.get_data_blk_to_query_addr(self.data[w])
+            rd_only_addr2desc[to_query_addr] = w
 
         for rw_and_addr in self.raw_addr_log:
             # rw_and_addr[0] is 'r' or 'w', while rw_and_addr[1] is the raw address
@@ -202,10 +207,9 @@ class Workload:
 
         if need_convert_from_sc_log and self.use_real_data:
             # care about self.weights and self.inputs
-            memory = {}     # {64B-aligned addr, [uint32_t]}
+            memory = {}     # {axi-aligned addr, [uint32_t]}
             to_prepend_txn_lines = []
             to_append_txn_lines = []
-            txn_len = None
             with open(os.path.join(self.in_dir, "sc.log")) as fp:
                 sclog_lines = fp.readlines()
             for line in sclog_lines:
@@ -214,14 +218,12 @@ class Workload:
                     assert info_match is not None
                     addr = int(info_match.group(1), 16)
                     data_len = int(info_match.group(2))
-                    if txn_len is not None:
-                        assert txn_len == data_len
-                    else:
-                        txn_len = data_len
+                    assert data_len == self.axi_width
                     assert info_match.group(3).count(' ') == data_len // 4 - 1
                     uint32_ts = info_match.group(3).replace("X", "0").replace("_", "").split()
                     contents = [int(uint32_t, 16) for uint32_t in uint32_ts]
-                    assert addr not in memory or memory[addr] == contents
+                    if addr in memory and memory[addr] != contents:
+                        print("inconsistent memory access result!\nPrevious:\n", memory[addr], "\nNow:\n", contents)
                     memory[addr] = contents
 
             to_get_data = self.weights + self.inputs + self.outputs if self.dump_results else self.weights + self.inputs
@@ -236,11 +238,16 @@ class Workload:
                 bytes_in_this_line = 0
                 file_line = ""
                 assert data_blk.hyper_data_addr is None
-                for addr in range(data_blk.addr, data_blk.addr + data_blk.size, txn_len):
-                    # assume each entry has length txn_len
+                aligned_start = (data_blk.addr // self.axi_width) * self.axi_width
+                aligned_end_ceil = ((data_blk.addr + data_blk.size - 1) // self.axi_width + 1) * self.axi_width
+                # true_start = data_blk.addr
+                # true_end = data_blk.addr + data_blk.size
+                for addr in range(aligned_start, aligned_end_ceil, self.axi_width):
+                    # each entry has length self.axi_width
                     contents = memory[addr]
-                    this_txn_len = min(txn_len, data_blk.addr + data_blk.size - addr)
-                    for byte_id in range(0, this_txn_len):
+                    this_txn_st = max(data_blk.addr, addr) % self.axi_width
+                    this_txn_ed = min(addr + self.axi_width, data_blk.addr + data_blk.size) % self.axi_width
+                    for byte_id in range(this_txn_st, this_txn_ed):
                         int_id = byte_id // 4
                         offset = (byte_id % 4) * 8
                         byte = (contents[int_id] >> offset) & 0xff
@@ -271,14 +278,24 @@ class Workload:
 
         # do liveness analysis for each Data object
         for _, data_blk in self.data.items():
-            first = data_blk.addr
-            last = last_aligned(data_blk.addr, data_blk.true_occupy_space, 0x40)
+            first = self.get_data_blk_to_query_addr(data_blk)
+            last = last_aligned(data_blk.addr, data_blk.true_occupy_space, self.axi_width)
             # Use true_occupy_space here instead of bundled_data_size because this strided tensor is already dead.
             # No need to focus on its bundled peers
             assert first in self.addr_log
             assert last in self.addr_log
             data_blk.liveness = (self.addr_log[first][0][0], self.addr_log[last][-1][0])
             data_blk.num_access = len(self.addr_log[last])
+
+    def get_data_blk_to_query_addr(self, data_blk):
+        if (data_blk.addr // self.axi_width) * self.axi_width == data_blk.addr:
+            to_query_addr = data_blk.addr
+        elif data_blk.size > self.axi_width:
+            to_query_addr = ((data_blk.addr // self.axi_width) + 1) * self.axi_width
+        else:
+            print("critical unaligned data_blk")
+            to_query_addr = (data_blk.addr // self.axi_width) * self.axi_width
+        return to_query_addr
 
     def write_rd_only_var_log(self, rd_var_log_path):
         with open(rd_var_log_path, "wb") as fp:
@@ -422,6 +439,23 @@ class Workload:
         with open(os.path.join(self.in_dir, "VP_mem_wr"), "w") as fp:
             fp.writelines(wr_lines)
 
+    # based on combining compilation info and runtime info
+    def get_inout_data_blks(self):
+        inputs = []
+        outputs = []
+        for data_blk_key, data_blk in self.data.items():
+            if data_blk.attr == "activation" and data_blk.addr_id != -1:
+                to_query_addr = self.get_data_blk_to_query_addr(data_blk)
+                addr_entry = self.addr_log[to_query_addr]
+                if addr_entry[0][1] == "r":
+                    inputs.append(data_blk_key)
+                if addr_entry[-1][1] == "w":
+                    outputs.append(data_blk_key)
+        inputs.sort(key=lambda x: self.data[x].size, reverse=True)
+        outputs.sort(key=lambda x: self.data[x].size, reverse=True)
+        self.inputs = inputs
+        self.outputs = outputs
+
     def print_workload_info(self):
         for key, val in self.data.items():
             print(val.attr, val.addr_id, hex(val.offset), hex(val.addr) if val.addr is not None else None, hex(val.size))
@@ -533,22 +567,6 @@ def get_addr_mapping(lines):
             else:
                 assert addr_base_map[key] == val    # the log file should agree with itself
     return addr_base_map
-
-
-# based on combining compilation info and runtime info
-def get_inout_data_blks(data, addr_log):
-    inputs = []
-    outputs = []
-    for data_blk_key, data_blk in data.items():
-        if data_blk.attr == "activation" and data_blk.addr_id != -1:
-            addr_entry = addr_log[data_blk.addr]
-            if addr_entry[0][1] == "r":
-                inputs.append(data_blk_key)
-            if addr_entry[-1][1] == "w":
-                outputs.append(data_blk_key)
-    inputs.sort(key=lambda x: data[x].size, reverse=True)
-    outputs.sort(key=lambda x: data[x].size, reverse=True)
-    return inputs, outputs
 
 
 # @output addr_log = {addr: [[rw_id, 'r' or 'w'], ...]}
