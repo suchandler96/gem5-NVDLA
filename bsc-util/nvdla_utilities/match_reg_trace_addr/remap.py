@@ -303,7 +303,7 @@ class PipelineRemapper(BaseRemapper):
         assert found_any
 
         """ mapping parameters """
-        self.weight_base_addr = 0x80000000
+        self.weight_base_addr = 0xc0000000
         self.activation_base_addr = None
         self.batch_num = None
 
