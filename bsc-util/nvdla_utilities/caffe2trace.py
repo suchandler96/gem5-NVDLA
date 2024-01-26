@@ -143,7 +143,7 @@ def process_log(options):
         os.system("cd /usr/local/nvdla && mv qemu_log " + options.out_dir)
 
     nvdla_utilities_dir = os.path.dirname(os.path.abspath(__file__))
-    workload = Workload(options.out_dir, options.true_data, options.dump_results)
+    workload = Workload(options.out_dir, True, options.true_data, options.dump_results)
     os.system("cd " + nvdla_utilities_dir + " && python3 fix_txn_discontinuous.py --vp-out-dir " + options.out_dir +
               " --name try_input")
     os.system("cd " + options.out_dir + " && mv input.txn bkp_input.txn")

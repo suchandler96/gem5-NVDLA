@@ -127,8 +127,7 @@ def get_nvdla_cycles(sweep_dir):
             else:
                 assert False
 
-            stat_val_match = re.search(r"%s\s+([0-9]+)\s+#" % "nvdla_cycles", line)
-            # suppose each line must end with a comment
+            stat_val_match = re.search(r"%s\s+([0-9]+)\s+" % "nvdla_cycles", line)
 
             assert stat_val_match
             stat_val = stat_val_match.group(1)

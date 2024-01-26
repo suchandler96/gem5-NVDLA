@@ -75,7 +75,7 @@ class HyperData:
 
 
 class Workload:
-    def __init__(self, in_dir, use_real_data=False, dump_results=False, axi_width=0x40):
+    def __init__(self, in_dir, to_convert=False, use_real_data=False, dump_results=False, axi_width=0x40):
         self.in_dir = in_dir        # each workload corresponds to a directory of log files
         self.data = {}              # {(addr_id, offset): class Data}
         self.surfaces = []          # [class Surface, ...]
@@ -97,6 +97,7 @@ class Workload:
         self.hyper_data = {}        # = {hyper_data_addr: HyperData}
 
         self.txn_lines = []         # for self.sclog2traces() to store translated contents of input.txn
+        self.to_convert = to_convert        # whether to convert input.txn, mem traces from sc.log
         self.use_real_data = use_real_data  # (does not contain dump_mem instructions)
         self.dump_results = dump_results    # whether to dump results for checking correctness
 
@@ -113,9 +114,7 @@ class Workload:
 
         # figure out the attributes of "unknown"
         mem_trace_path = os.path.join(self.in_dir, "VP_mem_rd_wr")
-        need_convert_from_sc_log = False
-        if not os.path.exists(mem_trace_path):      # memory trace files not yet generated
-            need_convert_from_sc_log = True
+        if self.to_convert:      # memory trace files and input.txn not yet generated
             self.sclog2traces()                     # not yet prepended load_mem & dump instructions
 
         self.addr_log, self.sorted_addr, self.raw_addr_log = parse_rd_wr_trace(mem_trace_path)
@@ -205,7 +204,7 @@ class Workload:
             if 'r' in rw_and_addr[0] and rw_and_addr[1] in rd_only_addr2desc.keys():
                 self.rd_only_vars.append(rd_only_addr2desc[rw_and_addr[1]])
 
-        if need_convert_from_sc_log and self.use_real_data:
+        if self.to_convert and self.use_real_data:
             # care about self.weights and self.inputs
             memory = {}     # {axi-aligned addr, [uint32_t]}
             to_prepend_txn_lines = []
@@ -272,7 +271,7 @@ class Workload:
                                                 " " + file_name + "\t#actual_len = " + hex(data_blk.size) + "\n")
             self.txn_lines = to_prepend_txn_lines + self.txn_lines + to_append_txn_lines
 
-        if need_convert_from_sc_log:
+        if self.to_convert:
             with open(os.path.join(self.in_dir, "input.txn"), "w") as fp:
                 fp.writelines(self.txn_lines)
 
