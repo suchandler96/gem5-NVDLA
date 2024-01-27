@@ -268,22 +268,31 @@ class MixPinRemapper(SingleAccelCVSRAMRemapper):
         self.last_tick = len(self.workload.raw_addr_log) - 1
 
     def compute_remap_decision(self):
-        w_and_acts_file = os.path.join(self.in_dir, "weight_and_im_acts")
-        write_solver_input(w_and_acts_file, self.workload, log_weights=True)
+        # do the same thing as ActPin Remappers, except for replacing the keyword names
+        itm_acts_file = os.path.join(self.in_dir, "intermediate_acts")
+        write_solver_input(itm_acts_file, self.workload, log_weights=False)
 
         # call the gurobi solver
-        gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
+        gurobi_out_path = os.path.join(self.out_dir, self.testcase_str.replace("MixPin", "ActPin") + "_alloc_result")
         os.system("cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && make ActAlloc")
-        return ["cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && ./ActAlloc " + w_and_acts_file +
+        return ["cd " + os.path.join(os.path.dirname(__file__), "CVSRAMAlloc") + " && ./ActAlloc " + itm_acts_file +
                 " " + gurobi_out_path + " " + str(self.cvsram_sizes[0]) + " > " +
-                os.path.join(self.out_dir, self.testcase_str + "_gurobi_stdout")]
+                os.path.join(self.out_dir, self.testcase_str.replace("MixPin", "ActPin") + "_gurobi_stdout")]
 
     def collect_remap_decision(self):
-        gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
-        gurobi_in_path = os.path.join(self.in_dir, "weight_and_im_acts")
+        gurobi_out_path = os.path.join(self.out_dir, self.testcase_str.replace("MixPin", "ActPin") + "_alloc_result")
+        gurobi_in_path = os.path.join(self.in_dir, "intermediate_acts")
         relative_map = collect_gurobi_results(self.workload, self.cvsram_sizes[0], gurobi_out_path, gurobi_in_path)
+        cvsram_space_left = self.cvsram_sizes[0]
         for desc, rel_addr in relative_map.items():
             self.mapping[self.workload.data[desc].addr] = self.cvsram_base_addrs[0] + rel_addr
+            cvsram_space_left = min(cvsram_space_left, self.cvsram_sizes[0] - rel_addr)
+
+        for weight_desc in self.workload.weights:
+            weight_blk = self.workload.data[weight_desc]
+            if weight_blk.size <= cvsram_space_left:
+                self.mapping[weight_blk.addr] = self.cvsram_base_addrs[0] + self.cvsram_sizes[0] - cvsram_space_left
+                cvsram_space_left -= weight_blk.size
 
 
 class PipelineRemapper(BaseRemapper):
@@ -630,7 +639,7 @@ def write_solver_input(file_path, workload, log_weights):
 
 def collect_gurobi_results(workload, cvsram_size, gurobi_out_path, gurobi_in_path):
     # read results from the solver and draw the CVSRAM occupation figure
-    occ_fig = plt.figure()
+    occ_fig = plt.figure(figsize=(12.8, 9.6))
     ax1 = occ_fig.add_subplot("111")
     plt.xlim(xmin=0, xmax=len(workload.raw_addr_log))
     plt.ylim(ymin=0, ymax=cvsram_size)
@@ -681,6 +690,6 @@ def collect_gurobi_results(workload, cvsram_size, gurobi_out_path, gurobi_in_pat
     plt.xlabel("Logical Order")
     plt.ylabel("CVSRAM Address")
     plt.tight_layout()
-    occ_fig.savefig(gurobi_out_path + "_vis.png", dpi=300)
+    occ_fig.savefig(gurobi_out_path + "_vis.png", dpi=400)
 
     return relative_mapping

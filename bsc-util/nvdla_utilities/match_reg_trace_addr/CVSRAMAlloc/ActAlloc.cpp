@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
+#include <algorithm>
 
 #include <vector>
 #include <cmath>
@@ -20,9 +21,10 @@ struct AtomicTensor {
     uint64_t use_end;
     uint64_t size;
     uint32_t num_access;
+    uint32_t belong_to_tensor;
 
-    AtomicTensor(uint32_t start, uint32_t end, uint32_t size, uint32_t accesses) :
-            use_start(start), use_end(end), size(size), num_access(accesses) {}
+    AtomicTensor(uint32_t start, uint32_t end, uint32_t size, uint32_t accesses, uint32_t belong_to) :
+            use_start(start), use_end(end), size(size), num_access(accesses), belong_to_tensor(belong_to) {}
 };
 
 
@@ -35,12 +37,13 @@ struct TensorAllocInfo {
 
     uint32_t line_stride_aligned;
     uint32_t surf_stride_aligned;
+    int32_t hyp_tensor_id;
     std::vector<uint32_t> atomic_tensors;
 
     TensorAllocInfo(uint32_t start, uint32_t end, uint32_t size, uint32_t dram_addr, uint32_t line_stride,
                     uint32_t surf_stride, uint32_t accesses) :
         use_start(start), use_end(end), size(size), dram_addr(dram_addr), num_access(accesses),
-        line_stride_aligned(line_stride), surf_stride_aligned(surf_stride) {}
+        line_stride_aligned(line_stride), surf_stride_aligned(surf_stride), hyp_tensor_id(-1) {}
 
     bool is_strided() const {
         if (line_stride_aligned == 0) {
@@ -48,6 +51,10 @@ struct TensorAllocInfo {
         }
         uint32_t num_segment = (size - 1) / line_stride_aligned + 1;
         return surf_stride_aligned > line_stride_aligned && num_segment > 1;
+    }
+
+    void set_hyp_tensor_id(int32_t hyp) {
+        hyp_tensor_id = hyp;
     }
 };
 
@@ -63,15 +70,16 @@ class NoChangeTimeoutCallback: public GRBCallback {
 public:
     time_t timeout_time;
     time_t abs_timeout_time;
+    time_t base_sol_time;
     double epsilon;
 
     double last_gap;
     time_t last_time;
     time_t init_time;
 
-    explicit NoChangeTimeoutCallback(time_t _time = 45, time_t abs_timeout = 600, double _epsilon = 0.01):
-            timeout_time(_time), abs_timeout_time(abs_timeout), epsilon(_epsilon), last_gap(-1),
-            last_time(time(nullptr)), init_time(time(nullptr)) {}
+    NoChangeTimeoutCallback(time_t _time = 60, time_t abs_timeout = 600, time_t base_time = 300, double _epsilon = 0.01):
+        timeout_time(_time), abs_timeout_time(abs_timeout), base_sol_time(base_time), epsilon(_epsilon), last_gap(-1),
+        last_time(time(nullptr)), init_time(time(nullptr)) {}
 
 protected:
     void callback() override {
@@ -79,17 +87,19 @@ protected:
             double obj_bst = getDoubleInfo(GRB_CB_MIP_OBJBST);
             double obj_bnd = getDoubleInfo(GRB_CB_MIP_OBJBND);
             double this_gap = fabs(obj_bst - obj_bnd) / obj_bst;
-            if (fabs(this_gap - last_gap) < epsilon * this_gap) {
-                if (time(nullptr) - last_time > timeout_time) {
-                    std::cout << "gap has not changed for more than " << timeout_time << " seconds. Abort.\n";
+            if (time(nullptr) - init_time > base_sol_time) {
+                if (fabs(this_gap - last_gap) < epsilon * this_gap) {
+                    if (time(nullptr) - last_time > timeout_time) {
+                        std::cout << "gap has not changed for more than " << timeout_time << " seconds. Abort.\n";
+                        abort();
+                    }
+                } else if (time(nullptr) - init_time > abs_timeout_time) {
+                    std::cout << "has consumed over " << abs_timeout_time << " seconds, abort\n";
                     abort();
+                } else {
+                    last_gap = this_gap;
+                    last_time = time(nullptr);
                 }
-            } else if (time(nullptr) - init_time > abs_timeout_time) {
-                std::cout << "has consumed over " << abs_timeout_time << " seconds, abort\n";
-                abort();
-            } else {
-                last_gap = this_gap;
-                last_time = time(nullptr);
             }
         }
     }
@@ -103,6 +113,7 @@ private:
     uint64_t mem_size;
     uint64_t M_size;    // possibly larger than mem_size
     uint64_t M_pos{0};  // possibly larger than mem_size
+    uint64_t max_life_span;
     std::vector<AtomicTensor> atom_tensors;
     std::vector<TensorAllocInfo> tensors;
     std::vector<HyperTensor> hyp_tensors;
@@ -117,6 +128,8 @@ public:
         std::string line;
         M_size = 0;
 
+        max_life_span = 0;
+
         // get tensor information
         while (std::getline(fin, line)) {
             if (line.find("-----") != std::string::npos) {
@@ -126,6 +139,7 @@ public:
             uint64_t start, end, accesses;
             uint64_t size, dram_addr, orig_line_stride, orig_surf_stride;
             line_stream >> std::dec >> start >> end >> size >> orig_line_stride >> orig_surf_stride >> accesses >> std::hex >> dram_addr;
+            max_life_span = max_life_span > (end - start) ? max_life_span : (end - start);
 
             tensors.emplace_back(start, end, size, dram_addr, orig_line_stride, orig_surf_stride, accesses);
         }
@@ -144,21 +158,25 @@ public:
             uint32_t tensor_id;
             while (line_stream >> std::dec >> tensor_id) {
                 hyp_tensor.tensors.emplace_back(tensor_id);
+                tensors[tensor_id].set_hyp_tensor_id(hyp_tensors.size() - 1);
             }
+            std::sort(hyp_tensor.tensors.begin(), hyp_tensor.tensors.end(),
+                      [&](auto a, auto b) {return tensors[a].dram_addr < tensors[b].dram_addr;});
         }
 
         // construct atomic_tensors using tensors
-        for (auto& tensor: tensors) {
+        for (size_t id = 0; id < tensors.size(); id++) {
+            auto& tensor = tensors[id];
             if (tensor.is_strided()) {
                 uint32_t num_segment = (tensor.size - 1) / tensor.line_stride_aligned + 1;
                 assert(num_segment > 1);
                 for (uint32_t i = 0; i < num_segment; i++) {
-                    atom_tensors.emplace_back(tensor.use_start, tensor.use_end, tensor.line_stride_aligned, tensor.num_access);
+                    atom_tensors.emplace_back(tensor.use_start, tensor.use_end, tensor.line_stride_aligned, tensor.num_access, id);
                     tensor.atomic_tensors.emplace_back(atom_tensors.size() - 1);
                     // std::cout << "Atomic Tensor emplaced: " << atom_tensors.size() - 1 << ", size: " << tensor.line_stride_aligned <<"\n";
                 }
             } else {
-                atom_tensors.emplace_back(tensor.use_start, tensor.use_end, tensor.size, tensor.num_access);
+                atom_tensors.emplace_back(tensor.use_start, tensor.use_end, tensor.size, tensor.num_access, id);
                 tensor.atomic_tensors.emplace_back(atom_tensors.size() - 1);
             }
         }
@@ -270,8 +288,12 @@ public:
             }
 
             GRBLinExpr obj = 0;
-            for (uint32_t i = 0; i < atom_tensors.size(); i++)
-                obj += sel[i] * atom_tensors[i].size * atom_tensors[i].num_access;
+            for (uint32_t i = 0; i < atom_tensors.size(); i++) {
+                obj += sel[i] * atom_tensors[i].size * atom_tensors[i].num_access / M_size;
+                obj -= 0.01 * pos[i] / M_pos;
+//                obj -= 0.001 * (sel[i] * (atom_tensors[i].use_end - atom_tensors[i].use_start) * atom_tensors[i].size *
+//                    (pos[i] + 0.5 * atom_tensors[i].size)) / (max_life_span * M_size * (M_pos + 0.5 * M_size));
+            }
 
             model.setObjective(obj, GRB_MAXIMIZE);
 

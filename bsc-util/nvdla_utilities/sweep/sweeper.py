@@ -228,9 +228,13 @@ class Sweeper:
 
     def parallel_remap_compute(self):
         pool = mp.Pool(mp.cpu_count() // 2)
+        all_cmds = []
         for _, cmds in self.mapper_comps:
             for cmd in cmds:
-                pool.apply_async(shell_run_cmd, args=(cmd, ))
+                if cmd not in all_cmds:
+                    all_cmds.append(cmd)
+        for cmd in all_cmds:
+            pool.apply_async(shell_run_cmd, args=(cmd, ))
         pool.close()
         pool.join()
 

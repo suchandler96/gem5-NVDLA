@@ -45,7 +45,6 @@ class Data:
             num_segment = (self.size - 1) // (self.height * self.line_stride) + 1
             assert num_segment > 1
             self.true_occupy_space = self.size + (num_segment - 1) * (self.surf_stride - self.height * self.line_stride)
-            print("Strided Tensor detected")
         else:
             self.true_occupy_space = self.size
 
