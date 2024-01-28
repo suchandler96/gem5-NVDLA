@@ -191,7 +191,7 @@ class CpuCluster(SubSystem):
             fakemem_ctrl_str = "use_fake_mem=options.use_fake_mem, freq_ratio=options.freq_ratio, " \
                                "print_path=os.path.join(os.path.abspath('.'), 'axilog')"
             assert os.path.exists(os.path.join(os.path.abspath('.'), "run.sh"))     # make sure this is a simulation dir
-            os.system("rm " + os.path.join(os.path.abspath('.'), 'axilog') +
+            os.system("rm -f " + os.path.join(os.path.abspath('.'), 'axilog') +
                       " && touch " + os.path.join(os.path.abspath('.'), 'axilog'))
 
             for i in range(4):

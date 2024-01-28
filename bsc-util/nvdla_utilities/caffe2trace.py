@@ -2,6 +2,9 @@ import os
 import argparse
 import subprocess
 import sys
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 sys.path.append(os.path.dirname(__file__))
 from match_reg_trace_addr.parse_qemu_log import *
 
@@ -137,6 +140,37 @@ send "shutdown -h now\\r"
     qemu_proc.wait()
 
 
+def parse_mixed_type_trace(rd_wr_trace_file):
+    rd_address_x_coords = []
+    rd_address_y_coords = []
+    wr_address_x_coords = []
+    wr_address_y_coords = []
+    with open(rd_wr_trace_file) as fp:
+        lines = fp.readlines()
+    for i, line in enumerate(lines):
+        words_in_line = line.split()
+        if 'r' in words_in_line[0]:
+            rd_address_x_coords.append(i)
+            rd_address_y_coords.append(int(words_in_line[1], 16))
+        elif 'w' in words_in_line[0]:
+            wr_address_x_coords.append(i)
+            wr_address_y_coords.append(int(words_in_line[1], 16))
+        else:
+            print("unknown line: %s" % line)
+            exit(1)
+
+    fig = plt.figure(figsize=(16, 9))
+    ax = fig.gca()
+    plt.scatter(rd_address_x_coords, rd_address_y_coords, s=1, c='red', label='read trace')
+    plt.scatter(wr_address_x_coords, wr_address_y_coords, s=1, c='blue', label='write_trace')
+
+    ylabels = map(lambda t: '0x%08x' % int(t), ax.get_yticks())
+    ax.set_yticklabels(ylabels)
+    ax.legend()
+    plt.tight_layout()
+    fig.savefig(os.path.join(os.path.dirname(rd_wr_trace_file), "VP_mem_rd_wr.png"), dpi=240)
+
+
 def process_log(options):
     if not options.convert_only:
         os.system("cd /usr/local/nvdla && mv sc.log " + options.out_dir)
@@ -144,6 +178,7 @@ def process_log(options):
 
     nvdla_utilities_dir = os.path.dirname(os.path.abspath(__file__))
     workload = Workload(options.out_dir, True, options.true_data, options.dump_results)
+    parse_mixed_type_trace(os.path.join(options.out_dir, "VP_mem_rd_wr"))
     os.system("cd " + nvdla_utilities_dir + " && python3 fix_txn_discontinuous.py --vp-out-dir " + options.out_dir +
               " --name try_input")
     os.system("cd " + options.out_dir + " && mv input.txn bkp_input.txn")
