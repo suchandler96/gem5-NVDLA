@@ -54,6 +54,31 @@ param_types = {
 }
 
 
+class LockFile:
+    def __init__(self, path):
+        self.path = os.path.abspath(path)
+
+    def __enter__(self):
+        first_iteration = True
+        while os.path.exists(self.path):
+            creation_time = os.path.getmtime(self.path)
+            current_time = time.time()
+            if current_time - creation_time >= 3600:  # if the "lock" file is older than an hour
+                os.remove(self.path)
+                print(f"Removed old 'lock' file: '{self.path}'")
+                break
+            if first_iteration:
+                print(f"'{self.path}' already exists, waiting for it to be deleted...")
+                first_iteration = False
+            time.sleep(10)
+        open(self.path, 'a').close()  # This creates an empty file
+        print(f"Entered code block, created '{self.path}'.")
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        os.remove(self.path)
+        print(f"Exited code block, removed '{self.path}'.")
+
+
 class Sweeper:
     def __init__(self, args):
         self.home_path = os.popen("cd ~/ && pwd").readlines()[0].strip('\n')
@@ -298,40 +323,41 @@ class Sweeper:
 
         assert 0 <= args.machine_id < args.num_machines
         if args.machine_id == 0 and not args.skip_checkpoint:
-            print("Generating checkpoint...")
             os.makedirs(os.path.join(self.gem5_nvdla_dir, "m5out"), exist_ok=True)  # in case m5out doesn't exist
-            bin_path = "build/ARM/gem5.opt" if args.gem5_binary.endswith("opt") else "build/ARM/gem5.fast"
-            lg = os.popen("cd " + self.gem5_nvdla_dir + " && " + bin_path + " configs/example/arm/fs_bigLITTLE_RTL.py"
-                          " --big-cpus 0 --little-cpus 1 --cpu-type atomic"
-                          " --bootscript=configs/boot/hack_back_ckpt.rcS").readlines()
-            # get the exact directory of the checkpoint just generated
-            tick_match = re.search("at tick ([0-9]+)", lg[-4])
-            assert tick_match is not None
-            cpt_dir_name = "cpt." + tick_match.group(1)
-            self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cpt_dir_name)
+            with LockFile(os.path.join(self.gem5_nvdla_dir, "m5out/checkpointing_lock")):
+                print("Generating checkpoint...")
+                bin_path = "build/ARM/gem5.opt" if args.gem5_binary.endswith("opt") else "build/ARM/gem5.fast"
+                lg = os.popen("cd " + self.gem5_nvdla_dir + " && " + bin_path + " configs/example/arm/fs_bigLITTLE_RTL.py"
+                              " --big-cpus 0 --little-cpus 1 --cpu-type atomic"
+                              " --bootscript=configs/boot/hack_back_ckpt.rcS").readlines()
+                # get the exact directory of the checkpoint just generated
+                tick_match = re.search("at tick ([0-9]+)", lg[-4])
+                assert tick_match is not None
+                cpt_dir_name = "cpt." + tick_match.group(1)
+                self.cpt_dir = os.path.join(self.gem5_nvdla_dir, "m5out", cpt_dir_name)
 
-            # after generating the checkpoint, we can apply it to the scripts
-            # change the checkpoint directory of all simulation points, without the need to manually change them
-            for pt_dir in self.pt_dirs:
-                with open(os.path.join(pt_dir, "run.sh")) as fp:
-                    run_sh_lines = fp.readlines()
-                for i, line in enumerate(run_sh_lines):
-                    if "restore-from" in line:
-                        if "cpt-dir" in line:   # placeholder found
-                            change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
-                        else:
-                            cpt_match = re.search(r"(cpt\.[0-9]+)", line)
-                            assert cpt_match is not None
-                            run_sh_lines[i] = run_sh_lines[i].replace(cpt_match.group(1), cpt_dir_name)
-                            with open(os.path.join(pt_dir, "run.sh"), "w") as fp:
-                                fp.writelines(run_sh_lines)
-                        break
+                # after generating the checkpoint, we can apply it to the scripts
+                # change the checkpoint directory of all simulation points, without the need to manually change them
+                for pt_dir in self.pt_dirs:
+                    with open(os.path.join(pt_dir, "run.sh")) as fp:
+                        run_sh_lines = fp.readlines()
+                    for i, line in enumerate(run_sh_lines):
+                        if "restore-from" in line:
+                            if "cpt-dir" in line:   # placeholder found
+                                change_config_file(pt_dir, "run.sh", {"cpt-dir": self.cpt_dir})
+                            else:
+                                cpt_match = re.search(r"(cpt\.[0-9]+)", line)
+                                assert cpt_match is not None
+                                run_sh_lines[i] = run_sh_lines[i].replace(cpt_match.group(1), cpt_dir_name)
+                                with open(os.path.join(pt_dir, "run.sh"), "w") as fp:
+                                    fp.writelines(run_sh_lines)
+                            break
 
-            esc_home_path = self.home_path.replace('/', '\\/')
-            esc_new_home = self.new_home.replace('/', '\\/')
-            esc_out_dir = self.out_dir.replace('/', '\\/')
-            os.system('sed -i "s/' + esc_home_path + '/' + esc_new_home + '/g" `grep "' +
-                      esc_home_path + '" -rl ' + esc_out_dir + '`')
+                esc_home_path = self.home_path.replace('/', '\\/')
+                esc_new_home = self.new_home.replace('/', '\\/')
+                esc_out_dir = self.out_dir.replace('/', '\\/')
+                os.system('sed -i "s/' + esc_home_path + '/' + esc_new_home + '/g" `grep "' +
+                          esc_home_path + '" -rl ' + esc_out_dir + '`')
 
         print("machine_id = %d, running all data points..." % args.machine_id)
         assert args.num_machines > 0
@@ -346,11 +372,12 @@ class Sweeper:
         sims = []
         pool = mp.Pool(
             initializer=_init_counter, initargs=(counter, ), processes=args.num_threads)
-        for p in range(len(this_machine_pt_dirs)):
-            cmd = os.path.join(this_machine_pt_dirs[p], "run.sh")
-            sims.append(pool.apply_async(_run_simulation, args=(cmd, )))
-            time.sleep(0.5)     # sleep for a while before launching next to avoid a gem5 bug (socket bind() failed)
-            # see https://gem5-users.gem5.narkive.com/tvnOFKtP/panic-listensocket-listen-listen-failed
+        with LockFile(os.path.join(self.gem5_nvdla_dir, "m5out/start_sim_lock")):
+            for p in range(len(this_machine_pt_dirs)):
+                cmd = os.path.join(this_machine_pt_dirs[p], "run.sh")
+                sims.append(pool.apply_async(_run_simulation, args=(cmd, )))
+                time.sleep(0.5)     # sleep for a while before launching next to avoid a gem5 bug (socket bind() failed)
+                # see https://gem5-users.gem5.narkive.com/tvnOFKtP/panic-listensocket-listen-listen-failed
         for sim in sims:
             sim.get()
         pool.close()
