@@ -220,8 +220,16 @@ class Workload:
                     assert info_match.group(3).count(' ') == data_len // 4 - 1
                     uint32_ts = info_match.group(3).replace("X", "0").replace("_", "").split()
                     contents = [int(uint32_t, 16) for uint32_t in uint32_ts]
-                    if addr in memory and memory[addr] != contents:
+
+                    '''
+                    is_write_match = re.search("iswrite=([0-9]+)", line)
+                    assert is_write_match is not None
+                    is_write = int(is_write_match.group(1))
+
+                    # only intermediate activations will be overwritten. We don't need their values in input.txn
+                    if is_write == 0 and (addr in memory and memory[addr] != contents):
                         print("inconsistent memory access result!\nPrevious:\n", memory[addr], "\nNow:\n", contents)
+                    '''
                     memory[addr] = contents
 
             to_get_data = self.weights + self.inputs + self.outputs if self.dump_results else self.weights + self.inputs
@@ -243,11 +251,11 @@ class Workload:
                 for addr in range(aligned_start, aligned_end_ceil, self.axi_width):
                     # each entry has length self.axi_width
                     contents = memory[addr]
-                    this_txn_st = max(data_blk.addr, addr) % self.axi_width
-                    this_txn_ed = min(addr + self.axi_width, data_blk.addr + data_blk.size) % self.axi_width
+                    this_txn_st = max(data_blk.addr, addr)
+                    this_txn_ed = min(addr + self.axi_width, data_blk.addr + data_blk.size)
                     for byte_id in range(this_txn_st, this_txn_ed):
-                        int_id = byte_id // 4
-                        offset = (byte_id % 4) * 8
+                        int_id = (byte_id % self.axi_width) // 4
+                        offset = ((byte_id % self.axi_width) % 4) * 8
                         byte = (contents[int_id] >> offset) & 0xff
                         file_line += "0x%02x " % byte
                         if bytes_in_this_line == 31:
@@ -307,7 +315,7 @@ class Workload:
         with open(os.path.join(self.in_dir, "compile_log")) as fp:
             lines = fp.readlines()
 
-        desc2uid = {}   # {(addr_id, offset, size): (tsd_str, tb_str)}, to examine the mapping is a bijection
+        desc2uid = {}   # {(addr_id, offset): (tsd_str, tb_str)}, to examine the mapping is a bijection
         uid2desc = {}
         # first build the above two mappings
         for line_id, line in enumerate(lines):
@@ -325,6 +333,7 @@ class Workload:
                         assert data_blk.uid is None     # assume each tensor is reported once
                         data_blk.uid = uid
 
+        '''
         # then get ALLOC and DEALLOC time info
         for line_id, line in enumerate(lines):
             if "[MEMTOOL]" in line:
@@ -352,6 +361,7 @@ class Workload:
                         self.data[desc].liveness[0] = time_stamp
                 else:
                     assert False
+        '''
 
     def sclog2traces(self):
         txn_lines = []

@@ -135,16 +135,16 @@ This section provides the process to generate the files in `bsc-util/nvdla_utili
 ```
 $ docker run -it --rm -v ~/:/home edwinlai99/advp:v1
 (advp)# cd /home/gem5-nvdla/bsc-util/nvdla_utilities/
-(advp)# python3 caffe2trace.py --model-name lenet --caffemodel example_usage/caffe_models/lenet/lenet_iter_10000.caffemodel --prototxt example_usage/caffe_models/lenet/Lenet.prototxt --out-dir /home/nvdla/traces/lenet/
+(advp)# python3.6 caffe2trace.py --model-name lenet --caffemodel example_usage/caffe_models/lenet/lenet_iter_10000.caffemodel --prototxt example_usage/caffe_models/lenet/Lenet.prototxt --out-dir /home/nvdla/traces/lenet/
 ```
 Then the log files and `*.txn` register trace will appear in `/home/nvdla/traces/lenet/`.
 
 # Compile a Pipelined Multibatch NN
 Our repo provides a scheduler that can map multiple batches of NN inference task of a single model onto multiple simulated NVDLAs. This script, `pipeline_compile.py`, thus helps to compile multiple prototxt files at the same time. This script expects the user to manually split a Caffe NN into multiple `*.prototxt` files (the `*.caffemodel` does not need to be modified), each of which corresponds to a pipeline stage. These `.prototxt` files should be provided to the script in the order of pipeline stages. Users are expected to use a subclass of `PipelineRemapper` in `match_reg_trace_addr/remap.py` when doing parameter sweeps for pipelined workloads. See below for usage:
 ```
-$ docker run -it --rm -v ~/:/home edwinlai99/advp
+$ docker run -it --rm -v ~/:/home edwinlai99/advp:v1
 (advp)# cd /home/gem5-nvdla/bsc-util/nvdla_utilities/
-(advp)# python3 pipeline_compile.py --model-name lenet --caffemodel example_usage/caffe_models/lenet/lenet_iter_10000.caffemodel --prototxts /home/gem5-nvdla/bsc-util/nvdla_utilities/example_usage/traces/lenet_pipeline/stage_1/lenet_stage1.prototxt /home/gem5-nvdla/bsc-util/nvdla_utilities/example_usage/traces/lenet_pipeline/stage_2/lenet_stage2.prototxt --out-dir /home/nvdla/traces/lenet_pipeline/
+(advp)# python3.6 pipeline_compile.py --model-name lenet --caffemodel example_usage/caffe_models/lenet/lenet_iter_10000.caffemodel --prototxts /home/gem5-nvdla/bsc-util/nvdla_utilities/example_usage/traces/lenet_pipeline/stage_1/lenet_stage1.prototxt /home/gem5-nvdla/bsc-util/nvdla_utilities/example_usage/traces/lenet_pipeline/stage_2/lenet_stage2.prototxt --out-dir /home/nvdla/traces/lenet_pipeline/
 ```
 
 ## Developer Tips

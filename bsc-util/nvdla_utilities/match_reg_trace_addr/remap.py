@@ -3,6 +3,7 @@ import shutil
 import os
 import argparse
 import re
+import errno
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
@@ -13,7 +14,7 @@ from parse_qemu_log import *
 class BaseRemapper:
     def __init__(self, in_dir, model_name):
         """ paths """
-        self.in_dir = in_dir
+        self.in_dir = in_dir    # expect in_dir to be VP out dir
         self.model_name = model_name
 
         """ workload-related info """
@@ -75,11 +76,12 @@ class IdentityRemapper(BaseRemapper):
                   os.path.join(self.out_dir, "trace.bin"))
         rd_var_log_path = os.path.join(self.out_dir, "rd_only_var_log")
         """ generate rd_only_var_log """
-        with open(rd_var_log_path, "wb") as fp:
-            for rd_only_var in self.workload.rd_only_vars:
-                data_blk = self.workload.data[rd_only_var]
-                fp.write(data_blk.addr.to_bytes(4, byteorder="little", signed=False))
-                fp.write(data_blk.size.to_bytes(4, byteorder="little", signed=False))
+        if not os.path.exists(rd_var_log_path):
+            with open(rd_var_log_path, "wb") as fp:
+                for rd_only_var in self.workload.rd_only_vars:
+                    data_blk = self.workload.data[rd_only_var]
+                    fp.write(data_blk.addr.to_bytes(4, byteorder="little", signed=False))
+                    fp.write(data_blk.size.to_bytes(4, byteorder="little", signed=False))
 
 
 class CVSRAMRemapper(BaseRemapper):
@@ -122,6 +124,8 @@ class CVSRAMRemapper(BaseRemapper):
         line = raw_lines[line_id]
         # use regex to get the register
         reg_match = re.search(r'#\s?(0x[0-9a-f]{1,2}0[0-9a-f]{2})', line)
+        if reg_match is None:       # not register txns. May be {load|dump}_mem
+            return
         reg = int(reg_match.group(1), 16)
         ram_type_reg, ram_type_bit = self.assoc_reg_bits[reg]
 
@@ -176,6 +180,22 @@ class SingleAccelCVSRAMRemapper(CVSRAMRemapper):
         BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
         self.mapping.clear()
 
+        for root, dirs, files in os.walk(self.in_dir):
+            if os.path.abspath(root) == os.path.abspath(self.in_dir):
+                # create symbolic links of *.dat files under root in out_dir
+                for file in files:
+                    if file.endswith(".dat"):
+                        src = os.path.abspath(os.path.join(root, file))
+                        link = os.path.abspath(os.path.join(out_dir, file))
+                        try:
+                            os.symlink(src, link)
+                        except OSError as e:
+                            if e.errno == errno.EEXIST:
+                                os.remove(link)
+                                os.symlink(src, link)
+                            else:
+                                raise e
+
     def set_cvsram_param(self, num_cvsram, cvsram_base_addrs, cvsram_sizes):
         CVSRAMRemapper.set_cvsram_param(self, num_cvsram, cvsram_base_addrs, cvsram_sizes)
         assert num_cvsram == 1
@@ -190,7 +210,9 @@ class SingleAccelCVSRAMRemapper(CVSRAMRemapper):
         for orig_addr, mapped_addr in self.mapping.items():
             for line_id, line in enumerate(raw_txn_lines):
                 if hex(orig_addr) in line and not modify_status[line_id]:
-                    new_lines[line_id] = line.replace(hex(orig_addr), hex(mapped_addr))
+                    new_lines[line_id] = line.replace(hex(orig_addr), hex(mapped_addr), 1)
+                    # the parameter "1" is crucial since in {load|dump}_mem, files are named with addresses
+                    # we want to keep the file name unchanged after remapping
                     modify_status[line_id] = True
 
                     self.change_ram_type_to_cvsram(raw_txn_lines, new_lines, line_id, modify_status)
@@ -528,7 +550,7 @@ class PipelineWeightPinRemapper(CVSRAMRemapper, PipelineRemapper):
         CVSRAMRemapper.__init__(self, in_dir, model_name)
 
     def testcase_init(self, out_dir, sim_dir, testcase_str):
-        BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
+        PipelineRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
 
     def remap_weights(self):
         next_avail_aligned = self.weight_base_addr                              # next available addr in DRAM
@@ -563,7 +585,7 @@ class PipelineActPinRemapper(CVSRAMRemapper, PipelineRemapper):
         CVSRAMRemapper.__init__(self, in_dir, model_name)
 
     def testcase_init(self, out_dir, sim_dir, testcase_str):
-        BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
+        PipelineRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
 
     def remap_activations(self):
         PipelineRemapper.remap_activations(self)

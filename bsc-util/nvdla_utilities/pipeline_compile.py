@@ -57,7 +57,7 @@ def main():
         assert os.path.exists(options.prototxts[i])
         os.system("cp " + options.prototxts[i] + " " + work_dir)
         os.system("cd " + os.path.dirname(os.path.abspath(__file__)) +
-                  " && python3 caffe2trace.py --model-name " + options.model_name +
+                  " && python3.6 caffe2trace.py --model-name " + options.model_name +
                   "_stage_" + str(i + 1) + " --caffemodel " + os.path.abspath(options.caffemodel) + " --prototxt " +
                   os.path.abspath(options.prototxts[i]) +
                   " --nvdla-compiler " + os.path.abspath(options.nvdla_compiler) + " --qemu-bin " +
