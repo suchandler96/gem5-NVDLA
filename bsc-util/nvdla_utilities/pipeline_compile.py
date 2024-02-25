@@ -34,14 +34,12 @@ def parse_args():
     parser.add_argument(
         "--out-dir", default="/home/nvdla/traces/lenet_pipeline/",
         help="directory to put the generated sc.log, register txn and mem traces")
+    parser.add_argument(
+        "--convert-only", action="store_true", default=False, help="Whether to assume the presence of sc.log "
+        "and only do processing only")
 
     args = parser.parse_args()
 
-    # check legal
-    if len(args.prototxts) != 0:
-        assert args.prototxt is None and args.split_at is None
-    if args.prototxt is not None or args.split_at is not None:
-        assert args.prototxt is not None and args.split_at is not None
     return args
 
 
@@ -56,13 +54,16 @@ def main():
 
         assert os.path.exists(options.prototxts[i])
         os.system("cp " + options.prototxts[i] + " " + work_dir)
-        os.system("cd " + os.path.dirname(os.path.abspath(__file__)) +
-                  " && python3.6 caffe2trace.py --model-name " + options.model_name +
-                  "_stage_" + str(i + 1) + " --caffemodel " + os.path.abspath(options.caffemodel) + " --prototxt " +
-                  os.path.abspath(options.prototxts[i]) +
-                  " --nvdla-compiler " + os.path.abspath(options.nvdla_compiler) + " --qemu-bin " +
-                  os.path.abspath(options.qemu_bin) + " --qemu-lua " + os.path.abspath(options.qemu_lua) +
-                  " --out-dir " + work_dir)
+        run_cmd = "cd " + os.path.dirname(os.path.abspath(__file__)) + \
+                  " && python3.6 caffe2trace.py --model-name " + options.model_name + \
+                  "_stage_" + str(i + 1) + " --caffemodel " + os.path.abspath(options.caffemodel) + " --prototxt " + \
+                  os.path.abspath(options.prototxts[i]) + \
+                  " --nvdla-compiler " + os.path.abspath(options.nvdla_compiler) + " --qemu-bin " + \
+                  os.path.abspath(options.qemu_bin) + " --qemu-lua " + os.path.abspath(options.qemu_lua) + \
+                  " --out-dir " + work_dir
+        if options.convert_only:
+            run_cmd += " --convert-only"
+        os.system(run_cmd)
 
 
 if __name__ == "__main__":

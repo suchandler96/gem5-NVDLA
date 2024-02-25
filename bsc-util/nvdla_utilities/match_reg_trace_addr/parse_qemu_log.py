@@ -1,9 +1,13 @@
 import sys
 import os
-import argparse
 import re
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+"""
+tsd: tensor surface descriptor
+tb(d): tensor buffer (descriptor)
+"""
 
 
 class Data:
@@ -12,7 +16,6 @@ class Data:
         self.attr = None        # weight, activation, unknown
         self.addr_id = None
         self.offset = None
-        self.addr = None        # offset 0xc0000000 by default
         self.size = None
         self.width = None
         self.height = None
@@ -21,32 +24,54 @@ class Data:
         self.surf_stride = None
         self.plane_stride = None
 
-        """ inferred compilation-time info """
-        self.true_occupy_space = None   # for regular data blocks, it will be self.size
-        self.hyper_data_addr = None     # for strided tensors: hyper data addr; remain None for ordinary data blocks
-
-        """runtime info"""
-        self.num_access = 0     # calculated by the number of accesses of last addr aligned to 0x40
-        self.liveness = [None, None]    # (rw_id of first access of first element, rw_id of last access of last element)
-
     def valid(self):
         if self.addr_id <= 0 or (self.addr_id == 0 and self.offset == 0 and self.size == 0):
             return False
         return True
 
-    def is_strided(self):
-        if self.height * self.line_stride == 0:
-            return False
-        num_segment = (self.size - 1) // (self.height * self.line_stride) + 1
-        return self.surf_stride > self.height * self.line_stride and num_segment > 1
 
-    def infer(self):
-        if self.is_strided():  # this is a strided tensor
-            num_segment = (self.size - 1) // (self.height * self.line_stride) + 1
-            assert num_segment > 1
-            self.true_occupy_space = self.size + (num_segment - 1) * (self.surf_stride - self.height * self.line_stride)
-        else:
-            self.true_occupy_space = self.size
+class TensorSurface:
+    def __init__(self, tsd, tb, addr_id, offset, addr_base_map):
+        """ compilation-time info """
+        self.tsd_name = tsd     # each Data has a unique tsd_name
+        self.tb_name = tb       # but multiple Data objects may belong to the same tb
+        self.addr_id = addr_id
+        self.offset = offset
+
+        self.attr = None        # weight, activation, unknown
+        self.addr = None        # offset 0xc0000000 by default
+        self.size = None        # will only be correct for input/output/weight tensor surfaces
+
+        if self.addr_id in addr_base_map:
+            self.addr = addr_base_map[self.addr_id] + self.offset
+
+
+class TensorBuffer:
+    def __init__(self, tb, addr_id, size, addr_base_map):
+        self.tb_name = tb
+        self.addr_id = addr_id if addr_id in addr_base_map else None
+        # generally 1 are weights and 2 are activations (w/o inputs and outputs)
+
+        self.offset = None
+        self.size = size
+        self.tsd_list = []
+
+        self.addr = None
+        self.liveness = None
+        self.num_access = None
+
+    def add_tensor_surface(self, ts_name, ts, addr_base_map):
+        assert ts_name not in self.tsd_list
+        if ts.addr_id in addr_base_map:     # otherwise this TensorBuffer will be deleted. Don't care
+            if self.offset is None:
+                self.addr_id = ts.addr_id   # self.addr_id can be None during construction
+                self.offset = ts.offset
+                self.addr = addr_base_map[self.addr_id] + self.offset
+            elif ts.addr < self.addr:     # update to a new addr_id and offset
+                self.offset = ts.offset
+                self.addr_id = ts.addr_id
+                self.addr = ts.addr
+            self.tsd_list.append(ts_name)
 
 
 class Surface:
@@ -56,33 +81,19 @@ class Surface:
         self.unknowns = []
 
 
-class HyperData:
-    def __init__(self, first_blk_key, first_blk):
-        # for strided tensors: multiple tensors are interleaved. They need to be allocated as a whole
-        self.addr = first_blk.addr
-        self.bundled_data_blk_keys = [first_blk_key]
-        self.bundled_data_size = first_blk.true_occupy_space
-        # |<------bundled_data_size------->|
-        # |<-true_occupy_space#0->|
-        #          |<-true_occupy_space#1->|
-        # |--------........--------........|
-
-    def insert_data(self, blk_key, blk):
-        self.bundled_data_blk_keys.append(blk_key)
-        current_addr_max = blk.addr + blk.true_occupy_space
-        self.bundled_data_size = max(self.bundled_data_size, current_addr_max - self.addr)
-
-
 class Workload:
     def __init__(self, in_dir, to_convert=False, use_real_data=False, dump_results=False, axi_width=0x40):
         self.in_dir = in_dir        # each workload corresponds to a directory of log files
-        self.data = {}              # {(addr_id, offset): class Data}
-        self.surfaces = []          # [class Surface, ...]
-        self.inputs = []            # once got, the inputs and outputs are sorted in reverse order of size
-        self.outputs = []           # [(addr_id, offset), ...]
-        self.activations = []
-        self.intermediate_act = []  # [(addr_id, offset), ...]
-        self.weights = []
+        self.tb = {}                # tensor buffers = {tb_name: TensorBuffer}
+        self.ts = {}                # tensor surfaces = {ts_name: TensorSurface}
+
+        self.in_tb = []             # input tensor surfaces: [class TensorBuffer, ...]
+        self.out_tb = []            # output tensor surfaces: [class TensorBuffer, ...]
+        self.act_tb = []            # activation tensor buffers
+        self.itm_act_tb = []        # intermediate activation tensor buffers
+        self.w_tb = []              # weight tensor buffers
+
+        self.rd_only_tbs = []       # = [tb_name]
 
         self.axi_width = axi_width  # in bytes
 
@@ -91,120 +102,70 @@ class Workload:
         self.addr_log = None        # = {addr: [[rw_id, 'r' or 'w'], ...]}
         self.sorted_addr = None     # = [addr, ...]
         self.raw_addr_log = None    # = [['r' or 'w', addr], ...]
-        self.rd_only_vars = []      # = [[addr_id, offset], ...]
-
-        self.hyper_data = {}        # = {hyper_data_addr: HyperData}
 
         self.txn_lines = []         # for self.sclog2traces() to store translated contents of input.txn
         self.to_convert = to_convert        # whether to convert input.txn, mem traces from sc.log
         self.use_real_data = use_real_data  # (does not contain dump_mem instructions)
         self.dump_results = dump_results    # whether to dump results for checking correctness
 
-        # sanity check
+        """sanity check"""
         if self.dump_results:
             assert self.use_real_data
         assert self.axi_width == 0x40 or self.axi_width == 0x20
 
         with open(os.path.join(self.in_dir, "qemu_log")) as fp:
             lines = fp.readlines()
-
-        self.surfaces, self.data = construct_surfaces(lines)
         self.addr_base_map = get_addr_mapping(lines)
 
-        # figure out the attributes of "unknown"
+        """acquire self.ts and self.tb"""
+        self.read_compile_log(self.addr_base_map)
+
+        # remove redundant ts and tb
+        to_pop = []
+        for ts_name, ts in self.ts.items():
+            if ts.addr is None:
+                to_pop.append(ts_name)
+        for pop_item in to_pop:
+            self.ts.pop(pop_item)
+        to_pop = []
+        for tb_name, tb in self.tb.items():
+            if tb.addr is None:
+                to_pop.append(tb_name)
+        for pop_item in to_pop:
+            self.tb.pop(pop_item)
+
         mem_trace_path = os.path.join(self.in_dir, "VP_mem_rd_wr")
         if self.to_convert:      # memory trace files and input.txn not yet generated
             self.sclog2traces()                     # not yet prepended load_mem & dump instructions
 
+        """acquire size info of tsd (only for input/out/weight are correct)"""
+        surfaces, data = construct_surfaces(lines)
+        for ts_name, ts in self.ts.items():
+            desc = (ts.addr_id, ts.offset)
+            ts.size = data[desc].size
+
+        """construct self.in_tb, self.out_tb, self.w_tb, self.act_tb, self.itm_act_tb"""
         self.addr_log, self.sorted_addr, self.raw_addr_log = parse_rd_wr_trace(mem_trace_path)
+        self.get_various_tensor_buffers()
 
-        # set data_blk.addr and determine "unknown"
-        for _, data_blk in self.data.items():
-            if data_blk.addr_id != -1:
-                data_blk.addr = (self.addr_base_map[data_blk.addr_id] + data_blk.offset)
-                if data_blk.attr == "unknown":
-                    to_query_addr = self.get_data_blk_to_query_addr(data_blk)
-                    addr_log_entry = self.addr_log[to_query_addr]
-                    read_only = True
-                    for visit_pair in addr_log_entry:
-                        if visit_pair[1] == 'w':
-                            read_only = False
-                            break
-                    if read_only:
-                        data_blk.attr = "weight"
-                    else:
-                        data_blk.attr = "activation"
+        if len(self.in_tb) > 1:
+            print("Critical situation: len(self.in_tb) > 1")
+        if len(self.out_tb) > 1:
+            print("Critical situation: len(self.out_tb) > 1")
 
-        # update self.activations and self.weights
-        for data_blk_key, data_blk in self.data.items():
-            if data_blk.addr_id != -1:
-                if data_blk.attr == "weight":
-                    self.weights.append(data_blk_key)
-                elif data_blk.attr == "activation":
-                    self.activations.append(data_blk_key)
-                else:
-                    assert False
-
-        # update unknown in self.surfaces
-        for surface in self.surfaces:
-            for unknown in surface.unknowns:
-                if self.data[unknown].attr == "weight":
-                    surface.weights.append(unknown)
-                elif self.data[unknown].attr == "activation":
-                    surface.activations.append(unknown)
-                else:
-                    assert False
-            surface.unknowns = []
-
-        self.get_inout_data_blks()
-
-        for act in self.activations:
-            if act not in self.inputs and act not in self.outputs:
-                self.intermediate_act.append(act)
-
-        # here we have known all the activation tensors
-        # continue to infer information about bundled strided tensors
-        # because they must be activations
-        # find all those pairs that have intersection with each other
-        sorted_acts = []
-        for act in self.activations:
-            if self.data[act].is_strided():
-                sorted_acts.append(act)
-        sorted_acts.sort(key=lambda x: self.data[x].addr)
-        for i in range(len(sorted_acts)):
-            i_blk = self.data[sorted_acts[i]]
-            for j in range(i + 1, len(sorted_acts)):
-                j_blk = self.data[sorted_acts[j]]
-                max_l = max(i_blk.addr, j_blk.addr)
-                min_r = min(i_blk.addr + i_blk.true_occupy_space, j_blk.addr + j_blk.true_occupy_space)
-                if max_l < min_r:
-                    # first check whether i_blk.addr is included in any hyper_data
-                    covered = False
-                    for hyper_data_addr, hyper_data_blk in self.hyper_data.items():
-                        covered = sorted_acts[i] in hyper_data_blk.bundled_data_blk_keys
-                        if covered:
-                            if sorted_acts[j] not in hyper_data_blk.bundled_data_blk_keys:
-                                hyper_data_blk.insert_data(sorted_acts[j], j_blk)
-                                j_blk.hyper_data_addr = hyper_data_addr
-                            break
-                    if not covered:
-                        self.hyper_data[i_blk.addr] = HyperData(sorted_acts[i], i_blk)
-                        i_blk.hyper_data_addr = i_blk.addr       # use its own addr as the key
-                        self.hyper_data[i_blk.addr].insert_data(sorted_acts[j], j_blk)
-                        j_blk.hyper_data_addr = i_blk.addr
-
-        rd_only_addr2desc = {}
-        for w in self.weights:
-            to_query_addr = self.get_data_blk_to_query_addr(self.data[w])
-            rd_only_addr2desc[to_query_addr] = w
+        """get self.rd_only_tbs"""
+        rd_only_addr2tb_name = {}
+        for w in self.w_tb:
+            to_query_addr = self.get_to_query_addr(self.tb[w])
+            rd_only_addr2tb_name[to_query_addr] = w
 
         for rw_and_addr in self.raw_addr_log:
             # rw_and_addr[0] is 'r' or 'w', while rw_and_addr[1] is the raw address
-            if 'r' in rw_and_addr[0] and rw_and_addr[1] in rd_only_addr2desc.keys():
-                self.rd_only_vars.append(rd_only_addr2desc[rw_and_addr[1]])
+            if 'r' in rw_and_addr[0] and rw_and_addr[1] in rd_only_addr2tb_name.keys():
+                self.rd_only_tbs.append(rd_only_addr2tb_name[rw_and_addr[1]])
 
         if self.to_convert and self.use_real_data:
-            # care about self.weights and self.inputs
+            # care about self.w_tb and self.in_tb
             memory = {}     # {axi-aligned addr, [uint32_t]}
             to_prepend_txn_lines = []
             to_append_txn_lines = []
@@ -232,27 +193,24 @@ class Workload:
                     '''
                     memory[addr] = contents
 
-            to_get_data = self.weights + self.inputs + self.outputs if self.dump_results else self.weights + self.inputs
-            for data_blk_key in to_get_data:
-                data_blk = self.data[data_blk_key]
-                # assume input is not strided tensor
-                # weight cannot be strided tensor
-                file_name = "0x%08x" % data_blk.addr + ".dat"
-                if data_blk_key in self.outputs:
+            to_get_tb = self.w_tb + self.in_tb + self.out_tb if self.dump_results else self.w_tb + self.in_tb
+            for tb_name in to_get_tb:
+                tb = self.tb[tb_name]
+                file_name = "0x%08x" % tb.addr + ".dat"
+                if tb_name in self.out_tb:
                     file_name = "golden_" + file_name
                 file_lines = []
                 bytes_in_this_line = 0
                 file_line = ""
-                assert data_blk.hyper_data_addr is None
-                aligned_start = (data_blk.addr // self.axi_width) * self.axi_width
-                aligned_end_ceil = ((data_blk.addr + data_blk.size - 1) // self.axi_width + 1) * self.axi_width
+                aligned_start = (tb.addr // self.axi_width) * self.axi_width
+                aligned_end_ceil = ((tb.addr + tb.size - 1) // self.axi_width + 1) * self.axi_width
                 # true_start = data_blk.addr
                 # true_end = data_blk.addr + data_blk.size
                 for addr in range(aligned_start, aligned_end_ceil, self.axi_width):
                     # each entry has length self.axi_width
                     contents = memory[addr]
-                    this_txn_st = max(data_blk.addr, addr)
-                    this_txn_ed = min(addr + self.axi_width, data_blk.addr + data_blk.size)
+                    this_txn_st = max(tb.addr, addr)
+                    this_txn_ed = min(addr + self.axi_width, tb.addr + tb.size)
                     for byte_id in range(this_txn_st, this_txn_ed):
                         int_id = (byte_id % self.axi_width) // 4
                         offset = ((byte_id % self.axi_width) % 4) * 8
@@ -270,98 +228,71 @@ class Workload:
                     file_line = ""
                 with open(os.path.join(self.in_dir, file_name), "w") as fp:
                     fp.writelines(file_lines)
-                if data_blk_key in self.outputs:
-                    to_append_txn_lines.append("dump_mem " + "0x%08x" % data_blk.addr + " " + hex(data_blk.size) +
-                                               " " + file_name + "\t#actual_len = " + hex(data_blk.size) + "\n")
+                if tb_name in self.out_tb:
+                    to_append_txn_lines.append("dump_mem " + "0x%08x" % tb.addr + " " + hex(tb.size) +
+                                               " " + file_name + "\t#actual_len = " + hex(tb.size) + "\n")
                 else:
-                    to_prepend_txn_lines.append("load_mem " + "0x%08x" % data_blk.addr + " " + hex(data_blk.size) +
-                                                " " + file_name + "\t#actual_len = " + hex(data_blk.size) + "\n")
+                    to_prepend_txn_lines.append("load_mem " + "0x%08x" % tb.addr + " " + hex(tb.size) +
+                                                " " + file_name + "\t#actual_len = " + hex(tb.size) + "\n")
             self.txn_lines = to_prepend_txn_lines + self.txn_lines + to_append_txn_lines
 
         if self.to_convert:
             with open(os.path.join(self.in_dir, "input.txn"), "w") as fp:
                 fp.writelines(self.txn_lines)
 
-        # do liveness analysis for each Data object
-        for _, data_blk in self.data.items():
-            first = self.get_data_blk_to_query_addr(data_blk)
-            last = last_aligned(data_blk.addr, data_blk.true_occupy_space, self.axi_width)
-            # Use true_occupy_space here instead of bundled_data_size because this strided tensor is already dead.
-            # No need to focus on its bundled peers
+        """do liveness analysis for each intermediate activation TensorBuffer object"""
+        for tb_name in self.itm_act_tb:
+            tb = self.tb[tb_name]
+            first = self.get_to_query_addr(tb)
+            last = last_aligned(tb.addr, tb.size, self.axi_width)
             assert first in self.addr_log
             assert last in self.addr_log
-            data_blk.liveness = (self.addr_log[first][0][0], self.addr_log[last][-1][0])
-            data_blk.num_access = len(self.addr_log[last])
+            tb.liveness = (self.addr_log[first][0][0], self.addr_log[last][-1][0])
+            tb.num_access = len(self.addr_log[last])
 
-    def get_data_blk_to_query_addr(self, data_blk):
-        if (data_blk.addr // self.axi_width) * self.axi_width == data_blk.addr:
-            to_query_addr = data_blk.addr
-        elif data_blk.size > self.axi_width:
-            to_query_addr = ((data_blk.addr // self.axi_width) + 1) * self.axi_width
+    def get_to_query_addr(self, ts_or_tb):      # it accepts either tensor surface or tensor buffer
+        if (ts_or_tb.addr // self.axi_width) * self.axi_width == ts_or_tb.addr:
+            to_query_addr = ts_or_tb.addr
+        elif ts_or_tb.size > self.axi_width:
+            to_query_addr = ((ts_or_tb.addr // self.axi_width) + 1) * self.axi_width
         else:
             print("critical unaligned data_blk")
-            to_query_addr = (data_blk.addr // self.axi_width) * self.axi_width
+            to_query_addr = (ts_or_tb.addr // self.axi_width) * self.axi_width
         return to_query_addr
 
     def write_rd_only_var_log(self, rd_var_log_path):
         with open(rd_var_log_path, "wb") as fp:
-            for rd_only_var in self.rd_only_vars:
-                data_blk = self.data[rd_only_var]
-                fp.write(data_blk.addr.to_bytes(4, byteorder="little", signed=False))
-                fp.write(data_blk.size.to_bytes(4, byteorder="little", signed=False))
+            for rd_only_var in self.rd_only_tbs:
+                tb = self.tb[rd_only_var]
+                fp.write(tb.addr.to_bytes(4, byteorder="little", signed=False))
+                fp.write(tb.size.to_bytes(4, byteorder="little", signed=False))
 
-    # read compile_log and read ALLOC and DEALLOC info
-    def read_compile_log(self):
+    # read compile_log
+    def read_compile_log(self, addr_base_map):
         with open(os.path.join(self.in_dir, "compile_log")) as fp:
             lines = fp.readlines()
 
-        desc2uid = {}   # {(addr_id, offset): (tsd_str, tb_str)}, to examine the mapping is a bijection
-        uid2desc = {}
-        # first build the above two mappings
         for line_id, line in enumerate(lines):
             if "(Surface) Address list entry for" in line:
                 name_match = re.search(r"tsd=(tsd-\d+)/(tb-\d+):\d+ -> (\d+) offset=(\d+) size=(\d+)", line)
-                uid = (name_match.group(1), name_match.group(2))
-                desc = (int(name_match.group(3)), int(name_match.group(4)))
-                if desc in self.data:
-                    print(uid, desc, hex(self.data[desc].addr))
-                    assert desc not in desc2uid
-                    desc2uid[desc] = uid
-                    uid2desc[uid] = desc
-                    if desc in self.data:
-                        data_blk = self.data[desc]
-                        assert data_blk.uid is None     # assume each tensor is reported once
-                        data_blk.uid = uid
+                tsd = name_match.group(1)
+                tb = name_match.group(2)
+                addr_id = int(name_match.group(3))
+                offset = int(name_match.group(4))
+                tb_size = int(name_match.group(5))  # this tb_size is not 100% correct, as observed in resnet50 inputs
 
-        '''
-        # then get ALLOC and DEALLOC time info
-        for line_id, line in enumerate(lines):
-            if "[MEMTOOL]" in line:
-                time_match = re.search(r"t = (\d)+", line)
-                time_stamp = int(time_match.group(1))
-                tb_match = re.search(r"tb-\d+", line)
-                if "DEALLOC" in line:
-                    assert "deallocating " in lines[line_id - 1]
-                    assert tb_match.group(0) in lines[line_id - 1]
-                    uid_match = re.search(r"(tsd-\d+)/(tb-\d+)", lines[line_id - 1])
-                    assert uid_match.group(2) == tb_match.group(0)
-                    uid = (uid_match.group(1), uid_match.group(2))
-                    desc = uid2desc[uid]
-                    if desc in self.data:
-                        self.data[desc].liveness[1] = time_stamp
-                elif "ALLOC" in line:
-                    assert "resolve placement/alloc for" in lines[line_id - 1]
-                    assert tb_match.group(0) in lines[line_id - 1]
-                    uid_match = re.search(r"(tsd-\d+)/(tb-\d+)", lines[line_id - 1])
-                    # hw_match = re.search(r"\s+[a-z-]+-\d+'s", line)
-                    assert uid_match.group(2) == tb_match.group(0)
-                    uid = (uid_match.group(1), uid_match.group(2))
-                    desc = uid2desc[uid]
-                    if desc in self.data:
-                        self.data[desc].liveness[0] = time_stamp
+                assert tsd not in self.ts
+                new_ts = TensorSurface(tsd, tb, addr_id, offset, addr_base_map)
+                self.ts[tsd] = new_ts
+
+                if tb not in self.tb:
+                    curr_tb = TensorBuffer(tb, addr_id, tb_size, addr_base_map)
+                    curr_tb.add_tensor_surface(tsd, new_ts, addr_base_map)
+                    self.tb[tb] = curr_tb
                 else:
-                    assert False
-        '''
+                    prev_tb = self.tb[tb]
+                    assert prev_tb.size == tb_size
+                    prev_tb.add_tensor_surface(tsd, new_ts, addr_base_map)
 
     def sclog2traces(self):
         txn_lines = []
@@ -448,41 +379,21 @@ class Workload:
             fp.writelines(wr_lines)
 
     # based on combining compilation info and runtime info
-    def get_inout_data_blks(self):
-        inputs = []
-        outputs = []
-        for data_blk_key, data_blk in self.data.items():
-            if data_blk.attr == "activation" and data_blk.addr_id != -1:
-                to_query_addr = self.get_data_blk_to_query_addr(data_blk)
+    def get_various_tensor_buffers(self):
+        assert len(self.in_tb) == 0 and len(self.out_tb) == 0
+        for tb_name, tb in self.tb.items():
+            if tb.addr_id != 1:
+                self.act_tb.append(tb_name)
+                to_query_addr = self.get_to_query_addr(tb)
                 addr_entry = self.addr_log[to_query_addr]
                 if addr_entry[0][1] == "r":
-                    inputs.append(data_blk_key)
-                if addr_entry[-1][1] == "w":
-                    outputs.append(data_blk_key)
-        inputs.sort(key=lambda x: self.data[x].size, reverse=True)
-        outputs.sort(key=lambda x: self.data[x].size, reverse=True)
-        self.inputs = inputs
-        self.outputs = outputs
-
-    def print_workload_info(self):
-        for key, val in self.data.items():
-            print(val.attr, val.addr_id, hex(val.offset), hex(val.addr) if val.addr is not None else None, hex(val.size))
-        print("-----------------------")
-
-        print("inputs:")
-        for ipt in self.inputs:
-            print(hex(self.data[ipt].addr))
-        print("outputs:")
-        for opt in self.outputs:
-            print(hex(self.data[opt].addr))
-
-        print("-----------------------")
-        for i, surface in enumerate(self.surfaces):
-            print("surface[" + str(i) + "]:\n")
-            print("weights = ", surface.weights)
-            print("activations = ", surface.activations)
-            print("unknowns = ", surface.unknowns)
-            print("\n")
+                    self.in_tb.append(tb_name)
+                elif addr_entry[-1][1] == "w":
+                    self.out_tb.append(tb_name)
+                else:
+                    self.itm_act_tb.append(tb_name)
+            else:
+                self.w_tb.append(tb_name)
 
 
 # @output0: a list of surfaces, each is an object of Surface class
@@ -508,11 +419,14 @@ def construct_surfaces(lines):
             assert len(data_start_mark) == 0
             if " ]" in line:    # the space before "]" differentiates from the [] for reporting time
                 logging_data = False
-                temp_data.infer()
                 if temp_data.valid():
                     key = (temp_data.addr_id, temp_data.offset)
                     if key not in data.keys():
                         data[key] = temp_data
+                    else:
+                        prev_data = data[key]
+                        if temp_data.size < prev_data.size:
+                            data[key] = temp_data
 
                     if temp_data.attr == "weight":
                         temp_surf.weights.append(key)
@@ -601,23 +515,3 @@ def parse_rd_wr_trace(file_name):
             addr_log[addr] = [[i, addresses[i][0]]]
 
     return addr_log, sorted_addr, addresses
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--work-dir", default="/home/nvdla/traces/lenet_auto/",
-        help="directory to put the generated sc.log, register txn and mem traces")
-
-    args = parser.parse_args()
-    return args
-
-
-def main():
-    options = parse_args()
-    workload = Workload(options.work_dir)
-    workload.print_workload_info()
-
-
-if __name__ == "__main__":
-    main()

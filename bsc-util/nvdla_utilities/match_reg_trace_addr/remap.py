@@ -78,10 +78,10 @@ class IdentityRemapper(BaseRemapper):
         """ generate rd_only_var_log """
         if not os.path.exists(rd_var_log_path):
             with open(rd_var_log_path, "wb") as fp:
-                for rd_only_var in self.workload.rd_only_vars:
-                    data_blk = self.workload.data[rd_only_var]
-                    fp.write(data_blk.addr.to_bytes(4, byteorder="little", signed=False))
-                    fp.write(data_blk.size.to_bytes(4, byteorder="little", signed=False))
+                for rd_only_var in self.workload.rd_only_tbs:
+                    tb = self.workload.tb[rd_only_var]
+                    fp.write(tb.addr.to_bytes(4, byteorder="little", signed=False))
+                    fp.write(tb.size.to_bytes(4, byteorder="little", signed=False))
 
 
 class CVSRAMRemapper(BaseRemapper):
@@ -227,11 +227,11 @@ class SingleAccelCVSRAMRemapper(CVSRAMRemapper):
 
         """ modify rd_only_var_log """
         with open(rd_var_log_path, "wb") as fp:
-            for rd_only_var in self.workload.rd_only_vars:
-                data_blk = self.workload.data[rd_only_var]
-                if data_blk.addr not in self.mapping.keys():
-                    fp.write(data_blk.addr.to_bytes(4, byteorder="little", signed=False))
-                    fp.write(data_blk.size.to_bytes(4, byteorder="little", signed=False))
+            for rd_only_var in self.workload.rd_only_tbs:
+                tb = self.workload.tb[rd_only_var]
+                if tb.addr not in self.mapping.keys():
+                    fp.write(tb.addr.to_bytes(4, byteorder="little", signed=False))
+                    fp.write(tb.size.to_bytes(4, byteorder="little", signed=False))
 
 
 class WeightPinRemapper(SingleAccelCVSRAMRemapper):
@@ -240,8 +240,8 @@ class WeightPinRemapper(SingleAccelCVSRAMRemapper):
 
         """ workload-related info """
         # sort all the weights in workload
-        self.weights_cp = [weight for weight in self.workload.weights]
-        self.weights_cp.sort(key=lambda x: self.workload.data[x].size, reverse=True)
+        self.weights_cp = [weight for weight in self.workload.w_tb]
+        self.weights_cp.sort(key=lambda x: self.workload.tb[x].size, reverse=True)
 
     def compute_remap_decision(self):
         cvsram_size = self.cvsram_sizes[0]
@@ -250,9 +250,9 @@ class WeightPinRemapper(SingleAccelCVSRAMRemapper):
         # assign one by one greedily. If enough space, then mark to remap
         space_left = cvsram_size
         for weight in self.weights_cp:
-            aligned_size = self.aligned_ceil(self.workload.data[weight].size)
+            aligned_size = self.aligned_ceil(self.workload.tb[weight].size)
             if aligned_size <= space_left:
-                self.mapping[self.workload.data[weight].addr] = cvsram_base_addr + cvsram_size - space_left
+                self.mapping[self.workload.tb[weight].addr] = cvsram_base_addr + cvsram_size - space_left
                 space_left -= aligned_size
 
 
@@ -278,8 +278,15 @@ class ActPinRemapper(SingleAccelCVSRAMRemapper):
         gurobi_in_path = os.path.join(self.in_dir, "intermediate_acts")
         gurobi_out_path = os.path.join(self.out_dir, self.testcase_str + "_alloc_result")
         relative_map = collect_gurobi_results(self.workload, self.cvsram_sizes[0], gurobi_out_path, gurobi_in_path)
-        for desc, rel_addr in relative_map.items():
-            self.mapping[self.workload.data[desc].addr] = self.cvsram_base_addrs[0] + rel_addr
+        for tb_name, rel_addr in relative_map.items():
+            buffer = self.workload.tb[tb_name]
+            for ts_name in buffer.tsd_list:
+                ts = self.workload.ts[ts_name]
+                to_map_addr = self.cvsram_base_addrs[0] + rel_addr + ts.addr - buffer.addr
+                if ts.addr in self.mapping:
+                    assert to_map_addr == self.mapping[ts.addr]
+                else:
+                    self.mapping[ts.addr] = to_map_addr
 
 
 class MixPinRemapper(SingleAccelCVSRAMRemapper):
@@ -288,6 +295,9 @@ class MixPinRemapper(SingleAccelCVSRAMRemapper):
 
         """ workload-related info """
         self.last_tick = len(self.workload.raw_addr_log) - 1
+        # sort all the weights in workload
+        self.weights_cp = [weight for weight in self.workload.w_tb]
+        self.weights_cp.sort(key=lambda x: self.workload.tb[x].size, reverse=True)
 
     def compute_remap_decision(self):
         # do the same thing as ActPin Remappers, except for replacing the keyword names
@@ -306,12 +316,20 @@ class MixPinRemapper(SingleAccelCVSRAMRemapper):
         gurobi_in_path = os.path.join(self.in_dir, "intermediate_acts")
         relative_map = collect_gurobi_results(self.workload, self.cvsram_sizes[0], gurobi_out_path, gurobi_in_path)
         cvsram_space_left = self.cvsram_sizes[0]
-        for desc, rel_addr in relative_map.items():
-            self.mapping[self.workload.data[desc].addr] = self.cvsram_base_addrs[0] + rel_addr
-            cvsram_space_left = min(cvsram_space_left, self.cvsram_sizes[0] - rel_addr)
+        for tb_name, rel_addr in relative_map.items():
+            buffer = self.workload.tb[tb_name]
+            for ts_name in buffer.tsd_list:
+                ts = self.workload.ts[ts_name]
+                to_map_to_addr = self.cvsram_base_addrs[0] + rel_addr + ts.addr - buffer.addr
+                if ts.addr in self.mapping:
+                    assert to_map_to_addr == self.mapping[ts.addr]
+                else:
+                    self.mapping[ts.addr] = to_map_to_addr
+            cvsram_space_left = min(cvsram_space_left, self.cvsram_sizes[0] - rel_addr - buffer.size)
+            assert cvsram_space_left >= 0
 
-        for weight_desc in self.workload.weights:
-            weight_blk = self.workload.data[weight_desc]
+        for weight_desc in self.weights_cp:
+            weight_blk = self.workload.tb[weight_desc]
             if weight_blk.size <= cvsram_space_left:
                 self.mapping[weight_blk.addr] = self.cvsram_base_addrs[0] + self.cvsram_sizes[0] - cvsram_space_left
                 cvsram_space_left -= weight_blk.size
@@ -341,62 +359,64 @@ class PipelineRemapper(BaseRemapper):
         self.pipeline_stages = []
         for pipeline_log_dir in self.in_dirs:
             pipeline_stage = Workload(pipeline_log_dir)
-            # pipeline_stage.print_workload_info()
             self.pipeline_stages.append(pipeline_stage)
 
         # weights
-        self.all_weights = []
+        self.all_w_tb = []
         for i, stage in enumerate(self.pipeline_stages):
-            for weight in stage.weights:
-                self.all_weights.append((i, weight[0], weight[1]))
-                # all_weights = [(pipeline_stage_id(starting from 0), addr_id, offset)]
-        self.all_weights.sort(key=lambda x: self.pipeline_stages[x[0]].data[(x[1], x[2])].size, reverse=True)
+            for weight in stage.w_tb:
+                self.all_w_tb.append((i, weight))
+                # self.all_w_tb = [(pipeline_stage_id(starting from 0), weight_tb_name)]
+        self.all_w_tb.sort(key=lambda x: self.pipeline_stages[x[0]].tb[x[1]].size, reverse=True)
 
         # activations
-        self.all_activations = []   # = [(batch_id, stage_id, addr_id, offset)]
-        self.intra_act = []         # = [(stage_id, addr_id, offset)]
-        self.inter_act = []         # = [(batch_id, stage_id, addr_id, offset)]
+        self.intra_act_tb = []          # = [(stage_id, tb_name)]
+        self.inter_act_tb = []          # = [(batch_id, stage_id, tb_name)]
 
         """ testcase-related decisions """
-        self.weight_map = {}        # {(stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
-        self.inter_act_map = {}     # {(batch_id, stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
-        self.intra_act_map = {}     # {(stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
+        self.weight_map = {}            # {(stage_id, tb_name): (mapped_addr, is_cvsram)}
+        self.inter_act_map = {}         # {(batch_id, stage_id, tb_name): (mapped_addr, is_cvsram)}
+        self.intra_act_map = {}         # {(stage_id, tb_name): (mapped_addr, is_cvsram)}
+
+        self.weight_addr_map = {}       # {(stage_id, orig_addr): (mapped_addr, is_cvsram)}
+        self.inter_act_addr_map = {}    # {(batch_id, stage_id, orig_addr): (mapped_addr, is_cvsram)}
+        self.intra_act_addr_map = {}    # {(stage_id, orig_addr): (mapped_addr, is_cvsram)}
 
     def testcase_init(self, out_dir, sim_dir, testcase_str):
         BaseRemapper.testcase_init(self, out_dir, sim_dir, testcase_str)
         self.weight_map.clear()
         self.inter_act_map.clear()
-        self.intra_act.clear()
+        self.intra_act_map.clear()
+        self.weight_addr_map.clear()
+        self.inter_act_addr_map.clear()
+        self.intra_act_addr_map.clear()
 
     def set_pipeline_params(self, num_batches):
         self.batch_num = num_batches
-        # self.all_activations = [(batch_id, stage_id, addr_id, offset)]
         # for the first stage, put all activations
         # for the other stages, put all activations except inputs
         # for input / output activations, include their batch_id
-        # but for intermediate ones, set their batch_id to a default 0
+        # but for intermediate ones, ignore their batch_id
         # since inside a pipeline stage, the intermediate acts will not be overwritten by data from another batch
         for i, stage in enumerate(self.pipeline_stages):
-            for act in stage.intermediate_act:
-                self.intra_act.append((i, act[0], act[1]))
-            for act in stage.outputs:
+            for act in stage.itm_act_tb:
+                self.intra_act_tb.append((i, act))
+            for act in stage.out_tb:
                 for batch in range(self.batch_num):
-                    self.inter_act.append((batch, i, act[0], act[1]))
-        for act in self.pipeline_stages[0].inputs:
+                    self.inter_act_tb.append((batch, i, act))
+        for act in self.pipeline_stages[0].in_tb:
             for batch in range(self.batch_num):
-                self.inter_act.append((batch, 0, act[0], act[1]))
-
-        self.all_activations = self.inter_act + self.intra_act
-        self.all_activations.sort(key=lambda x: self.pipeline_stages[x[-3]].data[(x[-2], x[-1])].size, reverse=True)
+                self.inter_act_tb.append((batch, 0, act))
 
     def remap_weights(self):
-        # weights are not strided tensors
         next_avail_aligned = self.weight_base_addr
-        for weight_desc in self.all_weights:
-            # weight_desc: (stage_id, addr_id, offset)
-            self.weight_map[weight_desc] = (next_avail_aligned, False)  # False means it isn't mapped to CVSRAM
+        for w_desc in self.all_w_tb:
+            # w_desc: (stage_id, tb_name)
+            w_tb = self.pipeline_stages[w_desc[0]].tb[w_desc[1]]
+            self.weight_map[w_desc] = (next_avail_aligned, False)  # False means it isn't mapped to CVSRAM
+            self.weight_addr_map[(w_desc[0], w_tb.addr)] = (next_avail_aligned, False)
             # aligned size
-            al_sz = self.aligned_ceil(self.pipeline_stages[weight_desc[0]].data[(weight_desc[1], weight_desc[2])].size)
+            al_sz = self.aligned_ceil(w_tb.size)
             next_avail_aligned += al_sz
 
         self.activation_base_addr = next_avail_aligned
@@ -405,56 +425,42 @@ class PipelineRemapper(BaseRemapper):
         assert self.activation_base_addr is not None
         next_avail_aligned = self.activation_base_addr
         activation_map = {}
-        # {(batch_id, stage_id, addr_id, offset) or (stage_id, addr_id, offset): (mapped_addr, is_cvsram)}
-
-        mapped = [False for _ in self.all_activations]
-        for act_id, act_desc in enumerate(self.all_activations):
-            if mapped[act_id]:
-                continue
+        # {(batch_id, stage_id, tb_name) or (stage_id, tb_name): (mapped_addr, is_cvsram)}
+        for act_id, act_desc in enumerate(self.inter_act_tb + self.intra_act_tb):
             # for all the activations (outputs of the previous stage and inputs of the next stage are counted ONCE)
-            # act_desc: (batch_id, stage_id, addr_id, offset)   (for input / output activations)
-            #           (          stage_id, addr_id, offset)   (for intermediate activations)
-            stage = self.pipeline_stages[act_desc[-3]]
-            data_blk = stage.data[(act_desc[-2], act_desc[-1])]
-            if data_blk.hyper_data_addr is not None:
-                for strided_data_key in stage.hyper_data[data_blk.hyper_data_addr].bundled_data_blk_keys:
-                    strided_data_blk = stage.data[strided_data_key]
-                    if len(act_desc) == 3:
-                        global_key = (act_desc[0], strided_data_key[0], strided_data_key[1])
-                    elif len(act_desc) == 4:
-                        global_key = (act_desc[0], act_desc[1], strided_data_key[0], strided_data_key[1])
-                    else:
-                        assert False
-                    activation_map[global_key] = (next_avail_aligned + strided_data_blk.addr -
-                                                  data_blk.hyper_data_addr, False)
-                    mapped[self.all_activations.index(global_key)] = True
-                assert mapped[act_id]
-                next_avail_aligned += self.aligned_ceil(stage.hyper_data[data_blk.hyper_data_addr].bundled_data_size)
-            else:
-                activation_map[act_desc] = (next_avail_aligned, False)     # False means it isn't mapped to CVSRAM
-                aligned_size = self.aligned_ceil(data_blk.size)
-                next_avail_aligned += aligned_size
-                mapped[act_id] = True
+            # act_desc: (batch_id, stage_id, tb_name)   (for input / output activations)
+            #           (          stage_id, tb_name)   (for intermediate activations)
+            activation_map[act_desc] = (next_avail_aligned, False)     # False means it isn't mapped to CVSRAM
+            aligned_size = self.aligned_ceil(self.pipeline_stages[act_desc[-2]].tb[act_desc[-1]].size)
+            next_avail_aligned += aligned_size
 
         # match the outputs of the previous stage with the inputs of the next stage
         # for inter-stage tensors, only their output-side were added to self.all_activations
         # and are thus mapped in the previous loop,
         # so we assert (input_)key not in activation_map
         for stage_id in range(1, len(self.pipeline_stages)):
-            for i, ipt in enumerate(self.pipeline_stages[stage_id].inputs):
+            for i, ipt in enumerate(self.pipeline_stages[stage_id].in_tb):
                 for batch_id in range(self.batch_num):
-                    key = (batch_id, stage_id, ipt[0], ipt[1])
-                    corr_opt = self.pipeline_stages[stage_id - 1].outputs[i]    # corresponding output
-                    corr_opt_key = (batch_id, stage_id - 1, corr_opt[0], corr_opt[1])
+                    key = (batch_id, stage_id, ipt)
+                    corr_opt = self.pipeline_stages[stage_id - 1].out_tb[i]     # corresponding output
+                    corr_opt_key = (batch_id, stage_id - 1, corr_opt)
                     assert key not in activation_map.keys()
                     activation_map[key] = activation_map[corr_opt_key]
 
         for key, val in activation_map.items():
-            if len(key) == 3:   # intermediate activation
+            stage = self.pipeline_stages[key[-2]]
+            tb = stage.tb[key[-1]]
+            if len(key) == 2:   # intermediate activation
                 self.intra_act_map[key] = val
+                for tsd_name in tb.tsd_list:
+                    tsd_addr = stage.ts[tsd_name].addr
+                    self.intra_act_addr_map[(key[-2], tsd_addr)] = (val[0] + tsd_addr - tb.addr, val[1])
             else:
-                assert len(key) == 4
+                assert len(key) == 3
                 self.inter_act_map[key] = val
+                for tsd_name in tb.tsd_list:
+                    tsd_addr = stage.ts[tsd_name].addr
+                    self.inter_act_addr_map[(key[-3], key[-2], tsd_addr)] = (val[0] + tsd_addr - tb.addr, val[1])
 
     def compute_remap_decision(self):
         self.remap_weights()
@@ -468,12 +474,12 @@ class PipelineRemapper(BaseRemapper):
                 new_lines = [str(line) for line in txn_lines]
                 modify_status = [False for _ in txn_lines]
 
-                for w_desc, w_map_info in self.weight_map.items():
-                    # w_desc: pipeline_stage, addr_id, offset
-                    assert len(w_desc) == 3
+                for w_addr_desc, w_map_info in self.weight_addr_map.items():
+                    # w_desc: pipeline_stage, weight_addr
+                    assert len(w_addr_desc) == 2
                     addr_mapped, is_cvsram = w_map_info
-                    if w_desc[0] == i:
-                        orig_addr = self.pipeline_stages[i].data[(w_desc[1], w_desc[2])].addr
+                    if w_addr_desc[0] == i:
+                        orig_addr = w_addr_desc[-1]
                         for line_id, line in enumerate(txn_lines):
                             if hex(orig_addr) in line and not modify_status[line_id]:
                                 new_lines[line_id] = line.replace(hex(orig_addr), hex(addr_mapped))
@@ -484,12 +490,12 @@ class PipelineRemapper(BaseRemapper):
                                     self.change_ram_type_to_cvsram(txn_lines, new_lines, line_id, modify_status)
 
                 # intermediate activation / intra_act
-                for ia_desc, ia_map_info in self.intra_act_map.items():
-                    # ia_desc: (stage_id, addr_id, offset)
-                    assert len(ia_desc) == 3
+                for ia_addr_desc, ia_map_info in self.intra_act_addr_map.items():
+                    # ia_addr_desc: (stage_id, ia_addr)
+                    assert len(ia_addr_desc) == 2
                     addr_mapped, is_cvsram = ia_map_info
-                    if ia_desc[0] == i:
-                        orig_addr = self.pipeline_stages[i].data[(ia_desc[-2], ia_desc[-1])].addr
+                    if ia_addr_desc[0] == i:
+                        orig_addr = ia_addr_desc[-1]
                         for line_id, line in enumerate(txn_lines):
                             if hex(orig_addr) in line and not modify_status[line_id]:
                                 new_lines[line_id] = line.replace(hex(orig_addr), hex(addr_mapped))
@@ -500,12 +506,12 @@ class PipelineRemapper(BaseRemapper):
                                     self.change_ram_type_to_cvsram(txn_lines, new_lines, line_id, modify_status)
 
                 # input & output activation / inter_act
-                for io_desc, io_map_info in self.inter_act_map.items():
+                for io_addr_desc, io_map_info in self.inter_act_addr_map.items():
                     addr_mapped, is_cvsram = io_map_info
-                    # act_desc: (batch_id, stage_id, addr_id, offset)
-                    assert len(io_desc) == 4
-                    if io_desc[0] == batch_id and io_desc[1] == i:
-                        orig_addr = self.pipeline_stages[i].data[(io_desc[2], io_desc[3])].addr
+                    # act_desc: (batch_id, stage_id, io_addr)
+                    assert len(io_addr_desc) == 3
+                    if io_addr_desc[0] == batch_id and io_addr_desc[1] == i:
+                        orig_addr = io_addr_desc[-1]
                         for line_id, line in enumerate(txn_lines):
                             if hex(orig_addr) in line and not modify_status[line_id]:
                                 new_lines[line_id] = line.replace(hex(orig_addr), hex(addr_mapped))
@@ -531,17 +537,17 @@ class PipelineRemapper(BaseRemapper):
 
                 """ modify rd_only_var_log """
                 with open(rd_var_log_path, "wb") as fp:
-                    for rd_only_var in self.pipeline_stages[i].rd_only_vars:
-                        data_blk = self.pipeline_stages[i].data[rd_only_var]
+                    for rd_only_tb in self.pipeline_stages[i].rd_only_tbs:
+                        tb = self.pipeline_stages[i].tb[rd_only_tb]
 
                         # we have disabled input prefetching in current rd_only_var_log
-                        assert data_blk.attr == "weight"
-                        key = (i, rd_only_var[0], rd_only_var[1])
+                        assert tb.addr_id == 1
+                        key = (i, rd_only_tb)
                         mapped_to_cvsram = self.weight_map[key][1]
                         if not mapped_to_cvsram:
                             mapped_addr = self.weight_map[key][0]
                             fp.write(mapped_addr.to_bytes(4, byteorder="little", signed=False))
-                            fp.write(data_blk.size.to_bytes(4, byteorder="little", signed=False))
+                            fp.write(tb.size.to_bytes(4, byteorder="little", signed=False))
 
 
 class PipelineWeightPinRemapper(CVSRAMRemapper, PipelineRemapper):
@@ -555,18 +561,20 @@ class PipelineWeightPinRemapper(CVSRAMRemapper, PipelineRemapper):
     def remap_weights(self):
         next_avail_aligned = self.weight_base_addr                              # next available addr in DRAM
         spaces_left = [self.cvsram_sizes[i] for i in range(self.num_cvsram)]    # available space in all CVSRAMs
-        for weight_desc in self.all_weights:
-            # weight_desc: (stage_id, addr_id, offset)
+        for weight_desc in self.all_w_tb:
+            # weight_desc: (stage_id, tb_name)
             stage_id = weight_desc[0]
-            this_size = self.pipeline_stages[stage_id].data[(weight_desc[1], weight_desc[2])].size
-            aligned_size = self.aligned_ceil(this_size)
+            w_tb = self.pipeline_stages[stage_id].tb[weight_desc[-1]]
+            aligned_size = self.aligned_ceil(w_tb.size)
             if aligned_size <= spaces_left[stage_id]:   # like WeightPinRemapper, assign weights greedily
-                self.weight_map[weight_desc] = (self.cvsram_base_addrs[stage_id] + self.cvsram_sizes[stage_id] -
-                                                spaces_left[stage_id], True)
+                map_to_addr = self.cvsram_base_addrs[stage_id] + self.cvsram_sizes[stage_id] - spaces_left[stage_id]
+                self.weight_map[weight_desc] = (map_to_addr, True)
+                self.weight_addr_map[(stage_id, w_tb.addr)] = (map_to_addr, True)
                 # True means assigned to CVSRAM; False means assigned in DRAM
                 spaces_left[stage_id] -= aligned_size
             else:   # map to DRAM
                 self.weight_map[weight_desc] = (next_avail_aligned, False)
+                self.weight_addr_map[(stage_id, w_tb.addr)] = (next_avail_aligned, False)
                 next_avail_aligned += aligned_size
 
         self.activation_base_addr = next_avail_aligned
@@ -618,10 +626,14 @@ class PipelineActPinRemapper(CVSRAMRemapper, PipelineRemapper):
             gurobi_out_path = os.path.join(stage_out_dir, self.testcase_str + "_alloc_result")
             gurobi_in_path = os.path.join(self.in_dirs[stage_id], "intermediate_acts")
             relative_map = collect_gurobi_results(stage, self.cvsram_sizes[stage_id], gurobi_out_path, gurobi_in_path)
-            for desc, rel_addr in relative_map.items():
-                assert len(desc) == 2
-                global_key = (stage_id, desc[0], desc[1])
+            for tb_name, rel_addr in relative_map.items():
+                global_key = (stage_id, tb_name)
                 self.intra_act_map[global_key] = (self.cvsram_base_addrs[stage_id] + rel_addr, True)
+                tb = stage.tb[tb_name]
+                for tsd_name in tb.tsd_list:
+                    tsd_addr = stage.ts[tsd_name].addr
+                    to_map_to_addr = self.cvsram_base_addrs[stage_id] + rel_addr + tsd_addr - tb.addr, True
+                    self.intra_act_addr_map[(stage_id, tsd_addr)] = to_map_to_addr
 
     def write_to_files(self):
         PipelineRemapper.write_to_files(self)
@@ -629,34 +641,22 @@ class PipelineActPinRemapper(CVSRAMRemapper, PipelineRemapper):
 
 def write_solver_input(file_path, workload, log_weights):
     with open(file_path, "w") as fp:
-        for act in workload.intermediate_act:
-            data_blk = workload.data[act]
-            fp.write(str(data_blk.liveness[0]) + " " + str(data_blk.liveness[1]) + " " + str(data_blk.size) + " " +
-                     str(data_blk.line_stride * data_blk.height) + " " + str(data_blk.surf_stride) + " " +
-                     str(data_blk.num_access) + " " + hex(data_blk.addr) + " ")
-            last_aligned_addr = last_aligned(data_blk.addr, data_blk.true_occupy_space, workload.axi_width)
+        for act in workload.itm_act_tb:
+            buffer = workload.tb[act]
+            fp.write(str(buffer.liveness[0]) + " " + str(buffer.liveness[1]) + " " + str(buffer.size) + " " +
+                     str(buffer.num_access) + " " + hex(buffer.addr) + " ")
+            last_aligned_addr = last_aligned(buffer.addr, buffer.size, workload.axi_width)
             for id_rw in workload.addr_log[last_aligned_addr]:
                 fp.write(id_rw[1] + " ")
             fp.write("\n")
 
         if log_weights:
             last_tick = len(workload.raw_addr_log) - 1
-            for w in workload.weights:
-                data_blk = workload.data[w]
-                fp.write("0 " + str(last_tick) + " " + str(data_blk.size) +
-                         " 0 " + "0 " + "1 " + hex(data_blk.addr) + " r\n")
-
-        fp.write("-----\n")
-
-        for hyp_tensor_addr, hyp_tensor in workload.hyper_data.items():
-            fp.write(str(hyp_tensor.bundled_data_size) + " ")
-            for related_data_key in hyp_tensor.bundled_data_blk_keys:
-                try:
-                    idx = workload.intermediate_act.index(related_data_key)
-                    fp.write(str(idx) + " ")
-                except ValueError as e:
-                    print("did not find element ", related_data_key, " in self.workload.intermediate_act")
-            fp.write("\n")
+            for w in workload.w_tb:
+                weight_tb = workload.tb[w]
+                assert len(weight_tb.tsd_list) == 1
+                fp.write("0 " + str(last_tick) + " " + str(weight_tb.size) +
+                         "1 " + hex(weight_tb.addr) + " r\n")
 
 
 def collect_gurobi_results(workload, cvsram_size, gurobi_out_path, gurobi_in_path):
@@ -680,26 +680,16 @@ def collect_gurobi_results(workload, cvsram_size, gurobi_out_path, gurobi_in_pat
         attrs = in_lines[line_id].strip().split()
         is_w = attrs[5] == "1"      # weights will only be used once
         if words[0] == '1':
-            desc = workload.weights[collect_w_cnt] if is_w else workload.intermediate_act[collect_a_cnt]
-            data_blk = workload.data[desc]
-            relative_mapping[desc] = int(words[1])
+            tb_name = workload.tb[workload.w_tb[collect_w_cnt]].tb_name if is_w else workload.itm_act_tb[collect_a_cnt]
+            buffer = workload.tb[tb_name]
+            relative_mapping[tb_name] = int(words[1])
             if is_w:
-                ax1.add_patch(patches.Rectangle((0, int(words[1])), len(workload.raw_addr_log) - 1, data_blk.size,
+                ax1.add_patch(patches.Rectangle((0, int(words[1])), len(workload.raw_addr_log) - 1, buffer.size,
                                                 linewidth=1, edgecolor='black'))
             else:
-                if not data_blk.is_strided():
-                    ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1])),
-                                                    data_blk.liveness[1] - data_blk.liveness[0], data_blk.size,
-                                                    linewidth=1, edgecolor='black'))
-                else:
-                    # we need to draw several rectangles for strided tensors
-                    num_segment = (data_blk.size - 1) // (data_blk.height * data_blk.line_stride) + 1
-                    for stride in range(num_segment):
-                        ax1.add_patch(patches.Rectangle((data_blk.liveness[0], int(words[1]) +
-                                                         stride * data_blk.surf_stride),
-                                                        data_blk.liveness[1] - data_blk.liveness[0],
-                                                        data_blk.height * data_blk.line_stride,
-                                                        linewidth=1, edgecolor='black'))
+                ax1.add_patch(patches.Rectangle((buffer.liveness[0], int(words[1])),
+                                                buffer.liveness[1] - buffer.liveness[0], buffer.size,
+                                                linewidth=1, edgecolor='black'))
         if is_w:
             collect_w_cnt += 1
         else:
