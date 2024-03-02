@@ -701,6 +701,7 @@ def collect_gurobi_results(workload, cvsram_size, gurobi_out_path, gurobi_in_pat
     plt.title("Buffer Allocation Result on CVSRAM size = 0x%x Bytes" % cvsram_size)
     plt.xlabel("Logical Order")
     plt.ylabel("CVSRAM Address")
+    plt.rcParams.update({'font.size': 22})
     plt.tight_layout()
     occ_fig.savefig(gurobi_out_path + "_vis.png", dpi=400)
 

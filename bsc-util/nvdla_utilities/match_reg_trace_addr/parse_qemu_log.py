@@ -38,7 +38,6 @@ class TensorSurface:
         self.addr_id = addr_id
         self.offset = offset
 
-        self.attr = None        # weight, activation, unknown
         self.addr = None        # offset 0xc0000000 by default
         self.size = None        # will only be correct for input/output/weight tensor surfaces
 
@@ -82,7 +81,7 @@ class Surface:
 
 
 class Workload:
-    def __init__(self, in_dir, to_convert=False, use_real_data=False, dump_results=False, axi_width=0x40):
+    def __init__(self, in_dir, in_compilation=False, use_real_data=False, dump_results=False, axi_width=0x40):
         self.in_dir = in_dir        # each workload corresponds to a directory of log files
         self.tb = {}                # tensor buffers = {tb_name: TensorBuffer}
         self.ts = {}                # tensor surfaces = {ts_name: TensorSurface}
@@ -104,7 +103,7 @@ class Workload:
         self.raw_addr_log = None    # = [['r' or 'w', addr], ...]
 
         self.txn_lines = []         # for self.sclog2traces() to store translated contents of input.txn
-        self.to_convert = to_convert        # whether to convert input.txn, mem traces from sc.log
+        self.in_compilation = in_compilation        # constructor called in compilation or remapping phase
         self.use_real_data = use_real_data  # (does not contain dump_mem instructions)
         self.dump_results = dump_results    # whether to dump results for checking correctness
 
@@ -114,39 +113,58 @@ class Workload:
         assert self.axi_width == 0x40 or self.axi_width == 0x20
 
         with open(os.path.join(self.in_dir, "qemu_log")) as fp:
-            lines = fp.readlines()
-        self.addr_base_map = get_addr_mapping(lines)
+            qemu_log_lines = fp.readlines()
+        self.addr_base_map = get_addr_mapping(qemu_log_lines)
 
         """acquire self.ts and self.tb"""
-        self.read_compile_log(self.addr_base_map)
+        self.read_compile_log(self.addr_base_map, qemu_log_lines)
 
-        # remove redundant ts and tb
-        to_pop = []
-        for ts_name, ts in self.ts.items():
-            if ts.addr is None:
-                to_pop.append(ts_name)
-        for pop_item in to_pop:
-            self.ts.pop(pop_item)
-        to_pop = []
-        for tb_name, tb in self.tb.items():
-            if tb.addr is None:
-                to_pop.append(tb_name)
-        for pop_item in to_pop:
-            self.tb.pop(pop_item)
-
-        mem_trace_path = os.path.join(self.in_dir, "VP_mem_rd_wr")
-        if self.to_convert:      # memory trace files and input.txn not yet generated
-            self.sclog2traces()                     # not yet prepended load_mem & dump instructions
-
-        """acquire size info of tsd (only for input/out/weight are correct)"""
-        surfaces, data = construct_surfaces(lines)
-        for ts_name, ts in self.ts.items():
-            desc = (ts.addr_id, ts.offset)
-            ts.size = data[desc].size
+        if self.in_compilation:     # memory trace files and input.txn not yet generated
+            self.sclog2traces()           # not yet prepended load_mem & dump instructions
 
         """construct self.in_tb, self.out_tb, self.w_tb, self.act_tb, self.itm_act_tb"""
+        mem_trace_path = os.path.join(self.in_dir, "VP_mem_rd_wr" if self.in_compilation else "rtl_mem_rd_wr")
+        if not self.in_compilation:
+            # check validity of rtl_mem_rd_wr and nvdla_cpp.log
+            nvdla_cpp_log = os.path.join(self.in_dir, "nvdla_cpp.log")
+            legal = (os.path.exists(nvdla_cpp_log) and os.path.exists(mem_trace_path) and
+                     os.stat(nvdla_cpp_log).st_size != 0 and os.stat(mem_trace_path).st_size != 0)
+            log_tail_lines = "".join(os.popen("tail -n 3 " + nvdla_cpp_log).readlines()) if legal else ""
+            legal = legal and ("done at" in log_tail_lines) and ("PASS" in log_tail_lines or "FAIL" in log_tail_lines)
+            if not legal:
+                assert os.getenv("VERILATOR_ROOT") is not None  # must install verilator for simulation
+                bin_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                       "../../../ext/rtl/model_nvdla"))
+                os.system("cd " + bin_dir + " && make VNV_nvdla && ./VNV_nvdla " +
+                          os.path.join(self.in_dir, "trace.bin") + " > " + nvdla_cpp_log)
+
+                with open(os.path.join(self.in_dir, "nvdla_cpp.log")) as fp:
+                    nvdla_cpp_log_lines = fp.readlines()
+                rd_log_lines, wr_log_lines, rw_log_lines = [], [], []
+                for line in nvdla_cpp_log_lines:
+                    rw_m = re.search("([a-z]+) request from dla, addr ([0-9a-zA-Z]+)", line)
+                    if rw_m is not None:
+                        is_read = (rw_m.group(1) == "read")
+                        addr = int(rw_m.group(2), 16)
+                        if is_read:
+                            burst_match = re.search("burst ([0-9]+)", line)
+                            assert burst_match is not None
+                            burst_len = int(burst_match.group(1)) + 1
+                            for burst_id in range(burst_len):
+                                this_addr = addr + burst_id * self.axi_width
+                                rd_log_lines.append(hex(this_addr) + "\n")
+                                rw_log_lines.append("r " + hex(this_addr) + "\n")
+                        else:
+                            wr_log_lines.append(hex(addr) + "\n")
+                            rw_log_lines.append("w " + hex(addr) + "\n")
+                with open(os.path.join(self.in_dir, "rtl_mem_rd_wr"), "w") as fp:
+                    fp.writelines(rw_log_lines)
+                with open(os.path.join(self.in_dir, "rtl_mem_rd"), "w") as fp:
+                    fp.writelines(rd_log_lines)
+                with open(os.path.join(self.in_dir, "rtl_mem_wr"), "w") as fp:
+                    fp.writelines(wr_log_lines)
         self.addr_log, self.sorted_addr, self.raw_addr_log = parse_rd_wr_trace(mem_trace_path)
-        self.get_various_tensor_buffers()
+        self.get_various_tensor_buffers()   # in VP_mem_rd_wr, only the life cycles are inaccurate
 
         if len(self.in_tb) > 1:
             print("Critical situation: len(self.in_tb) > 1")
@@ -164,7 +182,7 @@ class Workload:
             if 'r' in rw_and_addr[0] and rw_and_addr[1] in rd_only_addr2tb_name.keys():
                 self.rd_only_tbs.append(rd_only_addr2tb_name[rw_and_addr[1]])
 
-        if self.to_convert and self.use_real_data:
+        if self.in_compilation and self.use_real_data:
             # care about self.w_tb and self.in_tb
             memory = {}     # {axi-aligned addr, [uint32_t]}
             to_prepend_txn_lines = []
@@ -182,15 +200,6 @@ class Workload:
                     uint32_ts = info_match.group(3).replace("X", "0").replace("_", "").split()
                     contents = [int(uint32_t, 16) for uint32_t in uint32_ts]
 
-                    '''
-                    is_write_match = re.search("iswrite=([0-9]+)", line)
-                    assert is_write_match is not None
-                    is_write = int(is_write_match.group(1))
-
-                    # only intermediate activations will be overwritten. We don't need their values in input.txn
-                    if is_write == 0 and (addr in memory and memory[addr] != contents):
-                        print("inconsistent memory access result!\nPrevious:\n", memory[addr], "\nNow:\n", contents)
-                    '''
                     memory[addr] = contents
 
             to_get_tb = self.w_tb + self.in_tb + self.out_tb if self.dump_results else self.w_tb + self.in_tb
@@ -236,19 +245,19 @@ class Workload:
                                                 " " + file_name + "\t#actual_len = " + hex(tb.size) + "\n")
             self.txn_lines = to_prepend_txn_lines + self.txn_lines + to_append_txn_lines
 
-        if self.to_convert:
+        if self.in_compilation:
             with open(os.path.join(self.in_dir, "input.txn"), "w") as fp:
                 fp.writelines(self.txn_lines)
-
-        """do liveness analysis for each intermediate activation TensorBuffer object"""
-        for tb_name in self.itm_act_tb:
-            tb = self.tb[tb_name]
-            first = self.get_to_query_addr(tb)
-            last = last_aligned(tb.addr, tb.size, self.axi_width)
-            assert first in self.addr_log
-            assert last in self.addr_log
-            tb.liveness = (self.addr_log[first][0][0], self.addr_log[last][-1][0])
-            tb.num_access = len(self.addr_log[last])
+        else:
+            """do liveness analysis for each intermediate activation TensorBuffer object"""
+            for tb_name in self.itm_act_tb:
+                tb = self.tb[tb_name]
+                first = self.get_to_query_addr(tb)
+                last = last_aligned(tb.addr, tb.size, self.axi_width)
+                assert first in self.addr_log
+                assert last in self.addr_log
+                tb.liveness = (self.addr_log[first][0][0], self.addr_log[last][-1][0])
+                tb.num_access = len(self.addr_log[last])
 
     def get_to_query_addr(self, ts_or_tb):      # it accepts either tensor surface or tensor buffer
         if (ts_or_tb.addr // self.axi_width) * self.axi_width == ts_or_tb.addr:
@@ -260,15 +269,8 @@ class Workload:
             to_query_addr = (ts_or_tb.addr // self.axi_width) * self.axi_width
         return to_query_addr
 
-    def write_rd_only_var_log(self, rd_var_log_path):
-        with open(rd_var_log_path, "wb") as fp:
-            for rd_only_var in self.rd_only_tbs:
-                tb = self.tb[rd_only_var]
-                fp.write(tb.addr.to_bytes(4, byteorder="little", signed=False))
-                fp.write(tb.size.to_bytes(4, byteorder="little", signed=False))
-
     # read compile_log
-    def read_compile_log(self, addr_base_map):
+    def read_compile_log(self, addr_base_map, qemu_log_lines):
         with open(os.path.join(self.in_dir, "compile_log")) as fp:
             lines = fp.readlines()
 
@@ -293,6 +295,26 @@ class Workload:
                     prev_tb = self.tb[tb]
                     assert prev_tb.size == tb_size
                     prev_tb.add_tensor_surface(tsd, new_ts, addr_base_map)
+
+        # remove redundant ts and tb
+        to_pop = []
+        for ts_name, ts in self.ts.items():
+            if ts.addr is None:
+                to_pop.append(ts_name)
+        for pop_item in to_pop:
+            self.ts.pop(pop_item)
+        to_pop = []
+        for tb_name, tb in self.tb.items():
+            if tb.addr is None:
+                to_pop.append(tb_name)
+        for pop_item in to_pop:
+            self.tb.pop(pop_item)
+
+        """acquire size info of tsd (only for input/out/weight are correct)"""
+        surfaces, data = construct_surfaces(qemu_log_lines)
+        for ts_name, ts in self.ts.items():
+            desc = (ts.addr_id, ts.offset)
+            ts.size = data[desc].size
 
     def sclog2traces(self):
         txn_lines = []
@@ -370,7 +392,7 @@ class Workload:
                     rd_lines.append(hex(axi_addr) + "\n")
                     rw_lines.append("r " + hex(axi_addr) + "\n")
 
-        self.txn_lines = txn_lines
+        self.txn_lines = txn_lines  # don't write to files at this point. Write after getting load|dump_mem insts.
         with open(os.path.join(self.in_dir, "VP_mem_rd_wr"), "w") as fp:
             fp.writelines(rw_lines)
         with open(os.path.join(self.in_dir, "VP_mem_rd"), "w") as fp:

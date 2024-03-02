@@ -248,36 +248,10 @@ Finally, remember to `source /root/.bashrc` after modification.
 #   (1) verilator -O3 to the verilog -> cpp code generation phase;
 #   (2) clang -O3 -Ofast to the cpp -> .o compilation;
 #   (3) profiling-guided optimization (PGO) to the cpp -> .o compilation.
-# So the compilation done below is for generating the binary for profiling.
-# We also need a second pass to utilize profiling data.
-# If you don't want to do PGO, please uncomment the line in the Makefile annotated
-# with "without profiling-guided optimization" and comment out the others.
-# But please note in our case PGO can bring 40% performance improvement.
+# Please note in our case PGO can bring 40% performance improvement.
 # We have also fixed some of the UNOPTFLAT warnings in the original NVDLA
 # vmod/, which is included in nvdla_hw.patch. If you don't want these
 # modifications, simply do `git checkout` for files under nvdla/hw/vmod/.
-
-(gem5)# ./tools/bin/tmake -build verilator
-
-# If PGO is not enabled, compilation is already done here
-# Here we go on 
-(gem5)# cd verif/verilator
-(gem5)# mkdir ../traceplayer/lenet
-(gem5)# cp /home/gem5-nvdla/bsc-util/nvdla_utilities/example_usage/traces/lenet/input.txn ../traceplayer/lenet/
-(gem5)# make run TEST=cc_alexnet_conv5_relu5_int16_dtest_cvsram
-(gem5)# make run TEST=googlenet_conv2_3x3_int16
-(gem5)# make run TEST=lenet
-# Do 3 profiling tests: lenet, a CONV layer in alexnet, a CONV layer in googlenet.
-
-# gather the profiling results
-(gem5)# llvm-profdata-10 merge -output=../../LAG.profdata \
-../../outdir/nv_full/verilator/test/lenet/*.profraw \
-../../outdir/nv_full/verilator/test/cc_alexnet_conv5_relu5_int16_dtest_cvsram/*.profraw \
-../../outdir/nv_full/verilator/test/googlenet_conv2_3x3_int16/*.profraw
-
-(gem5)# vi Makefile
-# uncomment the line annotated with 'after collecting data with "llvm-profdata merge xxx"'
-# and comment out the original one.
 (gem5)# ./tools/bin/tmake -build verilator
 ```
 

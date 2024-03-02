@@ -168,7 +168,7 @@ def parse_mixed_type_trace(rd_wr_trace_file):
     ax.set_yticklabels(ylabels)
     ax.legend()
     plt.tight_layout()
-    fig.savefig(os.path.join(os.path.dirname(rd_wr_trace_file), "VP_mem_rd_wr.png"), dpi=240)
+    fig.savefig(os.path.join(os.path.dirname(rd_wr_trace_file), rd_wr_trace_file + ".png"), dpi=240)
 
 
 def process_log(options):
@@ -177,18 +177,15 @@ def process_log(options):
         os.system("cd /usr/local/nvdla && mv qemu_log " + options.out_dir)
 
     nvdla_utilities_dir = os.path.dirname(os.path.abspath(__file__))
-    workload = Workload(options.out_dir, True, options.true_data, options.dump_results)
+    workload = Workload(options.out_dir, in_compilation=True, use_real_data=options.true_data,
+                        dump_results=options.dump_results)
+    assert os.path.exists(os.path.join(options.out_dir, "VP_mem_rd_wr"))
+    # rtl_mem_rd_wr is generated during the remapping phase
     parse_mixed_type_trace(os.path.join(options.out_dir, "VP_mem_rd_wr"))
     os.system("cd " + nvdla_utilities_dir + " && python3.6 fix_txn_discontinuous.py --vp-out-dir " + options.out_dir +
               " --name try_input")
     os.system("cd " + options.out_dir + " && mv input.txn bkp_input.txn")
     os.system("cd " + options.out_dir + " && mv try_input.txn input.txn")
-    workload.write_rd_only_var_log(os.path.join(options.out_dir, "rd_only_var_log"))
-
-    # the nvdla/vp docker image has perl v5.22.1 installed, ok
-    perl_script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "input_txn_to_verilator.pl")
-    os.system("perl " + perl_script_path + " " + os.path.join(options.out_dir, "input.txn") + " " +
-              os.path.join(options.out_dir, "trace.bin"))
 
 
 def main():

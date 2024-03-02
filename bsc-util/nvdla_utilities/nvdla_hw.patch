@@ -1,3 +1,29 @@
+diff --git a/Makefile b/Makefile
+index a3d2ef0..2f23540 100644
+--- a/Makefile
++++ b/Makefile
+@@ -16,6 +16,8 @@ DEFAULT_JAVA := /home/utils/java/jdk1.8.0_131/bin/java
+ DEFAULT_SYSTEMC := /usr/local/systemc-2.3.0/
+ DEFAULT_VERILATOR := verilator
+ DEFAULT_CLANG     := clang
++DEFAULT_CLANGXX   := clang++
++DEFAULT_LLVM_PROFDATA := llvm-profdata-10.0
+ DEFAULT_PROJ := nv_full
+ 
+ $(TREE_MAKE): Makefile
+@@ -58,6 +60,12 @@ $(TREE_MAKE): Makefile
+ 	@echo "  																  " >> $@ 	
+ 	@echo "## clang: used to build Verilated binaries (optional)" >> $@
+ 	@read -p "OPTIONAL: Enter clang path     (Press ENTER to use: $(DEFAULT_CLANG)):" opt_clang; if [ "_$$opt_clang" = "_" ]; then echo "CLANG := $(DEFAULT_CLANG)" >> $@;  else echo "CLANG := $$opt_clang" >> $@; fi
++	@echo "  																  " >> $@ 	
++	@echo "## clang++: used to build Verilated binaries (optional)" >> $@
++	@read -p "OPTIONAL: Enter clang++ path     (Press ENTER to use: $(DEFAULT_CLANGXX)):" opt_clangxx; if [ "_$$opt_clangxx" = "_" ]; then echo "CLANGXX := $(DEFAULT_CLANGXX)" >> $@;  else echo "CLANGXX := $$opt_clangxx" >> $@; fi
++	@echo "  																  " >> $@ 	
++	@echo "## llvm-profdata: used to build Verilated binaries (optional)" >> $@
++	@read -p "OPTIONAL: Enter llvm-profdata path     (Press ENTER to use: $(DEFAULT_LLVM_PROFDATA)):" opt_llvm_profdata; if [ "_$$opt_clang" = "_" ]; then echo "LLVM_PROFDATA := $(DEFAULT_LLVM_PROFDATA)" >> $@;  else echo "LLVM_PROFDATA := $$opt_llvm_profdata" >> $@; fi
+ 	@echo
+ 	@echo "====================================================================="
+ 	@echo "$@ is created successfully, and you can edit $@ manually if necessary"
 diff --git a/cmod/bdma/BdmaCore.cpp b/cmod/bdma/BdmaCore.cpp
 index 9e674d7..0e826f0 100644
 --- a/cmod/bdma/BdmaCore.cpp
@@ -13023,31 +13049,63 @@ index f983830..4740f0c 100644
  ==============================
  
 diff --git a/verif/verilator/Makefile b/verif/verilator/Makefile
-index aa73fac..bd28650 100644
+index aa73fac..e16b2b2 100644
 --- a/verif/verilator/Makefile
 +++ b/verif/verilator/Makefile
-@@ -11,24 +11,26 @@ include $(DEPTH)/tools/make/common.make
+@@ -7,28 +7,57 @@
+ # with this distribution.
+ 
+ DEPTH = ../..
++ROOT_PATH := $(abspath $(DEPTH))
+ include $(DEPTH)/tools/make/common.make
  
  default: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla
  
 -VERILATOR_PARAMS ?= --compiler clang --output-split 250000000
-+# VERILATOR_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-fPIC -DNDEBUG -O3 -Ofast" -LDFLAGS "--static"    # without profiling-guided optimization
-+VERILATOR_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-fPIC -DNDEBUG -O3 -Ofast -fprofile-generate" -LDFLAGS "--static -fprofile-generate"    # perform first-round profiling data collection
-+# VERILATOR_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-fPIC -DNDEBUG -O3 -Ofast -fprofile-use=/usr/local/nvdla/hw/LAG.profdata" -LDFLAGS "--static"    # after collecting data with "llvm-profdata merge xxx", use this command
++VERILATOR_PARAMS_NO_PROF ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-fPIC -DNDEBUG -O3 -Ofast" -LDFLAGS "--static"    # without profiling-guided optimization
++VERILATOR_PROF_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-fPIC -DNDEBUG -O3 -Ofast -fprofile-generate" -LDFLAGS "--static -fprofile-generate"    # perform first-round profiling data collection
++VERILATOR_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-fPIC -DNDEBUG -O3 -Ofast -fprofile-use=$(ROOT_PATH)/LAG.profdata" -LDFLAGS "--static"    # after collecting data with "llvm-profdata merge xxx", use this command
  # Perhaps you need to trace?
  #   VERILATOR_PARAMS += --trace --trace-depth 7 --trace-max-array 8
  
  # We end up hardcoding this, because the .f file applies only to nv_full,
  # living in outdir, right now.  Otherwise, you're on your own...
++$(DEPTH)/outdir/nv_full/verilator_prof/VNV_nvdla.mk: verilator.f ../../outdir/nv_full/vmod # and a lot of RTL...
++	$(VERILATOR) --cc --exe -f verilator.f --Mdir ../../outdir/nv_full/verilator_prof/ nvdla.cpp $(VERILATOR_PROF_PARAMS)
++
  $(DEPTH)/outdir/nv_full/verilator/VNV_nvdla.mk: verilator.f ../../outdir/nv_full/vmod # and a lot of RTL...
 -	$(VERILATOR) --cc --exe -f verilator.f --Mdir ../../outdir/nv_full/verilator/ nvdla.cpp --compiler clang --output-split 250000000
 +	$(VERILATOR) --cc --exe -f verilator.f --Mdir ../../outdir/nv_full/verilator/ nvdla.cpp $(VERILATOR_PARAMS)
++
++$(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/VNV_nvdla_prof: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/VNV_nvdla.mk nvdla.cpp
++	rm -f $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/nvdla.cpp
++	cp nvdla.cpp $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/nvdla.cpp
++	make -C $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof -j24 -f VNV_nvdla.mk CC=$(CLANG) CXX=$(CLANGXX) OPT_FAST="" VM_PARALLEL_BUILDS=1
++	mv $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/VNV_nvdla $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/VNV_nvdla_prof    # rename
++
++$(DEPTH)/LAG.profdata: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/lenet/trace.bin $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/cc_alexnet_conv5_relu5_int16_dtest_cvsram/trace.bin $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/googlenet_conv2_3x3_int16/trace.bin $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/VNV_nvdla_prof
++	rm $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/lenet/*.profraw
++	rm $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/cc_alexnet_conv5_relu5_int16_dtest_cvsram/*.profraw
++	rm $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/googlenet_conv2_3x3_int16/*.profraw
++	cd $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/lenet && ../../VNV_nvdla_prof trace.bin
++	cd $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/cc_alexnet_conv5_relu5_int16_dtest_cvsram && ../../VNV_nvdla_prof trace.bin
++	cd $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/googlenet_conv2_3x3_int16 && ../../VNV_nvdla_prof trace.bin
++	$(LLVM_PROFDATA) merge -output=$(DEPTH)/LAG.profdata \
++		$(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/lenet/*.profraw \
++		$(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/cc_alexnet_conv5_relu5_int16_dtest_cvsram/*.profraw \
++		$(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/googlenet_conv2_3x3_int16/*.profraw
  
- $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla.mk nvdla.cpp
+-$(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla.mk nvdla.cpp
++$(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla: $(DEPTH)/LAG.profdata $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla.mk nvdla.cpp
  	rm -f $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/nvdla.cpp
  	cp nvdla.cpp $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/nvdla.cpp
 -	make -C $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator -f VNV_nvdla.mk CC=$(CLANG) CXX=$(CLANG)++ VM_PARALLEL_BUILDS=1
-+	make -C $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator -j24 -f VNV_nvdla.mk CC=$(CLANG) CXX=$(CLANG)++ OPT_FAST="" VM_PARALLEL_BUILDS=1
++	make -C $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator -j24 -f VNV_nvdla.mk CC=$(CLANG) CXX=$(CLANGXX) OPT_FAST="" VM_PARALLEL_BUILDS=1
++
++$(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/%/trace.bin: $(DEPTH)/verif/traces/traceplayer/% input_txn_to_verilator.pl
++	rm -rf $@
++	mkdir -p $(dir $@)
++	$(PERL) input_txn_to_verilator.pl $</input.txn $@
  
  $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/%/trace.bin: $(DEPTH)/verif/traces/traceplayer/% input_txn_to_verilator.pl
  	rm -rf $@

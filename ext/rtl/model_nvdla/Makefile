@@ -96,6 +96,10 @@ library_vcd: wrapper_vcd_o verilated_o verilated_vcd_o
 library_vcd_opt: wrapper_vcd_opt_o verilated_opt_o verilated_vcd_opt_o
 	ar rvs libVerilatorNVDLA.a csbMaster_opt.o axiResponder_opt.o embeddedBuffer_opt.o wrapper_nvdla_opt.o verilated_opt.o verilated_vcd_opt.o
 
+VNV_nvdla: verilated_opt_o verilated_vcd_opt_o
+	$(CXX) nvdla.cpp verilated_opt.o verilated_vcd_opt.o -I$(DIR) -I$(VERILATOR_ROOT)/include \
+	-I$(VERILATOR_ROOT)/include/vltstd -L $(DIR) -l VNV_nvdla__ALL -O3 -Ofast -fPIC -o VNV_nvdla
+
 .PHONY: clean csbMaster_o csbMaster_opt_o axiResponder_o axiResponder_opt_o embeddedBuffer_o embeddedBuffer_opt_o wrapper_vcd_o wrapper_vcd_opt_o \
 	verilated_o verilated_opt_o verilated_vcd_o verilated_vcd_opt_o library_vcd library_vcd_opt
 
