@@ -126,19 +126,32 @@ class Workload:
         mem_trace_path = os.path.join(self.in_dir, "VP_mem_rd_wr" if self.in_compilation else "rtl_mem_rd_wr")
         if not self.in_compilation:
             # check validity of rtl_mem_rd_wr and nvdla_cpp.log
-            nvdla_cpp_log = os.path.join(self.in_dir, "nvdla_cpp.log")
+            nvdla_cpp_log = os.path.abspath(os.path.join(self.in_dir, "nvdla_cpp.log"))
             legal = (os.path.exists(nvdla_cpp_log) and os.path.exists(mem_trace_path) and
                      os.stat(nvdla_cpp_log).st_size != 0 and os.stat(mem_trace_path).st_size != 0)
             log_tail_lines = "".join(os.popen("tail -n 3 " + nvdla_cpp_log).readlines()) if legal else ""
             legal = legal and ("done at" in log_tail_lines) and ("PASS" in log_tail_lines or "FAIL" in log_tail_lines)
             if not legal:
-                assert os.getenv("VERILATOR_ROOT") is not None  # must install verilator for simulation
-                bin_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                       "../../../ext/rtl/model_nvdla"))
-                os.system("cd " + bin_dir + " && make VNV_nvdla && ./VNV_nvdla " +
-                          os.path.join(self.in_dir, "trace.bin") + " > " + nvdla_cpp_log)
+                usr_pfx = os.popen("cd ~/ && pwd").readlines()[0].strip().rstrip('/')
+                bin_dir_in_docker = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                    "../../../ext/rtl/model_nvdla")).replace(usr_pfx, "/home")
+                trace_in_docker = os.path.abspath(os.path.join(self.in_dir, "trace.bin").replace(usr_pfx, "/home"))
+                nvdla_cpp_log_in_docker = nvdla_cpp_log.replace(usr_pfx, "/home")
+                cmd = "cat /root/.bashrc | grep export | grep verilator > /root/envs && source /root/envs && cd " + \
+                      bin_dir_in_docker + " && make VNV_nvdla && ./VNV_nvdla " + trace_in_docker + " > " + \
+                      nvdla_cpp_log_in_docker + " && exit"
+                found_gem5_nvdla_env = False
+                for line in os.popen("docker images").readlines():
+                    words = line.split()
+                    if "edwinlai99/gem5_nvdla_env" in words[0] and "v3" in words[1]:
+                        found_gem5_nvdla_env = True
+                        break
+                assert found_gem5_nvdla_env
 
-                with open(os.path.join(self.in_dir, "nvdla_cpp.log")) as fp:
+                cid = os.popen("docker run -it -d --rm -v ~/:/home edwinlai99/gem5_nvdla_env:v3").readlines()[0].strip()
+                os.system('docker exec -it ' + cid + ' /bin/bash -c ' + '"' + cmd + '" && docker stop ' + cid)
+
+                with open(nvdla_cpp_log) as fp:
                     nvdla_cpp_log_lines = fp.readlines()
                 rd_log_lines, wr_log_lines, rw_log_lines = [], [], []
                 for line in nvdla_cpp_log_lines:
@@ -163,6 +176,7 @@ class Workload:
                     fp.writelines(rd_log_lines)
                 with open(os.path.join(self.in_dir, "rtl_mem_wr"), "w") as fp:
                     fp.writelines(wr_log_lines)
+
         self.addr_log, self.sorted_addr, self.raw_addr_log = parse_rd_wr_trace(mem_trace_path)
         self.get_various_tensor_buffers()   # in VP_mem_rd_wr, only the life cycles are inaccurate
 

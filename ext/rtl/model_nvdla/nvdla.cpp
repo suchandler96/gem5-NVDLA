@@ -143,7 +143,6 @@ public:
                             printf("(%lu) ERROR: timed out reading response\n", ticks);
                             printf("op.write = %d, op.addr = 0x%08x, op.data = %08x, received = 0x%08x\n", op.write,
                                    op.addr, op.data, (dla->nvdla2csb_data & op.mask));
-                            exit(1);
                             _test_passed = 0;
                             opq.pop();
                         }
