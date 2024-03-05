@@ -24,6 +24,21 @@ index a3d2ef0..2f23540 100644
  	@echo
  	@echo "====================================================================="
  	@echo "$@ is created successfully, and you can edit $@ manually if necessary"
+diff --git a/cmod/Makefile b/cmod/Makefile
+index f2022d0..788c656 100644
+--- a/cmod/Makefile
++++ b/cmod/Makefile
+@@ -150,8 +150,8 @@ LD_DIRS := \
+ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
+ LD_FLAGS  := $(addprefix -L,$(LD_DIRS))
+ 
+-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -fPIC -Wall -Werror -DSC_INCLUDE_DYNAMIC_PROCESSES -Wp,-w -std=c++11
+-LDFLAGS ?= -shared $(addprefix -l,$($(notdir $(SYSTEMC_LIBRARIES)):lib%.so=%)) $(LD_FLAGS)
++CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -fPIC -Wall -Werror -DSC_INCLUDE_DYNAMIC_PROCESSES -Wp,-w -std=c++11 -O3 -Ofast
++LDFLAGS ?= -O3 -shared $(addprefix -l,$($(notdir $(SYSTEMC_LIBRARIES)):lib%.so=%)) $(LD_FLAGS)
+ 
+ $(BUILD_DIR)/$(TARGET): $(OBJS) 
+ 	$(GCC) $(OBJS) -o $@ $(LDFLAGS) -L$(BUILD_DIR)
 diff --git a/cmod/bdma/BdmaCore.cpp b/cmod/bdma/BdmaCore.cpp
 index 9e674d7..0e826f0 100644
 --- a/cmod/bdma/BdmaCore.cpp
@@ -8994,7 +9009,7 @@ index 744a28b..467bcd0 100644
      }
  }
 diff --git a/cmod/mcif/gen/NV_NVDLA_mcif.cpp b/cmod/mcif/gen/NV_NVDLA_mcif.cpp
-index e7109b2..7f71cc5 100644
+index e7109b2..22e95d2 100644
 --- a/cmod/mcif/gen/NV_NVDLA_mcif.cpp
 +++ b/cmod/mcif/gen/NV_NVDLA_mcif.cpp
 @@ -304,14 +304,14 @@ void NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* pay
@@ -9749,15 +9764,18 @@ index e7109b2..7f71cc5 100644
  
      if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
          user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-@@ -1239,7 +1239,7 @@ void NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* pa
+@@ -1239,9 +1239,9 @@ void NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* pa
          user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
  
      //Split dma request to axi requests
 -    cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
 +    //cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
      while(base_addr <= last_base_addr) {
-         cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
+-        cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
++        //cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
          // base_addr should be aligned to 64B
+         // size_in_byte should be multiple of 64
+         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
 @@ -1268,13 +1268,13 @@ void NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* pa
                          ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
                      axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
@@ -9862,12 +9880,15 @@ index e7109b2..7f71cc5 100644
  
 -        cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
 -        cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
+-        for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
+-            cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
+-        }
+-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, before NV_NVDLA_mcif_base::mcif2sdp_b_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
 +        //cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
 +        //cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
-         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
-             cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
-         }
--        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, before NV_NVDLA_mcif_base::mcif2sdp_b_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
++        //for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
++            //cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
++        //}
 +        //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, before NV_NVDLA_mcif_base::mcif2sdp_b_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
          NV_NVDLA_mcif_base::mcif2sdp_b_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_);
 -        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, after NV_NVDLA_mcif_base::mcif2sdp_b_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
@@ -10008,12 +10029,15 @@ index e7109b2..7f71cc5 100644
  
 -        cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
 -        cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
+-        for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
+-            cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
+-        }
+-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, before NV_NVDLA_mcif_base::mcif2sdp_n_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
 +        //cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
 +        //cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
-         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
-             cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
-         }
--        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, before NV_NVDLA_mcif_base::mcif2sdp_n_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
++        //for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
++            //cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
++        //}
 +        //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, before NV_NVDLA_mcif_base::mcif2sdp_n_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
          NV_NVDLA_mcif_base::mcif2sdp_n_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_);
 -        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, after NV_NVDLA_mcif_base::mcif2sdp_n_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
@@ -10154,12 +10178,15 @@ index e7109b2..7f71cc5 100644
  
 -        cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
 -        cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
+-        for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
+-            cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
+-        }
+-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, before NV_NVDLA_mcif_base::mcif2sdp_e_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
 +        //cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
 +        //cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
-         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
-             cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
-         }
--        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, before NV_NVDLA_mcif_base::mcif2sdp_e_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
++        //for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
++            //cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
++        //}
 +        //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, before NV_NVDLA_mcif_base::mcif2sdp_e_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
          NV_NVDLA_mcif_base::mcif2sdp_e_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_);
 -        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, after NV_NVDLA_mcif_base::mcif2sdp_e_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
@@ -10300,12 +10327,15 @@ index e7109b2..7f71cc5 100644
  
 -        cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
 -        cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
+-        for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
+-            cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
+-        }
+-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, before NV_NVDLA_mcif_base::mcif2cdma_dat_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
 +        //cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
 +        //cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
-         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
-             cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
-         }
--        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, before NV_NVDLA_mcif_base::mcif2cdma_dat_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
++        //for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
++            //cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
++        //}
 +        //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, before NV_NVDLA_mcif_base::mcif2cdma_dat_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
          NV_NVDLA_mcif_base::mcif2cdma_dat_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_);
 -        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, after NV_NVDLA_mcif_base::mcif2cdma_dat_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
@@ -10330,6 +10360,1113 @@ index e7109b2..7f71cc5 100644
  
      if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
          user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
+@@ -1971,9 +1971,9 @@ void NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t*
+         user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+ 
+     //Split dma request to axi requests
+-    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
++    //cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
+     while(base_addr <= last_base_addr) {
+-        cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
++        //cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
+         // base_addr should be aligned to 64B
+         // size_in_byte should be multiple of 64
+         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
+@@ -2000,13 +2000,13 @@ void NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t*
+                         ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
+                     axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
+                     if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
+-                    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
++                    //cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
+                         cdma_wt_rd_atom_enable_fifo_->write(true);
+                     }
+                 } else {
+                     axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                     if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
+-                    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write false to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
++                    //cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write false to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
+                         cdma_wt_rd_atom_enable_fifo_->write(false);
+                     }
+                 }
+@@ -2015,13 +2015,13 @@ void NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t*
+                 if ( (true == is_base_64byte_align) || (byte_iter >= DMA_TRANSACTION_ATOM_SIZE) ){
+                     axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
+                     if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
+-                    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
++                    //cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
+                         cdma_wt_rd_atom_enable_fifo_->write(true);
+                     }
+                 } else {
+                     axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                     if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
+-                    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write false to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
++                    //cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write false to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
+                         cdma_wt_rd_atom_enable_fifo_->write(false);
+                     }
+                 }
+@@ -2029,7 +2029,7 @@ void NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t*
+             else {
+                 axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
+                 if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
+-                cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
++                //cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
+                     cdma_wt_rd_atom_enable_fifo_->write(true);
+                 }
+             }
+@@ -2043,13 +2043,13 @@ void NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t*
+         if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
+             FAIL(("NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+ #pragma CTC ENDSKIP
+-        cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, before sending data to cdma_wt_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, cdma_wt_rd_req_fifo_->num_free()));
++        //cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, before sending data to cdma_wt_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, cdma_wt_rd_req_fifo_->num_free()));
+         cdma_wt_rd_req_fifo_->write(bt_payload);
+-        cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, after sending data to cdma_wt_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
++        //cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, after sending data to cdma_wt_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
+ 
+         base_addr    += AXI_TRANSACTION_ATOM_SIZE;
+     }
+-    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
++    //cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
+ }
+ 
+ void NV_NVDLA_mcif::ReadResp_mcif2cdma_wt() {
+@@ -2062,11 +2062,11 @@ void NV_NVDLA_mcif::ReadResp_mcif2cdma_wt() {
+     atom_num_left = 0;
+     while(true) {
+         if(0 == atom_num_left) {
+-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, num_available:%d\x0A", cdma_wt2mcif_rd_req_atom_num_fifo_->num_available()));
++            //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, num_available:%d\x0A", cdma_wt2mcif_rd_req_atom_num_fifo_->num_available()));
+             atom_num_left = cdma_wt2mcif_rd_req_atom_num_fifo_->read();
+-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, update atom_num_left from cdma_wt2mcif_rd_req_atom_num_fifo_, atom_num_left is 0x%x\x0A", atom_num_left));
++            //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, update atom_num_left from cdma_wt2mcif_rd_req_atom_num_fifo_, atom_num_left is 0x%x\x0A", atom_num_left));
+         }
+-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, atom_num_left is 0x%x\x0A", atom_num_left));
++        //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, atom_num_left is 0x%x\x0A", atom_num_left));
+ 
+         dma_rd_rsp_payload      = new nvdla_dma_rd_rsp_t;
+         dma_payload_data_ptr    = reinterpret_cast <uint8_t *> (dma_rd_rsp_payload->pd.dma_read_data.data);
+@@ -2074,10 +2074,10 @@ void NV_NVDLA_mcif::ReadResp_mcif2cdma_wt() {
+ 
+         // 1st atom of the 64B
+         // Aligen to 32B
+-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, num_available:%d\x0A", mcif2cdma_wt_rd_rsp_fifo_->num_available()));
++        //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, num_available:%d\x0A", mcif2cdma_wt_rd_rsp_fifo_->num_available()));
+         axi_atom_ptr = mcif2cdma_wt_rd_rsp_fifo_->read();
+         credit_mcif2cdma_wt_rd_rsp_fifo_ ++;
+-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, read 1st atom of the 64B from mcif2cdma_wt_rd_rsp_fifo_\x0A"));
++        //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, read 1st atom of the 64B from mcif2cdma_wt_rd_rsp_fifo_\x0A"));
+         atom_num_left--;
+ 
+         dma_rd_rsp_payload->pd.dma_read_data.mask = 0x1;
+@@ -2086,24 +2086,24 @@ void NV_NVDLA_mcif::ReadResp_mcif2cdma_wt() {
+ 
+         if(atom_num_left>0) {
+             // 2nd atom of the 64B
+-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, num_available:%d\x0A", mcif2cdma_wt_rd_rsp_fifo_->num_available()));
++            //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, num_available:%d\x0A", mcif2cdma_wt_rd_rsp_fifo_->num_available()));
+             axi_atom_ptr = mcif2cdma_wt_rd_rsp_fifo_->read();
+             credit_mcif2cdma_wt_rd_rsp_fifo_ ++;
+-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, read 2nd atom of the 64B from mcif2cdma_wt_rd_rsp_fifo_\x0A"));
++            //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, read 2nd atom of the 64B from mcif2cdma_wt_rd_rsp_fifo_\x0A"));
+             atom_num_left--;
+             dma_rd_rsp_payload->pd.dma_read_data.mask = (dma_rd_rsp_payload->pd.dma_read_data.mask << 0x1) + 0x1;
+             memcpy (&dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
+             delete[] axi_atom_ptr;
+         }
+ 
+-        cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
+-        cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
+-        for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
+-            cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
+-        }
+-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, before NV_NVDLA_mcif_base::mcif2cdma_wt_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
++        //cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
++        //cslDebug((70, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
++        //for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
++            //cslDebug((70, "    0x%lx\x0A", uint64_t (dma_rd_rsp_payload->pd.dma_read_data.data[idx])));   // The size of data[idx] is 8bytes and its type is "unsigned long"
++        //}
++        //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, before NV_NVDLA_mcif_base::mcif2cdma_wt_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
+         NV_NVDLA_mcif_base::mcif2cdma_wt_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_);
+-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, after NV_NVDLA_mcif_base::mcif2cdma_wt_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
++        //cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, after NV_NVDLA_mcif_base::mcif2cdma_wt_rd_rsp_b_transport(dma_rd_rsp_payload, dma_delay_)\x0A"));
+         delete dma_rd_rsp_payload;
+     }
+ }
+@@ -2133,7 +2133,7 @@ void NV_NVDLA_mcif::bdma2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* pay
+         bdma_wr_req->addr  = payload->pd.dma_write_cmd.addr;
+         bdma_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE;    //In byte
+         bdma_wr_req->require_ack = payload->pd.dma_write_cmd.require_ack;
+-        cslDebug((50, "write to bdma2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", bdma_wr_req->addr, bdma_wr_req->size, bdma2mcif_wr_cmd_fifo_->num_free()));
++        //cslDebug((50, "write to bdma2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", bdma_wr_req->addr, bdma_wr_req->size, bdma2mcif_wr_cmd_fifo_->num_free()));
+         bdma2mcif_wr_cmd_fifo_->write(bdma_wr_req);
+         bdma_wr_req_got_size_ = 0;
+         bdma_wr_req_size_ = bdma_wr_req->size;
+@@ -2144,25 +2144,25 @@ void NV_NVDLA_mcif::bdma2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* pay
+         incoming_size = min(rest_size, uint32_t (DMA_TRANSACTION_MAX_SIZE));
+         data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
+         memcpy(data_ptr, dma_payload_data_ptr, DMA_TRANSACTION_ATOM_SIZE);
+-        cslDebug((50, "write to bdma2mcif_wr_data_fifo_, num_free:%d\x0A", bdma2mcif_wr_data_fifo_->num_free()));
++        //cslDebug((50, "write to bdma2mcif_wr_data_fifo_, num_free:%d\x0A", bdma2mcif_wr_data_fifo_->num_free()));
+         bdma2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
+         bdma_wr_req_got_size_ += incoming_size;
+-        cslDebug((50, "bdma2mcif_wr_data_fifo_ data:\x0A"));
+-        for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+-            cslDebug((50, "%x ", data_ptr[i]));
+-        }
+-        cslDebug((50, "\x0A"));
++        //cslDebug((50, "bdma2mcif_wr_data_fifo_ data:\x0A"));
++        //for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
++            //cslDebug((50, "%x ", data_ptr[i]));
++        //}
++        //cslDebug((50, "\x0A"));
+ 
+         if (incoming_size==DMA_TRANSACTION_MAX_SIZE) { // The payload is 64B
+             data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
+             memcpy(data_ptr, &dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], DMA_TRANSACTION_ATOM_SIZE);
+-            cslDebug((50, "write to bdma2mcif_wr_data_fifo_, num_free:%d\x0A", bdma2mcif_wr_data_fifo_->num_free()));
++            //cslDebug((50, "write to bdma2mcif_wr_data_fifo_, num_free:%d\x0A", bdma2mcif_wr_data_fifo_->num_free()));
+             bdma2mcif_wr_data_fifo_->write(data_ptr);
+-            cslDebug((50, "bdma2mcif_wr_data_fifo_ data:\x0A"));
+-            for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+-                cslDebug((50, "%x ", data_ptr[i]));
+-            }
+-            cslDebug((50, "\x0A"));
++            //cslDebug((50, "bdma2mcif_wr_data_fifo_ data:\x0A"));
++            //for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
++                //cslDebug((50, "%x ", data_ptr[i]));
++            //}
++            //cslDebug((50, "\x0A"));
+         }
+ 
+         if (bdma_wr_req_got_size_ == bdma_wr_req_size_) {
+@@ -2202,7 +2202,7 @@ void NV_NVDLA_mcif::WriteRequest_bdma2mcif() {
+         is_rear_64byte_align = ((payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE) == 0;
+         total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+         last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
+-        cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_bdma2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
++        //cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_bdma2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
+ 
+         base_addr = first_base_addr;
+ 
+@@ -2216,7 +2216,7 @@ void NV_NVDLA_mcif::WriteRequest_bdma2mcif() {
+         else
+             user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+ 
+-        cslDebug((50, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
++        //cslDebug((50, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
+         while (base_addr <= last_base_addr) {
+             size_in_byte = AXI_TRANSACTION_ATOM_SIZE;   //64B
+             bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
+@@ -2273,20 +2273,20 @@ void NV_NVDLA_mcif::WriteRequest_bdma2mcif() {
+             }
+ 
+             if ( (base_addr==last_base_addr) && (bdma_wr_req->require_ack != 0) ) {
+-                cslDebug((30, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, required ack.\x0A"));
++                //cslDebug((30, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, required ack.\x0A"));
+                 bdma_wr_required_ack_fifo_->write(true);
+             }
+             else {
+-                cslDebug((30, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, did not require ack.\x0A"));
++                //cslDebug((30, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, did not require ack.\x0A"));
+                 bdma_wr_required_ack_fifo_->write(false);
+             }
+ 
+             // Prepare write payload
+             bt_payload->configure_gp(base_addr, size_in_byte, is_read);
+             bt_payload->gp.get_extension(nvdla_dbb_ext);
+-            cslDebug((50, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, sending write command to bdma_wr_req_fifo_.\x0A"));
+-            cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
+-            cslDebug((50, "    size: %d\x0A", size_in_byte));
++            //cslDebug((50, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, sending write command to bdma_wr_req_fifo_.\x0A"));
++            //cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
++            //cslDebug((50, "    size: %d\x0A", size_in_byte));
+             nvdla_dbb_ext->set_id(BDMA_AXI_ID);
+             nvdla_dbb_ext->set_size(64);
+             nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+@@ -2330,7 +2330,7 @@ void NV_NVDLA_mcif::sdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
+         sdp_wr_req->addr  = payload->pd.dma_write_cmd.addr;
+         sdp_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE;    //In byte
+         sdp_wr_req->require_ack = payload->pd.dma_write_cmd.require_ack;
+-        cslDebug((50, "write to sdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", sdp_wr_req->addr, sdp_wr_req->size, sdp2mcif_wr_cmd_fifo_->num_free()));
++        //cslDebug((50, "write to sdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", sdp_wr_req->addr, sdp_wr_req->size, sdp2mcif_wr_cmd_fifo_->num_free()));
+         sdp2mcif_wr_cmd_fifo_->write(sdp_wr_req);
+         sdp_wr_req_got_size_ = 0;
+         sdp_wr_req_size_ = sdp_wr_req->size;
+@@ -2341,25 +2341,25 @@ void NV_NVDLA_mcif::sdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
+         incoming_size = min(rest_size, uint32_t (DMA_TRANSACTION_MAX_SIZE));
+         data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
+         memcpy(data_ptr, dma_payload_data_ptr, DMA_TRANSACTION_ATOM_SIZE);
+-        cslDebug((50, "write to sdp2mcif_wr_data_fifo_, num_free:%d\x0A", sdp2mcif_wr_data_fifo_->num_free()));
++        //cslDebug((50, "write to sdp2mcif_wr_data_fifo_, num_free:%d\x0A", sdp2mcif_wr_data_fifo_->num_free()));
+         sdp2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
+         sdp_wr_req_got_size_ += incoming_size;
+-        cslDebug((50, "sdp2mcif_wr_data_fifo_ data:\x0A"));
+-        for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+-            cslDebug((50, "%x ", data_ptr[i]));
+-        }
+-        cslDebug((50, "\x0A"));
++        //cslDebug((50, "sdp2mcif_wr_data_fifo_ data:\x0A"));
++        //for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
++            //cslDebug((50, "%x ", data_ptr[i]));
++        //}
++        //cslDebug((50, "\x0A"));
+ 
+         if (incoming_size==DMA_TRANSACTION_MAX_SIZE) { // The payload is 64B
+             data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
+             memcpy(data_ptr, &dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], DMA_TRANSACTION_ATOM_SIZE);
+-            cslDebug((50, "write to sdp2mcif_wr_data_fifo_, num_free:%d\x0A", sdp2mcif_wr_data_fifo_->num_free()));
++            //cslDebug((50, "write to sdp2mcif_wr_data_fifo_, num_free:%d\x0A", sdp2mcif_wr_data_fifo_->num_free()));
+             sdp2mcif_wr_data_fifo_->write(data_ptr);
+-            cslDebug((50, "sdp2mcif_wr_data_fifo_ data:\x0A"));
+-            for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+-                cslDebug((50, "%x ", data_ptr[i]));
+-            }
+-            cslDebug((50, "\x0A"));
++            //cslDebug((50, "sdp2mcif_wr_data_fifo_ data:\x0A"));
++            //for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
++                //cslDebug((50, "%x ", data_ptr[i]));
++            //}
++            //cslDebug((50, "\x0A"));
+         }
+ 
+         if (sdp_wr_req_got_size_ == sdp_wr_req_size_) {
+@@ -2399,7 +2399,7 @@ void NV_NVDLA_mcif::WriteRequest_sdp2mcif() {
+         is_rear_64byte_align = ((payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE) == 0;
+         total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+         last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
+-        cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_sdp2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
++        //cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_sdp2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
+ 
+         base_addr = first_base_addr;
+ 
+@@ -2413,7 +2413,7 @@ void NV_NVDLA_mcif::WriteRequest_sdp2mcif() {
+         else
+             user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+ 
+-        cslDebug((50, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
++        //cslDebug((50, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
+         while (base_addr <= last_base_addr) {
+             size_in_byte = AXI_TRANSACTION_ATOM_SIZE;   //64B
+             bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
+@@ -2470,20 +2470,20 @@ void NV_NVDLA_mcif::WriteRequest_sdp2mcif() {
+             }
+ 
+             if ( (base_addr==last_base_addr) && (sdp_wr_req->require_ack != 0) ) {
+-                cslDebug((30, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, required ack.\x0A"));
++                //cslDebug((30, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, required ack.\x0A"));
+                 sdp_wr_required_ack_fifo_->write(true);
+             }
+             else {
+-                cslDebug((30, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, did not require ack.\x0A"));
++                //cslDebug((30, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, did not require ack.\x0A"));
+                 sdp_wr_required_ack_fifo_->write(false);
+             }
+ 
+             // Prepare write payload
+             bt_payload->configure_gp(base_addr, size_in_byte, is_read);
+             bt_payload->gp.get_extension(nvdla_dbb_ext);
+-            cslDebug((50, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, sending write command to sdp_wr_req_fifo_.\x0A"));
+-            cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
+-            cslDebug((50, "    size: %d\x0A", size_in_byte));
++            //cslDebug((50, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, sending write command to sdp_wr_req_fifo_.\x0A"));
++            //cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
++            //cslDebug((50, "    size: %d\x0A", size_in_byte));
+             nvdla_dbb_ext->set_id(SDP_AXI_ID);
+             nvdla_dbb_ext->set_size(64);
+             nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+@@ -2527,7 +2527,7 @@ void NV_NVDLA_mcif::pdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
+         pdp_wr_req->addr  = payload->pd.dma_write_cmd.addr;
+         pdp_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE;    //In byte
+         pdp_wr_req->require_ack = payload->pd.dma_write_cmd.require_ack;
+-        cslDebug((50, "write to pdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", pdp_wr_req->addr, pdp_wr_req->size, pdp2mcif_wr_cmd_fifo_->num_free()));
++        //cslDebug((50, "write to pdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", pdp_wr_req->addr, pdp_wr_req->size, pdp2mcif_wr_cmd_fifo_->num_free()));
+         pdp2mcif_wr_cmd_fifo_->write(pdp_wr_req);
+         pdp_wr_req_got_size_ = 0;
+         pdp_wr_req_size_ = pdp_wr_req->size;
+@@ -2538,25 +2538,25 @@ void NV_NVDLA_mcif::pdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
+         incoming_size = min(rest_size, uint32_t (DMA_TRANSACTION_MAX_SIZE));
+         data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
+         memcpy(data_ptr, dma_payload_data_ptr, DMA_TRANSACTION_ATOM_SIZE);
+-        cslDebug((50, "write to pdp2mcif_wr_data_fifo_, num_free:%d\x0A", pdp2mcif_wr_data_fifo_->num_free()));
++        //cslDebug((50, "write to pdp2mcif_wr_data_fifo_, num_free:%d\x0A", pdp2mcif_wr_data_fifo_->num_free()));
+         pdp2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
+         pdp_wr_req_got_size_ += incoming_size;
+-        cslDebug((50, "pdp2mcif_wr_data_fifo_ data:\x0A"));
+-        for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+-            cslDebug((50, "%x ", data_ptr[i]));
+-        }
+-        cslDebug((50, "\x0A"));
++        //cslDebug((50, "pdp2mcif_wr_data_fifo_ data:\x0A"));
++        //for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
++            //cslDebug((50, "%x ", data_ptr[i]));
++        //}
++        //cslDebug((50, "\x0A"));
+ 
+         if (incoming_size==DMA_TRANSACTION_MAX_SIZE) { // The payload is 64B
+             data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
+             memcpy(data_ptr, &dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], DMA_TRANSACTION_ATOM_SIZE);
+-            cslDebug((50, "write to pdp2mcif_wr_data_fifo_, num_free:%d\x0A", pdp2mcif_wr_data_fifo_->num_free()));
++            //cslDebug((50, "write to pdp2mcif_wr_data_fifo_, num_free:%d\x0A", pdp2mcif_wr_data_fifo_->num_free()));
+             pdp2mcif_wr_data_fifo_->write(data_ptr);
+-            cslDebug((50, "pdp2mcif_wr_data_fifo_ data:\x0A"));
+-            for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+-                cslDebug((50, "%x ", data_ptr[i]));
+-            }
+-            cslDebug((50, "\x0A"));
++            //cslDebug((50, "pdp2mcif_wr_data_fifo_ data:\x0A"));
++            //for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
++                //cslDebug((50, "%x ", data_ptr[i]));
++            //}
++            //cslDebug((50, "\x0A"));
+         }
+ 
+         if (pdp_wr_req_got_size_ == pdp_wr_req_size_) {
+@@ -2596,7 +2596,7 @@ void NV_NVDLA_mcif::WriteRequest_pdp2mcif() {
+         is_rear_64byte_align = ((payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE) == 0;
+         total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+         last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
+-        cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_pdp2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
++        //cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_pdp2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
+ 
+         base_addr = first_base_addr;
+ 
+@@ -2610,7 +2610,7 @@ void NV_NVDLA_mcif::WriteRequest_pdp2mcif() {
+         else
+             user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+ 
+-        cslDebug((50, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
++        //cslDebug((50, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
+         while (base_addr <= last_base_addr) {
+             size_in_byte = AXI_TRANSACTION_ATOM_SIZE;   //64B
+             bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
+@@ -2667,20 +2667,20 @@ void NV_NVDLA_mcif::WriteRequest_pdp2mcif() {
+             }
+ 
+             if ( (base_addr==last_base_addr) && (pdp_wr_req->require_ack != 0) ) {
+-                cslDebug((30, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, required ack.\x0A"));
++                //cslDebug((30, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, required ack.\x0A"));
+                 pdp_wr_required_ack_fifo_->write(true);
+             }
+             else {
+-                cslDebug((30, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, did not require ack.\x0A"));
++                //cslDebug((30, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, did not require ack.\x0A"));
+                 pdp_wr_required_ack_fifo_->write(false);
+             }
+ 
+             // Prepare write payload
+             bt_payload->configure_gp(base_addr, size_in_byte, is_read);
+             bt_payload->gp.get_extension(nvdla_dbb_ext);
+-            cslDebug((50, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, sending write command to pdp_wr_req_fifo_.\x0A"));
+-            cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
+-            cslDebug((50, "    size: %d\x0A", size_in_byte));
++            //cslDebug((50, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, sending write command to pdp_wr_req_fifo_.\x0A"));
++            //cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
++            //cslDebug((50, "    size: %d\x0A", size_in_byte));
+             nvdla_dbb_ext->set_id(PDP_AXI_ID);
+             nvdla_dbb_ext->set_size(64);
+             nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+@@ -2724,7 +2724,7 @@ void NV_NVDLA_mcif::cdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
+         cdp_wr_req->addr  = payload->pd.dma_write_cmd.addr;
+         cdp_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE;    //In byte
+         cdp_wr_req->require_ack = payload->pd.dma_write_cmd.require_ack;
+-        cslDebug((50, "write to cdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", cdp_wr_req->addr, cdp_wr_req->size, cdp2mcif_wr_cmd_fifo_->num_free()));
++        //cslDebug((50, "write to cdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", cdp_wr_req->addr, cdp_wr_req->size, cdp2mcif_wr_cmd_fifo_->num_free()));
+         cdp2mcif_wr_cmd_fifo_->write(cdp_wr_req);
+         cdp_wr_req_got_size_ = 0;
+         cdp_wr_req_size_ = cdp_wr_req->size;
+@@ -2735,25 +2735,25 @@ void NV_NVDLA_mcif::cdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
+         incoming_size = min(rest_size, uint32_t (DMA_TRANSACTION_MAX_SIZE));
+         data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
+         memcpy(data_ptr, dma_payload_data_ptr, DMA_TRANSACTION_ATOM_SIZE);
+-        cslDebug((50, "write to cdp2mcif_wr_data_fifo_, num_free:%d\x0A", cdp2mcif_wr_data_fifo_->num_free()));
++        //cslDebug((50, "write to cdp2mcif_wr_data_fifo_, num_free:%d\x0A", cdp2mcif_wr_data_fifo_->num_free()));
+         cdp2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
+         cdp_wr_req_got_size_ += incoming_size;
+-        cslDebug((50, "cdp2mcif_wr_data_fifo_ data:\x0A"));
+-        for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+-            cslDebug((50, "%x ", data_ptr[i]));
+-        }
+-        cslDebug((50, "\x0A"));
++        //cslDebug((50, "cdp2mcif_wr_data_fifo_ data:\x0A"));
++        //for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
++            //cslDebug((50, "%x ", data_ptr[i]));
++        //}
++        //cslDebug((50, "\x0A"));
+ 
+         if (incoming_size==DMA_TRANSACTION_MAX_SIZE) { // The payload is 64B
+             data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
+             memcpy(data_ptr, &dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], DMA_TRANSACTION_ATOM_SIZE);
+-            cslDebug((50, "write to cdp2mcif_wr_data_fifo_, num_free:%d\x0A", cdp2mcif_wr_data_fifo_->num_free()));
++            //cslDebug((50, "write to cdp2mcif_wr_data_fifo_, num_free:%d\x0A", cdp2mcif_wr_data_fifo_->num_free()));
+             cdp2mcif_wr_data_fifo_->write(data_ptr);
+-            cslDebug((50, "cdp2mcif_wr_data_fifo_ data:\x0A"));
+-            for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+-                cslDebug((50, "%x ", data_ptr[i]));
+-            }
+-            cslDebug((50, "\x0A"));
++            //cslDebug((50, "cdp2mcif_wr_data_fifo_ data:\x0A"));
++            //for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
++                //cslDebug((50, "%x ", data_ptr[i]));
++            //}
++            //cslDebug((50, "\x0A"));
+         }
+ 
+         if (cdp_wr_req_got_size_ == cdp_wr_req_size_) {
+@@ -2793,7 +2793,7 @@ void NV_NVDLA_mcif::WriteRequest_cdp2mcif() {
+         is_rear_64byte_align = ((payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE) == 0;
+         total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+         last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
+-        cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_cdp2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
++        //cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_cdp2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
+ 
+         base_addr = first_base_addr;
+ 
+@@ -2807,7 +2807,7 @@ void NV_NVDLA_mcif::WriteRequest_cdp2mcif() {
+         else
+             user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+ 
+-        cslDebug((50, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
++        //cslDebug((50, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
+         while (base_addr <= last_base_addr) {
+             size_in_byte = AXI_TRANSACTION_ATOM_SIZE;   //64B
+             bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
+@@ -2864,20 +2864,20 @@ void NV_NVDLA_mcif::WriteRequest_cdp2mcif() {
+             }
+ 
+             if ( (base_addr==last_base_addr) && (cdp_wr_req->require_ack != 0) ) {
+-                cslDebug((30, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, required ack.\x0A"));
++                //cslDebug((30, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, required ack.\x0A"));
+                 cdp_wr_required_ack_fifo_->write(true);
+             }
+             else {
+-                cslDebug((30, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, did not require ack.\x0A"));
++                //cslDebug((30, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, did not require ack.\x0A"));
+                 cdp_wr_required_ack_fifo_->write(false);
+             }
+ 
+             // Prepare write payload
+             bt_payload->configure_gp(base_addr, size_in_byte, is_read);
+             bt_payload->gp.get_extension(nvdla_dbb_ext);
+-            cslDebug((50, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, sending write command to cdp_wr_req_fifo_.\x0A"));
+-            cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
+-            cslDebug((50, "    size: %d\x0A", size_in_byte));
++            //cslDebug((50, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, sending write command to cdp_wr_req_fifo_.\x0A"));
++            //cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
++            //cslDebug((50, "    size: %d\x0A", size_in_byte));
+             nvdla_dbb_ext->set_id(CDP_AXI_ID);
+             nvdla_dbb_ext->set_size(64);
+             nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+@@ -2921,7 +2921,7 @@ void NV_NVDLA_mcif::rbk2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
+         rbk_wr_req->addr  = payload->pd.dma_write_cmd.addr;
+         rbk_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE;    //In byte
+         rbk_wr_req->require_ack = payload->pd.dma_write_cmd.require_ack;
+-        cslDebug((50, "write to rbk2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", rbk_wr_req->addr, rbk_wr_req->size, rbk2mcif_wr_cmd_fifo_->num_free()));
++        //cslDebug((50, "write to rbk2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", rbk_wr_req->addr, rbk_wr_req->size, rbk2mcif_wr_cmd_fifo_->num_free()));
+         rbk2mcif_wr_cmd_fifo_->write(rbk_wr_req);
+         rbk_wr_req_got_size_ = 0;
+         rbk_wr_req_size_ = rbk_wr_req->size;
+@@ -2932,25 +2932,25 @@ void NV_NVDLA_mcif::rbk2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
+         incoming_size = min(rest_size, uint32_t (DMA_TRANSACTION_MAX_SIZE));
+         data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
+         memcpy(data_ptr, dma_payload_data_ptr, DMA_TRANSACTION_ATOM_SIZE);
+-        cslDebug((50, "write to rbk2mcif_wr_data_fifo_, num_free:%d\x0A", rbk2mcif_wr_data_fifo_->num_free()));
++        //cslDebug((50, "write to rbk2mcif_wr_data_fifo_, num_free:%d\x0A", rbk2mcif_wr_data_fifo_->num_free()));
+         rbk2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
+         rbk_wr_req_got_size_ += incoming_size;
+-        cslDebug((50, "rbk2mcif_wr_data_fifo_ data:\x0A"));
+-        for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+-            cslDebug((50, "%x ", data_ptr[i]));
+-        }
+-        cslDebug((50, "\x0A"));
++        //cslDebug((50, "rbk2mcif_wr_data_fifo_ data:\x0A"));
++        //for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
++            //cslDebug((50, "%x ", data_ptr[i]));
++        //}
++        //cslDebug((50, "\x0A"));
+ 
+         if (incoming_size==DMA_TRANSACTION_MAX_SIZE) { // The payload is 64B
+             data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
+             memcpy(data_ptr, &dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], DMA_TRANSACTION_ATOM_SIZE);
+-            cslDebug((50, "write to rbk2mcif_wr_data_fifo_, num_free:%d\x0A", rbk2mcif_wr_data_fifo_->num_free()));
++            //cslDebug((50, "write to rbk2mcif_wr_data_fifo_, num_free:%d\x0A", rbk2mcif_wr_data_fifo_->num_free()));
+             rbk2mcif_wr_data_fifo_->write(data_ptr);
+-            cslDebug((50, "rbk2mcif_wr_data_fifo_ data:\x0A"));
+-            for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+-                cslDebug((50, "%x ", data_ptr[i]));
+-            }
+-            cslDebug((50, "\x0A"));
++            //cslDebug((50, "rbk2mcif_wr_data_fifo_ data:\x0A"));
++            //for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
++                //cslDebug((50, "%x ", data_ptr[i]));
++            //}
++            //cslDebug((50, "\x0A"));
+         }
+ 
+         if (rbk_wr_req_got_size_ == rbk_wr_req_size_) {
+@@ -2990,7 +2990,7 @@ void NV_NVDLA_mcif::WriteRequest_rbk2mcif() {
+         is_rear_64byte_align = ((payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE) == 0;
+         total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+         last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
+-        cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_rbk2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
++        //cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_rbk2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
+ 
+         base_addr = first_base_addr;
+ 
+@@ -3004,7 +3004,7 @@ void NV_NVDLA_mcif::WriteRequest_rbk2mcif() {
+         else
+             user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+ 
+-        cslDebug((50, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
++        //cslDebug((50, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
+         while (base_addr <= last_base_addr) {
+             size_in_byte = AXI_TRANSACTION_ATOM_SIZE;   //64B
+             bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
+@@ -3061,20 +3061,20 @@ void NV_NVDLA_mcif::WriteRequest_rbk2mcif() {
+             }
+ 
+             if ( (base_addr==last_base_addr) && (rbk_wr_req->require_ack != 0) ) {
+-                cslDebug((30, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, required ack.\x0A"));
++                //cslDebug((30, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, required ack.\x0A"));
+                 rbk_wr_required_ack_fifo_->write(true);
+             }
+             else {
+-                cslDebug((30, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, did not require ack.\x0A"));
++                //cslDebug((30, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, did not require ack.\x0A"));
+                 rbk_wr_required_ack_fifo_->write(false);
+             }
+ 
+             // Prepare write payload
+             bt_payload->configure_gp(base_addr, size_in_byte, is_read);
+             bt_payload->gp.get_extension(nvdla_dbb_ext);
+-            cslDebug((50, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, sending write command to rbk_wr_req_fifo_.\x0A"));
+-            cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
+-            cslDebug((50, "    size: %d\x0A", size_in_byte));
++            //cslDebug((50, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, sending write command to rbk_wr_req_fifo_.\x0A"));
++            //cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
++            //cslDebug((50, "    size: %d\x0A", size_in_byte));
+             nvdla_dbb_ext->set_id(RBK_AXI_ID);
+             nvdla_dbb_ext->set_size(64);
+             nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+@@ -3125,12 +3125,12 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
+     axi_byte_enable_ptr    =  tlm_gp.get_byte_enable_ptr();
+     axi_byte_enable_length =  tlm_gp.get_byte_enable_length();
+     axi_id                 =  nvdla_dbb_ext->get_id();
+-    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport\x0A"));
+-    cslDebug((50, "axi_id: 0x%x\x0A", axi_id));
+-    cslDebug((50, "axi_data_ptr: 0x%p\x0A", (void *) axi_data_ptr));
+-    cslDebug((50, "axi_length: %d\x0A", axi_length));
+-    cslDebug((50, "axi_byte_enable_ptr: 0x%p\x0A", (void *) axi_byte_enable_ptr));
+-    cslDebug((50, "axi_byte_enable_length: %d\x0A", axi_byte_enable_length));
++    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport\x0A"));
++    //cslDebug((50, "axi_id: 0x%x\x0A", axi_id));
++    //cslDebug((50, "axi_data_ptr: 0x%p\x0A", (void *) axi_data_ptr));
++    //cslDebug((50, "axi_length: %d\x0A", axi_length));
++    //cslDebug((50, "axi_byte_enable_ptr: 0x%p\x0A", (void *) axi_byte_enable_ptr));
++    //cslDebug((50, "axi_byte_enable_length: %d\x0A", axi_byte_enable_length));
+ 
+     // Data from general payload
+     //  # AXI transaction size shall not be greater than 256 bytes
+@@ -3147,48 +3147,48 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
+     //  Parsing AXI payload and generating DMA response payloads
+     dma_sent_size = 0;
+     for (dma_sent_size = 0; dma_sent_size < axi_length; dma_sent_size += DMA_TRANSACTION_ATOM_SIZE) {
+-        cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, dma_sent_size: 0x%x\x0A", dma_sent_size));
++        //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, dma_sent_size: 0x%x\x0A", dma_sent_size));
+         switch (axi_id) {
+ 
+            case BDMA_AXI_ID:
+                     dma_payload_atom_mask = (true == bdma_rd_atom_enable_fifo_->read())?0x1:0;
+-                    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read bdma_rd_atom_enable_fifo_, bdma payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
++                    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read bdma_rd_atom_enable_fifo_, bdma payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
+                 break;
+            case SDP_AXI_ID:
+                     dma_payload_atom_mask = (true == sdp_rd_atom_enable_fifo_->read())?0x1:0;
+-                    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_rd_atom_enable_fifo_, sdp payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
++                    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_rd_atom_enable_fifo_, sdp payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
+                 break;
+            case PDP_AXI_ID:
+                     dma_payload_atom_mask = (true == pdp_rd_atom_enable_fifo_->read())?0x1:0;
+-                    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read pdp_rd_atom_enable_fifo_, pdp payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
++                    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read pdp_rd_atom_enable_fifo_, pdp payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
+                 break;
+            case CDP_AXI_ID:
+                     dma_payload_atom_mask = (true == cdp_rd_atom_enable_fifo_->read())?0x1:0;
+-                    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read cdp_rd_atom_enable_fifo_, cdp payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
++                    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read cdp_rd_atom_enable_fifo_, cdp payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
+                 break;
+            case RBK_AXI_ID:
+                     dma_payload_atom_mask = (true == rbk_rd_atom_enable_fifo_->read())?0x1:0;
+-                    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read rbk_rd_atom_enable_fifo_, rbk payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
++                    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read rbk_rd_atom_enable_fifo_, rbk payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
+                 break;
+            case SDP_B_AXI_ID:
+                     dma_payload_atom_mask = (true == sdp_b_rd_atom_enable_fifo_->read())?0x1:0;
+-                    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_b_rd_atom_enable_fifo_, sdp_b payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
++                    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_b_rd_atom_enable_fifo_, sdp_b payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
+                 break;
+            case SDP_N_AXI_ID:
+                     dma_payload_atom_mask = (true == sdp_n_rd_atom_enable_fifo_->read())?0x1:0;
+-                    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_n_rd_atom_enable_fifo_, sdp_n payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
++                    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_n_rd_atom_enable_fifo_, sdp_n payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
+                 break;
+            case SDP_E_AXI_ID:
+                     dma_payload_atom_mask = (true == sdp_e_rd_atom_enable_fifo_->read())?0x1:0;
+-                    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_e_rd_atom_enable_fifo_, sdp_e payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
++                    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_e_rd_atom_enable_fifo_, sdp_e payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
+                 break;
+            case CDMA_DAT_AXI_ID:
+                     dma_payload_atom_mask = (true == cdma_dat_rd_atom_enable_fifo_->read())?0x1:0;
+-                    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read cdma_dat_rd_atom_enable_fifo_, cdma_dat payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
++                    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read cdma_dat_rd_atom_enable_fifo_, cdma_dat payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
+                 break;
+            case CDMA_WT_AXI_ID:
+                     dma_payload_atom_mask = (true == cdma_wt_rd_atom_enable_fifo_->read())?0x1:0;
+-                    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read cdma_wt_rd_atom_enable_fifo_, cdma_wt payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
++                    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read cdma_wt_rd_atom_enable_fifo_, cdma_wt payload atom mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
+                 break;
+ 
+ #pragma CTC SKIP
+@@ -3203,84 +3203,84 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
+             switch (axi_id) {
+ 
+                  case BDMA_AXI_ID:
+-                        cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2bdma_rd_rsp_fifo_->num_free()));
+-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+-                            cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
+-                        }
++                        //cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2bdma_rd_rsp_fifo_->num_free()));
++                        //for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
++                            //cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
++                        //}
+                         mcif2bdma_rd_rsp_fifo_->write(axi_atom_ptr);
+-                        cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, bdma payload atom mask is 0x1, write an atom to mcif2bdma_rd_rsp_fifo_, num_free:%d.\x0A", mcif2bdma_rd_rsp_fifo_->num_free()));
++                        //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, bdma payload atom mask is 0x1, write an atom to mcif2bdma_rd_rsp_fifo_, num_free:%d.\x0A", mcif2bdma_rd_rsp_fifo_->num_free()));
+                     break;
+                  case SDP_AXI_ID:
+-                        cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_rd_rsp_fifo_->num_free()));
+-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+-                            cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
+-                        }
++                        //cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_rd_rsp_fifo_->num_free()));
++                        //for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
++                            //cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
++                        //}
+                         mcif2sdp_rd_rsp_fifo_->write(axi_atom_ptr);
+-                        cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp payload atom mask is 0x1, write an atom to mcif2sdp_rd_rsp_fifo_, num_free:%d.\x0A", mcif2sdp_rd_rsp_fifo_->num_free()));
++                        //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp payload atom mask is 0x1, write an atom to mcif2sdp_rd_rsp_fifo_, num_free:%d.\x0A", mcif2sdp_rd_rsp_fifo_->num_free()));
+                     break;
+                  case PDP_AXI_ID:
+-                        cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2pdp_rd_rsp_fifo_->num_free()));
+-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+-                            cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
+-                        }
++                        //cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2pdp_rd_rsp_fifo_->num_free()));
++                        //for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
++                            //cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
++                        //}
+                         mcif2pdp_rd_rsp_fifo_->write(axi_atom_ptr);
+-                        cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, pdp payload atom mask is 0x1, write an atom to mcif2pdp_rd_rsp_fifo_, num_free:%d.\x0A", mcif2pdp_rd_rsp_fifo_->num_free()));
++                        //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, pdp payload atom mask is 0x1, write an atom to mcif2pdp_rd_rsp_fifo_, num_free:%d.\x0A", mcif2pdp_rd_rsp_fifo_->num_free()));
+                     break;
+                  case CDP_AXI_ID:
+-                        cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2cdp_rd_rsp_fifo_->num_free()));
+-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+-                            cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
+-                        }
++                        //cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2cdp_rd_rsp_fifo_->num_free()));
++                        //for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
++                            //cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
++                        //}
+                         mcif2cdp_rd_rsp_fifo_->write(axi_atom_ptr);
+-                        cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, cdp payload atom mask is 0x1, write an atom to mcif2cdp_rd_rsp_fifo_, num_free:%d.\x0A", mcif2cdp_rd_rsp_fifo_->num_free()));
++                        //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, cdp payload atom mask is 0x1, write an atom to mcif2cdp_rd_rsp_fifo_, num_free:%d.\x0A", mcif2cdp_rd_rsp_fifo_->num_free()));
+                     break;
+                  case RBK_AXI_ID:
+-                        cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2rbk_rd_rsp_fifo_->num_free()));
+-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+-                            cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
+-                        }
++                        //cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2rbk_rd_rsp_fifo_->num_free()));
++                        //for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
++                            //cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
++                        //}
+                         mcif2rbk_rd_rsp_fifo_->write(axi_atom_ptr);
+-                        cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, rbk payload atom mask is 0x1, write an atom to mcif2rbk_rd_rsp_fifo_, num_free:%d.\x0A", mcif2rbk_rd_rsp_fifo_->num_free()));
++                        //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, rbk payload atom mask is 0x1, write an atom to mcif2rbk_rd_rsp_fifo_, num_free:%d.\x0A", mcif2rbk_rd_rsp_fifo_->num_free()));
+                     break;
+                  case SDP_B_AXI_ID:
+-                        cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_b_rd_rsp_fifo_->num_free()));
+-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+-                            cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
+-                        }
++                        //cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_b_rd_rsp_fifo_->num_free()));
++                        //for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
++                            //cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
++                        //}
+                         mcif2sdp_b_rd_rsp_fifo_->write(axi_atom_ptr);
+-                        cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp_b payload atom mask is 0x1, write an atom to mcif2sdp_b_rd_rsp_fifo_, num_free:%d.\x0A", mcif2sdp_b_rd_rsp_fifo_->num_free()));
++                        //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp_b payload atom mask is 0x1, write an atom to mcif2sdp_b_rd_rsp_fifo_, num_free:%d.\x0A", mcif2sdp_b_rd_rsp_fifo_->num_free()));
+                     break;
+                  case SDP_N_AXI_ID:
+-                        cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_n_rd_rsp_fifo_->num_free()));
+-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+-                            cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
+-                        }
++                        //cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_n_rd_rsp_fifo_->num_free()));
++                        //for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
++                            //cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
++                        //}
+                         mcif2sdp_n_rd_rsp_fifo_->write(axi_atom_ptr);
+-                        cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp_n payload atom mask is 0x1, write an atom to mcif2sdp_n_rd_rsp_fifo_, num_free:%d.\x0A", mcif2sdp_n_rd_rsp_fifo_->num_free()));
++                        //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp_n payload atom mask is 0x1, write an atom to mcif2sdp_n_rd_rsp_fifo_, num_free:%d.\x0A", mcif2sdp_n_rd_rsp_fifo_->num_free()));
+                     break;
+                  case SDP_E_AXI_ID:
+-                        cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_e_rd_rsp_fifo_->num_free()));
+-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+-                            cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
+-                        }
++                        //cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_e_rd_rsp_fifo_->num_free()));
++                        //for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
++                            //cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
++                        //}
+                         mcif2sdp_e_rd_rsp_fifo_->write(axi_atom_ptr);
+-                        cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp_e payload atom mask is 0x1, write an atom to mcif2sdp_e_rd_rsp_fifo_, num_free:%d.\x0A", mcif2sdp_e_rd_rsp_fifo_->num_free()));
++                        //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp_e payload atom mask is 0x1, write an atom to mcif2sdp_e_rd_rsp_fifo_, num_free:%d.\x0A", mcif2sdp_e_rd_rsp_fifo_->num_free()));
+                     break;
+                  case CDMA_DAT_AXI_ID:
+-                        cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2cdma_dat_rd_rsp_fifo_->num_free()));
+-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+-                            cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
+-                        }
++                        //cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2cdma_dat_rd_rsp_fifo_->num_free()));
++                        //for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
++                            //cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
++                        //}
+                         mcif2cdma_dat_rd_rsp_fifo_->write(axi_atom_ptr);
+-                        cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, cdma_dat payload atom mask is 0x1, write an atom to mcif2cdma_dat_rd_rsp_fifo_, num_free:%d.\x0A", mcif2cdma_dat_rd_rsp_fifo_->num_free()));
++                        //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, cdma_dat payload atom mask is 0x1, write an atom to mcif2cdma_dat_rd_rsp_fifo_, num_free:%d.\x0A", mcif2cdma_dat_rd_rsp_fifo_->num_free()));
+                     break;
+                  case CDMA_WT_AXI_ID:
+-                        cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2cdma_wt_rd_rsp_fifo_->num_free()));
+-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+-                            cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
+-                        }
++                        //cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2cdma_wt_rd_rsp_fifo_->num_free()));
++                        //for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
++                            //cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
++                        //}
+                         mcif2cdma_wt_rd_rsp_fifo_->write(axi_atom_ptr);
+-                        cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, cdma_wt payload atom mask is 0x1, write an atom to mcif2cdma_wt_rd_rsp_fifo_, num_free:%d.\x0A", mcif2cdma_wt_rd_rsp_fifo_->num_free()));
++                        //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, cdma_wt payload atom mask is 0x1, write an atom to mcif2cdma_wt_rd_rsp_fifo_, num_free:%d.\x0A", mcif2cdma_wt_rd_rsp_fifo_->num_free()));
+                     break;
+ 
+ #pragma CTC SKIP
+@@ -3289,7 +3289,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
+ #pragma CTC ENDSKIP
+             }
+         } else {
+-            cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, {client} payload atom mask is 0x0, ignore current atom, dma_payload_atom_mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
++            //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, {client} payload atom mask is 0x0, ignore current atom, dma_payload_atom_mask is 0x%x\x0A", uint32_t(dma_payload_atom_mask)));
+         }
+     }
+ 
+@@ -3299,7 +3299,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
+ void NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport(int ID, tlm::tlm_generic_payload& tlm_gp, sc_time& delay) {
+     uint8_t             axi_id;
+     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
+-    cslDebug((50, "NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport.\x0A"));
++    //cslDebug((50, "NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport.\x0A"));
+ 
+     // Get DBB extension
+     tlm_gp.get_extension(nvdla_dbb_ext);
+@@ -3315,9 +3315,9 @@ void NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport(int ID, tlm::tlm_generic_payload
+             bdma_wr_rsp_count_ ++;
+             // Read a new reques id from fifo
+             bdma_wr_req_expected_ack = bdma_wr_required_ack_fifo_->read();
+-            cslDebug((50, "NV_NVDLA_mcif::ext2bdma_wr_rsp_b_transport, bdma_wr_req_expected_ack=0x%x\x0A", bdma_wr_req_expected_ack));
++            //cslDebug((50, "NV_NVDLA_mcif::ext2bdma_wr_rsp_b_transport, bdma_wr_req_expected_ack=0x%x\x0A", bdma_wr_req_expected_ack));
+             if (true == bdma_wr_req_expected_ack) {
+-                cslDebug((50, "send wr rsp to bdma\x0A"));
++                //cslDebug((50, "send wr rsp to bdma\x0A"));
+                 //FIXME(skip-t194): we can add assertion bdma_wr_rsp_count_ == bdma_wr_cmd_count_fifo_->read
+                 NV_NVDLA_mcif_base::mcif2bdma_wr_rsp.write(true);
+                 //FIXME(skip-t194): WAR to add wait here. Otherwise, the client will not receive the signal when two "true" are sent to client continuously.
+@@ -3331,9 +3331,9 @@ void NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport(int ID, tlm::tlm_generic_payload
+             sdp_wr_rsp_count_ ++;
+             // Read a new reques id from fifo
+             sdp_wr_req_expected_ack = sdp_wr_required_ack_fifo_->read();
+-            cslDebug((50, "NV_NVDLA_mcif::ext2sdp_wr_rsp_b_transport, sdp_wr_req_expected_ack=0x%x\x0A", sdp_wr_req_expected_ack));
++            //cslDebug((50, "NV_NVDLA_mcif::ext2sdp_wr_rsp_b_transport, sdp_wr_req_expected_ack=0x%x\x0A", sdp_wr_req_expected_ack));
+             if (true == sdp_wr_req_expected_ack) {
+-                cslDebug((50, "send wr rsp to sdp\x0A"));
++                //cslDebug((50, "send wr rsp to sdp\x0A"));
+                 //FIXME(skip-t194): we can add assertion sdp_wr_rsp_count_ == sdp_wr_cmd_count_fifo_->read
+                 NV_NVDLA_mcif_base::mcif2sdp_wr_rsp.write(true);
+                 //FIXME(skip-t194): WAR to add wait here. Otherwise, the client will not receive the signal when two "true" are sent to client continuously.
+@@ -3347,9 +3347,9 @@ void NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport(int ID, tlm::tlm_generic_payload
+             pdp_wr_rsp_count_ ++;
+             // Read a new reques id from fifo
+             pdp_wr_req_expected_ack = pdp_wr_required_ack_fifo_->read();
+-            cslDebug((50, "NV_NVDLA_mcif::ext2pdp_wr_rsp_b_transport, pdp_wr_req_expected_ack=0x%x\x0A", pdp_wr_req_expected_ack));
++            //cslDebug((50, "NV_NVDLA_mcif::ext2pdp_wr_rsp_b_transport, pdp_wr_req_expected_ack=0x%x\x0A", pdp_wr_req_expected_ack));
+             if (true == pdp_wr_req_expected_ack) {
+-                cslDebug((50, "send wr rsp to pdp\x0A"));
++                //cslDebug((50, "send wr rsp to pdp\x0A"));
+                 //FIXME(skip-t194): we can add assertion pdp_wr_rsp_count_ == pdp_wr_cmd_count_fifo_->read
+                 NV_NVDLA_mcif_base::mcif2pdp_wr_rsp.write(true);
+                 //FIXME(skip-t194): WAR to add wait here. Otherwise, the client will not receive the signal when two "true" are sent to client continuously.
+@@ -3363,9 +3363,9 @@ void NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport(int ID, tlm::tlm_generic_payload
+             cdp_wr_rsp_count_ ++;
+             // Read a new reques id from fifo
+             cdp_wr_req_expected_ack = cdp_wr_required_ack_fifo_->read();
+-            cslDebug((50, "NV_NVDLA_mcif::ext2cdp_wr_rsp_b_transport, cdp_wr_req_expected_ack=0x%x\x0A", cdp_wr_req_expected_ack));
++            //cslDebug((50, "NV_NVDLA_mcif::ext2cdp_wr_rsp_b_transport, cdp_wr_req_expected_ack=0x%x\x0A", cdp_wr_req_expected_ack));
+             if (true == cdp_wr_req_expected_ack) {
+-                cslDebug((50, "send wr rsp to cdp\x0A"));
++                //cslDebug((50, "send wr rsp to cdp\x0A"));
+                 //FIXME(skip-t194): we can add assertion cdp_wr_rsp_count_ == cdp_wr_cmd_count_fifo_->read
+                 NV_NVDLA_mcif_base::mcif2cdp_wr_rsp.write(true);
+                 //FIXME(skip-t194): WAR to add wait here. Otherwise, the client will not receive the signal when two "true" are sent to client continuously.
+@@ -3379,9 +3379,9 @@ void NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport(int ID, tlm::tlm_generic_payload
+             rbk_wr_rsp_count_ ++;
+             // Read a new reques id from fifo
+             rbk_wr_req_expected_ack = rbk_wr_required_ack_fifo_->read();
+-            cslDebug((50, "NV_NVDLA_mcif::ext2rbk_wr_rsp_b_transport, rbk_wr_req_expected_ack=0x%x\x0A", rbk_wr_req_expected_ack));
++            //cslDebug((50, "NV_NVDLA_mcif::ext2rbk_wr_rsp_b_transport, rbk_wr_req_expected_ack=0x%x\x0A", rbk_wr_req_expected_ack));
+             if (true == rbk_wr_req_expected_ack) {
+-                cslDebug((50, "send wr rsp to rbk\x0A"));
++                //cslDebug((50, "send wr rsp to rbk\x0A"));
+                 //FIXME(skip-t194): we can add assertion rbk_wr_rsp_count_ == rbk_wr_cmd_count_fifo_->read
+                 NV_NVDLA_mcif_base::mcif2rbk_wr_rsp.write(true);
+                 //FIXME(skip-t194): WAR to add wait here. Otherwise, the client will not receive the signal when two "true" are sent to client continuously.
+@@ -3550,9 +3550,9 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+         
+         if( !cdma_dat_ready && !cdma_wt_ready && !bdma_ready && !sdp_ready &&
+         !pdp_ready && !cdp_ready && !rbk_ready && !sdp_b_ready && !sdp_n_ready && !sdp_e_ready) {{
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, no pending request, waiting.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, no pending request, waiting.\x0A"));
+                 wait();
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, get new request, wake up.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, get new request, wake up.\x0A"));
+             }}
+ 
+         // Get a FIFO write event, query dma read request FIFOs
+@@ -3563,13 +3563,13 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+             int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+             if (credit_mcif2bdma_rd_rsp_fifo_ >= atom_num) {   // Same as bdma_ready
+                 credit_mcif2bdma_rd_rsp_fifo_ -= atom_num;
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from bdma, begin, atom:%d, num_free:%d credit_mcif2bdma_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2bdma_rd_rsp_fifo_->num_free(), credit_mcif2bdma_rd_rsp_fifo_));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from bdma, begin, atom:%d, num_free:%d credit_mcif2bdma_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2bdma_rd_rsp_fifo_->num_free(), credit_mcif2bdma_rd_rsp_fifo_));
+                 mcif2ext_rd_req->b_transport(bdma_rd_req_payload_->gp, axi_delay_);
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, bdma_rd_req_payload_ from bdma, end.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, bdma_rd_req_payload_ from bdma, end.\x0A"));
+                 delete bdma_rd_req_payload_;
+                 bdma_rd_req_payload_ = NULL;
+             } else {
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from bdma\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from bdma\x0A"));
+             }
+         }
+         // For SDP
+@@ -3578,13 +3578,13 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+             int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+             if (credit_mcif2sdp_rd_rsp_fifo_ >= atom_num) {   // Same as sdp_ready
+                 credit_mcif2sdp_rd_rsp_fifo_ -= atom_num;
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp, begin, atom:%d, num_free:%d credit_mcif2sdp_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_rd_rsp_fifo_->num_free(), credit_mcif2sdp_rd_rsp_fifo_));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp, begin, atom:%d, num_free:%d credit_mcif2sdp_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_rd_rsp_fifo_->num_free(), credit_mcif2sdp_rd_rsp_fifo_));
+                 mcif2ext_rd_req->b_transport(sdp_rd_req_payload_->gp, axi_delay_);
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, sdp_rd_req_payload_ from sdp, end.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, sdp_rd_req_payload_ from sdp, end.\x0A"));
+                 delete sdp_rd_req_payload_;
+                 sdp_rd_req_payload_ = NULL;
+             } else {
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from sdp\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from sdp\x0A"));
+             }
+         }
+         // For PDP
+@@ -3593,13 +3593,13 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+             int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+             if (credit_mcif2pdp_rd_rsp_fifo_ >= atom_num) {   // Same as pdp_ready
+                 credit_mcif2pdp_rd_rsp_fifo_ -= atom_num;
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from pdp, begin, atom:%d, num_free:%d credit_mcif2pdp_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2pdp_rd_rsp_fifo_->num_free(), credit_mcif2pdp_rd_rsp_fifo_));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from pdp, begin, atom:%d, num_free:%d credit_mcif2pdp_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2pdp_rd_rsp_fifo_->num_free(), credit_mcif2pdp_rd_rsp_fifo_));
+                 mcif2ext_rd_req->b_transport(pdp_rd_req_payload_->gp, axi_delay_);
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, pdp_rd_req_payload_ from pdp, end.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, pdp_rd_req_payload_ from pdp, end.\x0A"));
+                 delete pdp_rd_req_payload_;
+                 pdp_rd_req_payload_ = NULL;
+             } else {
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from pdp\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from pdp\x0A"));
+             }
+         }
+         // For CDP
+@@ -3608,13 +3608,13 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+             int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+             if (credit_mcif2cdp_rd_rsp_fifo_ >= atom_num) {   // Same as cdp_ready
+                 credit_mcif2cdp_rd_rsp_fifo_ -= atom_num;
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from cdp, begin, atom:%d, num_free:%d credit_mcif2cdp_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2cdp_rd_rsp_fifo_->num_free(), credit_mcif2cdp_rd_rsp_fifo_));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from cdp, begin, atom:%d, num_free:%d credit_mcif2cdp_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2cdp_rd_rsp_fifo_->num_free(), credit_mcif2cdp_rd_rsp_fifo_));
+                 mcif2ext_rd_req->b_transport(cdp_rd_req_payload_->gp, axi_delay_);
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, cdp_rd_req_payload_ from cdp, end.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, cdp_rd_req_payload_ from cdp, end.\x0A"));
+                 delete cdp_rd_req_payload_;
+                 cdp_rd_req_payload_ = NULL;
+             } else {
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from cdp\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from cdp\x0A"));
+             }
+         }
+         // For RBK
+@@ -3623,13 +3623,13 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+             int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+             if (credit_mcif2rbk_rd_rsp_fifo_ >= atom_num) {   // Same as rbk_ready
+                 credit_mcif2rbk_rd_rsp_fifo_ -= atom_num;
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from rbk, begin, atom:%d, num_free:%d credit_mcif2rbk_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2rbk_rd_rsp_fifo_->num_free(), credit_mcif2rbk_rd_rsp_fifo_));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from rbk, begin, atom:%d, num_free:%d credit_mcif2rbk_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2rbk_rd_rsp_fifo_->num_free(), credit_mcif2rbk_rd_rsp_fifo_));
+                 mcif2ext_rd_req->b_transport(rbk_rd_req_payload_->gp, axi_delay_);
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, rbk_rd_req_payload_ from rbk, end.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, rbk_rd_req_payload_ from rbk, end.\x0A"));
+                 delete rbk_rd_req_payload_;
+                 rbk_rd_req_payload_ = NULL;
+             } else {
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from rbk\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from rbk\x0A"));
+             }
+         }
+         // For SDP_B
+@@ -3638,13 +3638,13 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+             int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+             if (credit_mcif2sdp_b_rd_rsp_fifo_ >= atom_num) {   // Same as sdp_b_ready
+                 credit_mcif2sdp_b_rd_rsp_fifo_ -= atom_num;
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp_b, begin, atom:%d, num_free:%d credit_mcif2sdp_b_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_b_rd_rsp_fifo_->num_free(), credit_mcif2sdp_b_rd_rsp_fifo_));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp_b, begin, atom:%d, num_free:%d credit_mcif2sdp_b_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_b_rd_rsp_fifo_->num_free(), credit_mcif2sdp_b_rd_rsp_fifo_));
+                 mcif2ext_rd_req->b_transport(sdp_b_rd_req_payload_->gp, axi_delay_);
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, sdp_b_rd_req_payload_ from sdp_b, end.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, sdp_b_rd_req_payload_ from sdp_b, end.\x0A"));
+                 delete sdp_b_rd_req_payload_;
+                 sdp_b_rd_req_payload_ = NULL;
+             } else {
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from sdp_b\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from sdp_b\x0A"));
+             }
+         }
+         // For SDP_N
+@@ -3653,13 +3653,13 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+             int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+             if (credit_mcif2sdp_n_rd_rsp_fifo_ >= atom_num) {   // Same as sdp_n_ready
+                 credit_mcif2sdp_n_rd_rsp_fifo_ -= atom_num;
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp_n, begin, atom:%d, num_free:%d credit_mcif2sdp_n_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_n_rd_rsp_fifo_->num_free(), credit_mcif2sdp_n_rd_rsp_fifo_));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp_n, begin, atom:%d, num_free:%d credit_mcif2sdp_n_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_n_rd_rsp_fifo_->num_free(), credit_mcif2sdp_n_rd_rsp_fifo_));
+                 mcif2ext_rd_req->b_transport(sdp_n_rd_req_payload_->gp, axi_delay_);
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, sdp_n_rd_req_payload_ from sdp_n, end.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, sdp_n_rd_req_payload_ from sdp_n, end.\x0A"));
+                 delete sdp_n_rd_req_payload_;
+                 sdp_n_rd_req_payload_ = NULL;
+             } else {
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from sdp_n\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from sdp_n\x0A"));
+             }
+         }
+         // For SDP_E
+@@ -3668,13 +3668,13 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+             int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+             if (credit_mcif2sdp_e_rd_rsp_fifo_ >= atom_num) {   // Same as sdp_e_ready
+                 credit_mcif2sdp_e_rd_rsp_fifo_ -= atom_num;
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp_e, begin, atom:%d, num_free:%d credit_mcif2sdp_e_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_e_rd_rsp_fifo_->num_free(), credit_mcif2sdp_e_rd_rsp_fifo_));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp_e, begin, atom:%d, num_free:%d credit_mcif2sdp_e_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_e_rd_rsp_fifo_->num_free(), credit_mcif2sdp_e_rd_rsp_fifo_));
+                 mcif2ext_rd_req->b_transport(sdp_e_rd_req_payload_->gp, axi_delay_);
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, sdp_e_rd_req_payload_ from sdp_e, end.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, sdp_e_rd_req_payload_ from sdp_e, end.\x0A"));
+                 delete sdp_e_rd_req_payload_;
+                 sdp_e_rd_req_payload_ = NULL;
+             } else {
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from sdp_e\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from sdp_e\x0A"));
+             }
+         }
+         // For CDMA_DAT
+@@ -3683,13 +3683,13 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+             int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+             if (credit_mcif2cdma_dat_rd_rsp_fifo_ >= atom_num) {   // Same as cdma_dat_ready
+                 credit_mcif2cdma_dat_rd_rsp_fifo_ -= atom_num;
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from cdma_dat, begin, atom:%d, num_free:%d credit_mcif2cdma_dat_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2cdma_dat_rd_rsp_fifo_->num_free(), credit_mcif2cdma_dat_rd_rsp_fifo_));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from cdma_dat, begin, atom:%d, num_free:%d credit_mcif2cdma_dat_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2cdma_dat_rd_rsp_fifo_->num_free(), credit_mcif2cdma_dat_rd_rsp_fifo_));
+                 mcif2ext_rd_req->b_transport(cdma_dat_rd_req_payload_->gp, axi_delay_);
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, cdma_dat_rd_req_payload_ from cdma_dat, end.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, cdma_dat_rd_req_payload_ from cdma_dat, end.\x0A"));
+                 delete cdma_dat_rd_req_payload_;
+                 cdma_dat_rd_req_payload_ = NULL;
+             } else {
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from cdma_dat\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from cdma_dat\x0A"));
+             }
+         }
+         // For CDMA_WT
+@@ -3698,13 +3698,13 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+             int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+             if (credit_mcif2cdma_wt_rd_rsp_fifo_ >= atom_num) {   // Same as cdma_wt_ready
+                 credit_mcif2cdma_wt_rd_rsp_fifo_ -= atom_num;
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from cdma_wt, begin, atom:%d, num_free:%d credit_mcif2cdma_wt_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2cdma_wt_rd_rsp_fifo_->num_free(), credit_mcif2cdma_wt_rd_rsp_fifo_));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from cdma_wt, begin, atom:%d, num_free:%d credit_mcif2cdma_wt_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2cdma_wt_rd_rsp_fifo_->num_free(), credit_mcif2cdma_wt_rd_rsp_fifo_));
+                 mcif2ext_rd_req->b_transport(cdma_wt_rd_req_payload_->gp, axi_delay_);
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, cdma_wt_rd_req_payload_ from cdma_wt, end.\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, cdma_wt_rd_req_payload_ from cdma_wt, end.\x0A"));
+                 delete cdma_wt_rd_req_payload_;
+                 cdma_wt_rd_req_payload_ = NULL;
+             } else {
+-                cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from cdma_wt\x0A"));
++                //cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, skip send read request from cdma_wt\x0A"));
+             }
+         }
+ 
+@@ -3715,7 +3715,7 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
+ void NV_NVDLA_mcif::WriteRequestArbiter() {
+     dla_b_transport_payload *payload;
+     while (true) {
+-        cslDebug((50, "Calling WriteRequestArbiter\x0A"));
++        //cslDebug((50, "Calling WriteRequestArbiter\x0A"));
+         if((bdma_wr_req_fifo_->num_available()==0) && (rbk_wr_req_fifo_->num_available()==0) && (sdp_wr_req_fifo_->num_available()==0) && (pdp_wr_req_fifo_->num_available()==0) && (cdp_wr_req_fifo_->num_available()==0))
+             wait();
+ 
+@@ -3723,31 +3723,31 @@ void NV_NVDLA_mcif::WriteRequestArbiter() {
+ 
+         // For BDMA
+         if (bdma_wr_req_fifo_->nb_read(payload)) {
+-            cslDebug((50, "NV_NVDLA_mcif::WriteRequestArbiter, send write request, payload from bdma.\x0A"));
++            //cslDebug((50, "NV_NVDLA_mcif::WriteRequestArbiter, send write request, payload from bdma.\x0A"));
+             mcif2ext_wr_req->b_transport(payload->gp, axi_delay_);
+             delete payload;
+         }
+         // For SDP
+         if (sdp_wr_req_fifo_->nb_read(payload)) {
+-            cslDebug((50, "NV_NVDLA_mcif::WriteRequestArbiter, send write request, payload from sdp.\x0A"));
++            //cslDebug((50, "NV_NVDLA_mcif::WriteRequestArbiter, send write request, payload from sdp.\x0A"));
+             mcif2ext_wr_req->b_transport(payload->gp, axi_delay_);
+             delete payload;
+         }
+         // For PDP
+         if (pdp_wr_req_fifo_->nb_read(payload)) {
+-            cslDebug((50, "NV_NVDLA_mcif::WriteRequestArbiter, send write request, payload from pdp.\x0A"));
++            //cslDebug((50, "NV_NVDLA_mcif::WriteRequestArbiter, send write request, payload from pdp.\x0A"));
+             mcif2ext_wr_req->b_transport(payload->gp, axi_delay_);
+             delete payload;
+         }
+         // For CDP
+         if (cdp_wr_req_fifo_->nb_read(payload)) {
+-            cslDebug((50, "NV_NVDLA_mcif::WriteRequestArbiter, send write request, payload from cdp.\x0A"));
++            //cslDebug((50, "NV_NVDLA_mcif::WriteRequestArbiter, send write request, payload from cdp.\x0A"));
+             mcif2ext_wr_req->b_transport(payload->gp, axi_delay_);
+             delete payload;
+         }
+         // For RBK
+         if (rbk_wr_req_fifo_->nb_read(payload)) {
+-            cslDebug((50, "NV_NVDLA_mcif::WriteRequestArbiter, send write request, payload from rbk.\x0A"));
++            //cslDebug((50, "NV_NVDLA_mcif::WriteRequestArbiter, send write request, payload from rbk.\x0A"));
+             mcif2ext_wr_req->b_transport(payload->gp, axi_delay_);
+             delete payload;
+         }
 diff --git a/cmod/nvdla_clibs/NvdlaDataFormatConvertor.cpp b/cmod/nvdla_clibs/NvdlaDataFormatConvertor.cpp
 index f54c86c..d6f2307 100644
 --- a/cmod/nvdla_clibs/NvdlaDataFormatConvertor.cpp
@@ -13049,7 +14186,7 @@ index f983830..4740f0c 100644
  ==============================
  
 diff --git a/verif/verilator/Makefile b/verif/verilator/Makefile
-index aa73fac..e16b2b2 100644
+index aa73fac..df28d3a 100644
 --- a/verif/verilator/Makefile
 +++ b/verif/verilator/Makefile
 @@ -7,28 +7,57 @@
@@ -13084,9 +14221,9 @@ index aa73fac..e16b2b2 100644
 +	mv $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/VNV_nvdla $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/VNV_nvdla_prof    # rename
 +
 +$(DEPTH)/LAG.profdata: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/lenet/trace.bin $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/cc_alexnet_conv5_relu5_int16_dtest_cvsram/trace.bin $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/googlenet_conv2_3x3_int16/trace.bin $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/VNV_nvdla_prof
-+	rm $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/lenet/*.profraw
-+	rm $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/cc_alexnet_conv5_relu5_int16_dtest_cvsram/*.profraw
-+	rm $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/googlenet_conv2_3x3_int16/*.profraw
++	rm -f $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/lenet/*.profraw
++	rm -f $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/cc_alexnet_conv5_relu5_int16_dtest_cvsram/*.profraw
++	rm -f $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/googlenet_conv2_3x3_int16/*.profraw
 +	cd $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/lenet && ../../VNV_nvdla_prof trace.bin
 +	cd $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/cc_alexnet_conv5_relu5_int16_dtest_cvsram && ../../VNV_nvdla_prof trace.bin
 +	cd $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator_prof/test/googlenet_conv2_3x3_int16 && ../../VNV_nvdla_prof trace.bin

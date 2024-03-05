@@ -14,7 +14,6 @@ $ mv gem5-NVDLA/ gem5-nvdla     # simply a rename
 # Remember the ID of this docker container, as it will be reused.
 $ docker pull nvdla/vp
 $ docker run -it -v /home:/home nvdla/vp    # this step mounts the /home directory of host machine to the docker container
-(nvdla/vp)# apt update && apt install python3 expect cpio libncurses5-dev
 (nvdla/vp)# cd /usr/local/nvdla/
 (nvdla/vp)# git clone https://github.com/nvdla/hw.git
 (nvdla/vp)# git clone https://github.com/nvdla/sw.git
@@ -101,48 +100,18 @@ Usually, the VP debug info file is SO LARGE that it may overflow the whole hard 
 First we change the sources to update qemu repos according to [this thread](https://github.com/riscv-collab/riscv-gnu-toolchain/issues/280).
 ```
 (nvdla/vp)# cd /usr/local/nvdla/vp/
-(nvdla/vp)# touch ~/.gitconfig
-(nvdla/vp)# echo "[url \"https://git.qemu.org/git\"]" >> ~/.gitconfig
-(nvdla/vp)# echo "insteadOf = git://git.qemu-project.org" >> ~/.gitconfig
+(nvdla/vp)# echo -e "[url \"https://github.com/qemu/\"]\ninsteadOf = git://git.qemu-project.org\n\n[url \"https://github.com/qemu/\"]\ninsteadOf = git://git.qemu.org\n\n[url \"https://github.com\"]\ninsteadOf = git://github.com" > ~/.gitconfig
 (nvdla/vp)# git submodule update --init --recursive
 
-# If some submodules are still not able to be pulled, users may need to pull mannually.
-# For example, in my case, `QemuMacDrivers`, `qemu-palcode`, `skiboot`, `tlm2c` and `memory` failed, so I did the following:
-(nvdla/vp)# cd /usr/local/nvdla/vp/libs/qbox/roms
-(nvdla/vp)# git clone https://git.qemu.org/QemuMacDrivers.git
-(nvdla/vp)# cd QemuMacDrivers/
-(nvdla/vp)# git checkout d4e7d7a
-
-(nvdla/vp)# cd ../
-(nvdla/vp)# git clone https://github.com/rth7680/qemu-palcode
-(nvdla/vp)# cd qemu-palcode/
-(nvdla/vp)# git checkout f3c7e44
-
-(nvdla/vp)# cd ../
-(nvdla/vp)# git clone https://git.qemu.org/skiboot.git
-(nvdla/vp)# cd skiboot/
-(nvdla/vp)# git checkout 762d008
-
-# re-download everything in tlm2c/
-(nvdla/vp)# cd /usr/local/nvdla/vp/libs/
-(nvdla/vp)# rm -rf tlm2c/
-(nvdla/vp)# git clone git@github.com:nvdla/tlm2c.git
-(nvdla/vp)# cd tlm2c/
-(nvdla/vp)# git checkout c54ade0
-
-# re-download everything in memory/
-(nvdla/vp)# cd ../../models/
-(nvdla/vp)# rm -rf memory/
-(nvdla/vp)# git clone git@github.com:nvdla/simple_memory.git
-(nvdla/vp)# mv simple_memory/ memory/
-(nvdla/vp)# cd memory/
-(nvdla/vp)# git checkout 1018f8
-
 # below we rebuild VP, using the cmod built in step 1.
-(nvdla/vp)# cd ../vp
 (nvdla/vp)# cmake -DCMAKE_INSTALL_PREFIX=build -DSYSTEMC_PREFIX=/usr/local/systemc-2.3.0/ -DNVDLA_HW_PREFIX=/usr/local/nvdla/hw/ -DNVDLA_HW_PROJECT=nv_full -DCMAKE_BUILD_TYPE=Debug
 (nvdla/vp)# make -j24
 (nvdla/vp)# make install
+
+# Lastly, install dependencies for running our python scripts. Make Sure
+# you do this step after compiling VP. Otherwise you have to compile VP
+# in another nvdla/vp container and move it here.
+(nvdla/vp)# apt update && apt install python3 expect cpio libncurses5-dev
 ```
 And an executable named `aarch64_toplevel` will appear under `vp/` directory. This `aarch64_toplevel` will also be referred to in our automated script.
 

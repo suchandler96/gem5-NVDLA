@@ -176,16 +176,11 @@ def process_log(options):
         os.system("cd /usr/local/nvdla && mv sc.log " + options.out_dir)
         os.system("cd /usr/local/nvdla && mv qemu_log " + options.out_dir)
 
-    nvdla_utilities_dir = os.path.dirname(os.path.abspath(__file__))
     workload = Workload(options.out_dir, in_compilation=True, use_real_data=options.true_data,
                         dump_results=options.dump_results)
     assert os.path.exists(os.path.join(options.out_dir, "VP_mem_rd_wr"))
     # rtl_mem_rd_wr is generated during the remapping phase
     parse_mixed_type_trace(os.path.join(options.out_dir, "VP_mem_rd_wr"))
-    os.system("cd " + nvdla_utilities_dir + " && python3.6 fix_txn_discontinuous.py --vp-out-dir " + options.out_dir +
-              " --name try_input")
-    os.system("cd " + options.out_dir + " && mv input.txn bkp_input.txn")
-    os.system("cd " + options.out_dir + " && mv try_input.txn input.txn")
 
 
 def main():
