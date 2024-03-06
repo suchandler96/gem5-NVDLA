@@ -106,7 +106,7 @@ $ docker run --net=host -v ~/:/home -it --rm edwinlai99/gem5_nvdla_env:v3
 (gem5_nvdla_env)# exit
 
 $ cd ~/gem5-nvdla/bsc-util/nvdla_utilities/sweep/
-$ python3 get_sweep_stats.py -d ~/nvdla/traces/lenet/logs/ -j ~/nvdla/traces/lenet/jsons_tiny/ -p lenet_test_ --out-dir ~/
+$ python3 get_sweep_stats.py -d ~/nvdla/traces/lenet/logs/ -j ~/nvdla/traces/lenet/jsons_tiny/ -p lenet_test --out-dir ~/
 # Then a file named "lenet_test_summary.csv" would appear in ~/
 ```
 Some results close to the table below are desired:

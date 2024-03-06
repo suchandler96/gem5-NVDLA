@@ -37,7 +37,7 @@ class BaseParam:
         return True
 
     @classmethod
-    def get(cls, point_dir):
+    def get(cls, point_dir, run_sh_lines):
         raise NotImplementedError
 
     @classmethod
@@ -61,12 +61,7 @@ class LittleCPUClockParam(BaseParam):
             point_dir, "run.sh", {"little-cpu-clock": self.curr_sweep_value()})
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--little-cpu-clock")
             if pos == -1:
@@ -87,12 +82,7 @@ class FreqRatioParam(BaseParam):
             point_dir, "run.sh", {"freq-ratio": self.curr_sweep_value()})
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--freq-ratio")
             if pos == -1:
@@ -113,12 +103,7 @@ class DDRTypeParam(BaseParam):
             point_dir, "run.sh", {"ddr-type": self.curr_sweep_value()})
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--ddr-type")
             if pos == -1:
@@ -139,12 +124,7 @@ class NumNVDLAParam(BaseParam):
             point_dir, "run.sh", {"numNVDLA": self.curr_sweep_value()})
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--numNVDLA")
             if pos == -1:
@@ -171,12 +151,7 @@ class DMAEnableParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--dma-enable")
             if pos != -1:
@@ -210,12 +185,7 @@ class BufferModeParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--buffer-mode")
             if pos == -1:
@@ -242,12 +212,7 @@ class EmbedSPMSizeParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--embed-spm-size")
             if pos == -1:
@@ -273,12 +238,7 @@ class EmbedSPMAssocParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--embed-spm-assoc")
             if pos == -1:
@@ -304,12 +264,7 @@ class EmbedSPMLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--embed-spm-lat")
             if pos == -1:
@@ -336,12 +291,7 @@ class AddAccelPrivateCacheParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--add-accel-private-cache")
             if pos != -1:
@@ -369,12 +319,7 @@ class AccelPrCacheSizeParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-pr-cache-size")
             if pos == -1:
@@ -401,12 +346,7 @@ class AccelPrCacheAssocParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-pr-cache-assoc")
             if pos == -1:
@@ -433,12 +373,7 @@ class AccelPrCacheTagLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-pr-cache-tag-lat")
             if pos == -1:
@@ -465,12 +400,7 @@ class AccelPrCacheDatLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-pr-cache-dat-lat")
             if pos == -1:
@@ -497,12 +427,7 @@ class AccelPrCacheRespLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-pr-cache-resp-lat")
             if pos == -1:
@@ -529,12 +454,7 @@ class AccelPrCacheMshrParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-pr-cache-mshr")
             if pos == -1:
@@ -561,12 +481,7 @@ class AccelPrCacheTgtsPerMshrParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-pr-cache-tgts-per-mshr")
             if pos == -1:
@@ -593,12 +508,7 @@ class AccelPrCacheWrBufParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-pr-cache-wr-buf")
             if pos == -1:
@@ -625,12 +535,7 @@ class AccelPrCacheClusParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-pr-cache-clus")
             if pos == -1:
@@ -657,12 +562,7 @@ class AddAccelSharedCacheParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--add-accel-shared-cache")
             if pos != -1:
@@ -690,12 +590,7 @@ class AccelShCacheSizeParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-sh-cache-size")
             if pos == -1:
@@ -722,12 +617,7 @@ class AccelShCacheAssocParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-sh-cache-assoc")
             if pos == -1:
@@ -754,12 +644,7 @@ class AccelShCacheTagLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-sh-cache-tag-lat")
             if pos == -1:
@@ -786,12 +671,7 @@ class AccelShCacheDatLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-sh-cache-dat-lat")
             if pos == -1:
@@ -818,12 +698,7 @@ class AccelShCacheRespLatParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-sh-cache-resp-lat")
             if pos == -1:
@@ -850,12 +725,7 @@ class AccelShCacheMshrParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-sh-cache-mshr")
             if pos == -1:
@@ -882,12 +752,7 @@ class AccelShCacheTgtsPerMshrParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-sh-cache-tgts-per-mshr")
             if pos == -1:
@@ -914,12 +779,7 @@ class AccelShCacheWrBufParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-sh-cache-wr-buf")
             if pos == -1:
@@ -946,12 +806,7 @@ class AccelShCacheClusParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--accel-sh-cache-clus")
             if pos == -1:
@@ -977,12 +832,7 @@ class PftEnableParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--pft-enable")
             if pos != -1:
@@ -1008,12 +858,7 @@ class PftThresholdParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--pft-threshold")
             if pos == -1:
@@ -1040,12 +885,7 @@ class UseFakeMemParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--use-fake-mem")
             if pos != -1:
@@ -1071,12 +911,7 @@ class SharedSPMParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--shared-spm")
             if pos != -1:
@@ -1102,12 +937,7 @@ class CVSRAMEnableParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--cvsram-enable")
             if pos != -1:
@@ -1136,12 +966,7 @@ class CVSRAMSizeParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--cvsram-size")
             if pos == -1:
@@ -1167,12 +992,7 @@ class CVSRAMBandwidthParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--cvsram-bandwidth")
             if pos == -1:
@@ -1210,12 +1030,7 @@ class RemapperParam(BaseParam):
         return True
 
     @classmethod
-    def get(cls, point_dir):
-        run_sh_path = os.path.join(point_dir, "run.sh")
-        assert os.path.exists(run_sh_path)
-        with open(run_sh_path, "r") as fp:
-            run_sh_lines = fp.readlines()
-
+    def get(cls, point_dir, run_sh_lines):
         for line in run_sh_lines:
             pos = line.find("--remapper")
             if pos == -1:
