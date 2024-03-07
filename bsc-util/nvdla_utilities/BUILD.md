@@ -123,13 +123,13 @@ $ cd ~/
 # git clone https://github.com/suchandler96/gem5-NVDLA.git && mv gem5-NVDLA/ gem5-nvdla
 
 $ docker pull gcr.io/gem5-test/ubuntu-18.04_all-dependencies:v22-1
-$ docker run -it -v /home:/home gcr.io/gem5-test/ubuntu-18.04_all-dependencies:v22-1
+$ docker run -it -v ~/:/home gcr.io/gem5-test/ubuntu-18.04_all-dependencies:v22-1
 # below we call this image "gem5" for short
 
 (gem5)# cd /usr/local/ && mkdir nvdla && cd nvdla/
 (gem5)# git clone https://github.com/nvdla/hw.git
 (gem5)# cd hw/
-(gem5)# git apply /home/user_name/gem5-nvdla/bsc-util/nvdla_utilities/nvdla_hw.patch
+(gem5)# git apply /home/gem5-nvdla/bsc-util/nvdla_utilities/nvdla_hw.patch
 ```
 ## Step 2. Prepare Other Dependencies in the Docker Container
 The dependencies below are required:
@@ -166,7 +166,7 @@ Below we show the codes to install dependencies from the command line.
 (gem5)# ln -s /usr/bin/clang-10 /usr/bin/clang
 (gem5)# ln -s /usr/bin/clang++-10 /usr/bin/clang++
 
-(gem5)# cd /home/user_name/     # this is a temp dir to hold src and build files. Putting it elsewhere is also ok.
+(gem5)# cd /home                # this is a temp dir to hold src and build files. Putting it elsewhere is also ok.
 (gem5)# git clone https://github.com/verilator/verilator && cd verilator/
 (gem5)# unset VERILATOR_ROOT    # For bash
 (gem5)# git checkout stable     # Use most recent stable release
@@ -198,6 +198,8 @@ Finally, remember to `source /root/.bashrc` after modification.
 ## Step 3. Build NVDLA VMOD and Verilator Verification Flow
 ```
 (gem5)# cd /usr/local/nvdla/hw/
+(gem5)# mkdir verif/traces/traceplayer/lenet
+(gem5)# cp /home/gem5-nvdla/bsc-util/nvdla_utilities/example_usage/traces/lenet/input.txn ./verif/traces/traceplayer/lenet
 (gem5)# make
     * project name -> nv_full
     * c pre-processor -> /usr/bin/cpp

@@ -53,6 +53,8 @@ param_types = {
     "remapper": RemapperParam
 }
 
+from get_sweep_stats import PerformanceCollector
+
 
 class LockFile:
     def __init__(self, path):
@@ -368,10 +370,11 @@ class Sweeper:
                 for pt_id in range(grp_id * args.num_threads, min((grp_id + 1) * args.num_threads, len(self.pt_dirs))):
                     this_machine_pt_dirs.append(self.pt_dirs[pt_id])
 
-        counter = mp.Value('i', 0)
+        cnt = mp.Value('i', 0)
+        pc = PerformanceCollector(self.out_dir, os.path.abspath(args.jsons_dir), args.pr_stats, args.sh_stats)
         sims = []
         pool = mp.Pool(
-            initializer=_init_counter, initargs=(counter, ), processes=args.num_threads)
+            initializer=_init_args, initargs=(cnt, pc), processes=args.num_threads)
         with LockFile(os.path.join(self.gem5_nvdla_dir, "m5out/start_sim_lock")):
             for p in range(len(this_machine_pt_dirs)):
                 cmd = os.path.join(this_machine_pt_dirs[p], "run.sh")
@@ -384,18 +387,23 @@ class Sweeper:
         pool.join()
 
 
-counter = 0
+counter = mp.Value('i', 0)
+perf = PerformanceCollector("")
 
 
-def _init_counter(args):
+def _init_args(cnt, pc):
     global counter
-    counter = args
+    global perf
+    counter = cnt
+    perf = pc
 
 
 def _run_simulation(cmd):
     global counter
-    process = subprocess.Popen(["bash", cmd], cwd=os.path.dirname(cmd),
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    global perf
+    pt_dir = os.path.dirname(cmd)
+    process = subprocess.Popen(["bash", cmd], cwd=pt_dir,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     if process.returncode != 0:
         print("Running simulation returned nonzero exit code!\ncoming from cmd:\n%s\nContents of output:\n "
@@ -403,7 +411,10 @@ def _run_simulation(cmd):
 
     with counter.get_lock():
         counter.value += 1
-    print("---Finished running points: %d.---" % counter.value)
+        print("---Finished running points: %d.---" % counter.value)
+        perf.init_testcase(pt_dir)
+        perf.write_to_sweep_dir()
+        print("---Finished gathering results: %d.---" % counter.value)
 
 
 def shell_run_cmd(cmd):

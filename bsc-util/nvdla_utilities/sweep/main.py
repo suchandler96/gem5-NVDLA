@@ -62,6 +62,12 @@ def main():
     parser.add_argument(
         "--num-machines", type=int, default=1,
         help="Total numbers of nodes / machines in use. Useful when running in clusters")
+    parser.add_argument(
+        '--pr-stats', nargs='+', type=str,
+        help="private (of a certain NVDLA) stat metrics of concern")
+    parser.add_argument(
+        '--sh-stats', nargs='+', type=str,
+        help="shared (among NVDLAs) stat metrics of concern")
 
     args = parser.parse_args()
 

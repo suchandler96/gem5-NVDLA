@@ -7,7 +7,7 @@ index a3d2ef0..2f23540 100644
  DEFAULT_VERILATOR := verilator
  DEFAULT_CLANG     := clang
 +DEFAULT_CLANGXX   := clang++
-+DEFAULT_LLVM_PROFDATA := llvm-profdata-10.0
++DEFAULT_LLVM_PROFDATA := llvm-profdata-10
  DEFAULT_PROJ := nv_full
  
  $(TREE_MAKE): Makefile

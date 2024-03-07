@@ -9,13 +9,17 @@ from sweeper import param_types
 
 
 class PerformanceCollector:
-    def __init__(self, options):
+    def __init__(self, get_root_dir, jsons_dir="", pr_stats=None, sh_stats=None):
+        if get_root_dir == "":      # invalid input
+            return
+
+        self.get_root_dir = get_root_dir
         self.sweep_header = ["sweep_name", "sweep_id"]
         self.compulsory_header_fields = ["ddr-type", "dma-enable", "add-accel-private-cache", "pft-enable",
                                          "cvsram-enable", "cvsram-size"]
-        self.stats_pr_header = ["nvdla_cycles", "memory_cycles"] if options.pr_stats is None else options.pr_stats
+        self.stats_pr_header = ["nvdla_cycles", "memory_cycles"] if pr_stats is None else pr_stats
         self.stats_sh_header = ["num_dma_prefetch", "num_dma", "host_seconds", "simulated_seconds"] \
-            if options.sh_stats is None else options.sh_stats
+            if sh_stats is None else sh_stats
         # `pr`(private) stuffs may have multiple instances when using multiple NVDLAs
         # `sh`(shared) stuffs have only one instance
 
@@ -32,7 +36,7 @@ class PerformanceCollector:
             "simulated_seconds": "simulated_seconds"
         }
         self.max_num_nvdla = 0
-        for root, dirs, files in sorted(os.walk(options.get_root_dir), key=natural_keys):
+        for root, dirs, files in sorted(os.walk(get_root_dir), key=natural_keys):
             if "run.sh" in files:
                 with open(os.path.join(root, "run.sh")) as fp:
                     run_sh_lines = fp.readlines()
@@ -48,7 +52,7 @@ class PerformanceCollector:
         self.cvsram_inflight = []
 
         # get self.var_header
-        jsons_dir = os.path.join(options.get_root_dir, "../jsons") if options.jsons_dir == "" else options.jsons_dir
+        jsons_dir = os.path.join(get_root_dir, "../jsons") if jsons_dir == "" else jsons_dir
         assert os.path.exists(jsons_dir), f"path '{jsons_dir}' does not exist!\n"
 
         swept_vars = set(self.compulsory_header_fields)
@@ -278,6 +282,18 @@ class PerformanceCollector:
             sweep_stats.append(eval("self.get_" + identifier + "()"))
         return sweep_stats
 
+    def write_to_sweep_dir(self):
+        dir_level = os.path.abspath(self.sweep_dir).split(os.sep)
+        sweep_id = dir_level[-1]
+        sweep_name = os.path.relpath(os.path.abspath(os.path.join(self.sweep_dir, "..")), self.get_root_dir)
+        this_pt_list = [sweep_name, sweep_id] + self.get_var_val() + self.get_stat_val()
+        this_pt_list = [str(e) for e in this_pt_list]
+        this_pt_table = [self.sweep_header + self.var_header + self.stats_header, this_pt_list]
+        with open(os.path.join(self.sweep_dir, sweep_id + "_summary.csv"), "w") as fp:
+            for line_list in this_pt_table:
+                fp.write(",".join(line_list))
+                fp.write("\n")
+
 
 def atoi(text):
     return int(text) if text.isdigit() else text
@@ -305,20 +321,24 @@ def parse_args():
 
 
 def summarize(options):
-    perf = PerformanceCollector(options)
+    perf = PerformanceCollector(options.get_root_dir, options.jsons_dir, options.pr_stats, options.sh_stats)
     # first hold all the headers in a 2D list
     whole_table = [perf.sweep_header + perf.var_header + perf.stats_header]
 
     for root, dirs, files in sorted(os.walk(options.get_root_dir), key=natural_keys):
         if "run.sh" in files:
             # this is a directory that holds all data for an experiment
-            perf.init_testcase(root)
             dir_level = os.path.abspath(root).split(os.sep)
             sweep_id = dir_level[-1]
-            sweep_name = os.path.relpath(os.path.abspath(os.path.join(root, "..")), options.get_root_dir)
-
-            this_pt_list = [sweep_name, sweep_id] + perf.get_var_val() + perf.get_stat_val()
-            this_pt_list = [str(e) for e in this_pt_list]
+            if sweep_id + "_summary.csv" in files:  # statistics have been generated right after simulation
+                with open(os.path.join(root, sweep_id + "_summary.csv")) as fp:
+                    this_pt_line = fp.readlines()[1].strip()
+                    this_pt_list = this_pt_line.split(',')
+            else:
+                perf.init_testcase(root)
+                sweep_name = os.path.relpath(os.path.abspath(os.path.join(root, "..")), options.get_root_dir)
+                this_pt_list = [sweep_name, sweep_id] + perf.get_var_val() + perf.get_stat_val()
+                this_pt_list = [str(e) for e in this_pt_list]
             whole_table.append(this_pt_list)
 
     with open(os.path.join(options.out_dir, options.out_prefix + "_summary.csv"), "w") as fp:
