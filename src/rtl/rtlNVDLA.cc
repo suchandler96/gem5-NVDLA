@@ -160,7 +160,6 @@ rtlNVDLA::initNVDLA(bool use_shared_spm) {
         prefetch_enable, use_shared_spm, buffer_mode, assoc);
     // wrapper trace from nvidia
     trace = new TraceLoaderGem5(wr->csb, wr->axi_dbb, wr->axi_cvsram);
-    sim_time = time(nullptr);
 }
 
 void
@@ -191,6 +190,7 @@ rtlNVDLA::loadTraceNVDLA(char *ptr) {
     waiting = 0;
 
     schedule(tickEvent, nextCycle() + (freq_ratio - 1) * clockPeriod());
+    sim_time = time(nullptr);
 }
 
 void

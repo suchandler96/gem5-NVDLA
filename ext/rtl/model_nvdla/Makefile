@@ -37,71 +37,54 @@
 
 
 # here there is the code of nvdla
-DIR=verilator_nvdla
+DIR = verilator_nvdla
+CC = clang
+CXX = clang++
 
-CC=clang-10
-CXX=clang++-10 -fPIC
+PARAMS = -fPIC -I$(DIR) -I$(VERILATOR_ROOT)/include -std=c++14
+INTERFACES = csbMaster axiResponder embeddedBuffer wrapper_nvdla
+VERILATOR_LIBS = verilated # verilated_vcd_c
 
-csbMaster_o: csbMaster.cc csbMaster.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-c -o csbMaster.o csbMaster.cc
+ifeq ($(OPT), 1)
+    PARAMS += -DNDEBUG -O3 -Ofast
+else
+    PARAMS += -g
+endif
 
-csbMaster_opt_o: csbMaster.cc csbMaster.hh
-	$(CXX) -fpic -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-c -o csbMaster_opt.o csbMaster.cc
+ifeq ($(MULTI_THREAD), 1)
+    PARAMS += -DVL_THREADED
+    VERILATOR_LIBS += verilated_threads
+endif
 
-axiResponder_o: axiResponder.cc axiResponder.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-c -o axiResponder.o axiResponder.cc
+sconscript_edit:
+ifeq ($(MULTI_THREAD), 1)
+	sed -i "s/'VL_THREADED=0'/'VL_THREADED'/g" ../SConscript
+else
+	sed -i "s/'VL_THREADED'/'VL_THREADED=0'/g" ../SConscript
+	sed -i "s/'VL_THREADED=1'/'VL_THREADED=0'/g" ../SConscript
+endif
 
-axiResponder_opt_o: axiResponder.cc axiResponder.hh
-	$(CXX) -fpic -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-c -o axiResponder_opt.o axiResponder.cc
+define interface_rules
+$(1).o: sconscript_edit $(1).hh $(1).cc
+	$(CXX) $(PARAMS) -c -o $(1).o $(1).cc
+endef
 
-embeddedBuffer_o: embeddedBuffer.cc embeddedBuffer.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-c -o embeddedBuffer.o embeddedBuffer.cc
+define verilator_lib_rules
+$(1).o:
+	$(CXX) -I$(DIR) -I$(VERILATOR_ROOT)/include/vltstd $(PARAMS) -c -o $(1).o $(VERILATOR_ROOT)/include/$(1).cpp
+endef
 
-embeddedBuffer_opt_o: embeddedBuffer.cc embeddedBuffer.hh
-	$(CXX) -fpic -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-c -o embeddedBuffer_opt.o embeddedBuffer.cc
+$(foreach interface,$(INTERFACES),$(eval $(call interface_rules,$(interface))))
+$(foreach verilator_lib,$(VERILATOR_LIBS),$(eval $(call verilator_lib_rules,$(verilator_lib))))
 
-wrapper_vcd_o: axiResponder_o csbMaster_o embeddedBuffer_o wrapper_nvdla.cc wrapper_nvdla.hh
-	$(CXX) -fpic -I$(DIR) -g -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-c -o wrapper_nvdla.o wrapper_nvdla.cc
+library_vcd: sconscript_edit $(foreach file_name,$(VERILATOR_LIBS) $(INTERFACES),$(file_name).o)
+	ar rvs libVerilatorNVDLA.a $(foreach file_name,$(VERILATOR_LIBS) $(INTERFACES),$(file_name).o)
 
-wrapper_vcd_opt_o: axiResponder_opt_o csbMaster_opt_o embeddedBuffer_opt_o wrapper_nvdla.cc wrapper_nvdla.hh
-	$(CXX) -fpic -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -std=c++11 \
-	-c -o wrapper_nvdla_opt.o wrapper_nvdla.cc
+VNV_nvdla: $(foreach file_name,$(INTERFACES),$(file_name).o)
+	$(CXX) nvdla.cpp $(foreach file_name,$(INTERFACES),$(file_name).o) $(PARAMS) \
+	-I$(VERILATOR_ROOT)/include/vltstd -L $(DIR) -l VNV_nvdla__ALL -o VNV_nvdla
 
-verilated_o:
-	$(CXX) -I$(DIR) -g -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
-	$(VERILATOR_ROOT)/include/verilated.cpp -fPIC -c -o verilated.o
-
-verilated_opt_o:
-	$(CXX) -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
-	$(VERILATOR_ROOT)/include/verilated.cpp -fPIC -c -o verilated_opt.o
-
-verilated_vcd_o:
-	$(CXX) -I$(DIR) -g -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
-	$(VERILATOR_ROOT)/include/verilated_vcd_c.cpp -fPIC -c -o verilated_vcd.o
-
-verilated_vcd_opt_o:
-	$(CXX) -I$(DIR) -DNDEBUG -O3 -Ofast -I$(VERILATOR_ROOT)/include -I$(VERILATOR_ROOT)/include/vltstd \
-	$(VERILATOR_ROOT)/include/verilated_vcd_c.cpp -fPIC -c -o verilated_vcd_opt.o
-
-library_vcd: wrapper_vcd_o verilated_o verilated_vcd_o
-	ar rvs libVerilatorNVDLA.a csbMaster.o axiResponder.o embeddedBuffer.o wrapper_nvdla.o verilated.o verilated_vcd.o
-
-library_vcd_opt: wrapper_vcd_opt_o verilated_opt_o verilated_vcd_opt_o
-	ar rvs libVerilatorNVDLA.a csbMaster_opt.o axiResponder_opt.o embeddedBuffer_opt.o wrapper_nvdla_opt.o verilated_opt.o verilated_vcd_opt.o
-
-VNV_nvdla: verilated_opt_o verilated_vcd_opt_o
-	$(CXX) nvdla.cpp verilated_opt.o verilated_vcd_opt.o -I$(DIR) -I$(VERILATOR_ROOT)/include \
-	-I$(VERILATOR_ROOT)/include/vltstd -L $(DIR) -l VNV_nvdla__ALL -O3 -Ofast -fPIC -o VNV_nvdla
-
-.PHONY: clean csbMaster_o csbMaster_opt_o axiResponder_o axiResponder_opt_o embeddedBuffer_o embeddedBuffer_opt_o wrapper_vcd_o wrapper_vcd_opt_o \
-	verilated_o verilated_opt_o verilated_vcd_o verilated_vcd_opt_o library_vcd library_vcd_opt
+.PHONY: clean
 
 clean:
 	rm -f *.o *.d *.so *.a

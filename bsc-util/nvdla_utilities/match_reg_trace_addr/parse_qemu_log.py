@@ -138,7 +138,7 @@ class Workload:
                 trace_in_docker = os.path.abspath(os.path.join(self.in_dir, "trace.bin").replace(usr_pfx, "/home"))
                 nvdla_cpp_log_in_docker = nvdla_cpp_log.replace(usr_pfx, "/home")
                 cmd = "cat /root/.bashrc | grep export | grep verilator > /root/envs && source /root/envs && cd " + \
-                      bin_dir_in_docker + " && make VNV_nvdla && ./VNV_nvdla " + trace_in_docker + " > " + \
+                      bin_dir_in_docker + " && make VNV_nvdla OPT=1 && ./VNV_nvdla " + trace_in_docker + " > " + \
                       nvdla_cpp_log_in_docker + " && exit"
                 found_gem5_nvdla_env = False
                 for line in os.popen("docker images").readlines():
