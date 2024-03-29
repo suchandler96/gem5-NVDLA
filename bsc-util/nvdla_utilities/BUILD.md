@@ -44,7 +44,7 @@ This part for compiling NVDLA toolchain is modified from [this post](https://git
 (nvdla/vp)# cd /usr/local/
 (nvdla/vp)# git clone git://git.buildroot.net/buildroot
 (nvdla/vp)# cd buildroot
-(nvdla/vp)# git checkout -t orgin/2017.11.x
+(nvdla/vp)# git checkout -t origin/2017.11.x
 
 (nvdla/vp)# make qemu_aarch64_virt_defconfig
 (nvdla/vp)# make menuconfig
