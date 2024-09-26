@@ -100,7 +100,7 @@ Usually, the VP debug info file is SO LARGE that it may overflow the whole hard 
 First we change the sources to update qemu repos according to [this thread](https://github.com/riscv-collab/riscv-gnu-toolchain/issues/280).
 ```
 (nvdla/vp)# cd /usr/local/nvdla/vp/
-(nvdla/vp)# echo -e "[url \"https://github.com/qemu/\"]\ninsteadOf = git://git.qemu-project.org\n\n[url \"https://github.com/qemu/\"]\ninsteadOf = git://git.qemu.org\n\n[url \"https://github.com\"]\ninsteadOf = git://github.com" > ~/.gitconfig
+(nvdla/vp)# echo -e "[url \"https://github.com/qemu/\"]\ninsteadOf = git://git.qemu-project.org\n\n[url \"https://github.com/qemu/\"]\ninsteadOf = git://git.qemu.org\n\n[url \"https://github.com\"]\ninsteadOf = git://github.com\n\n[url \"https://gitlab.freedesktop.org/pixman/pixman\"]\ninsteadof = git://anongit.freedesktop.org/pixman" > ~/.gitconfig
 (nvdla/vp)# git submodule update --init --recursive
 
 # below we rebuild VP, using the cmod built in step 1.
@@ -162,7 +162,7 @@ Do remember to `source /root/.bashrc` after modification.
 Below we show the codes to install dependencies from the command line.
 ```
 (gem5)# apt update && apt install clang-10 clang++-10
-(gem5)# apt install libio-tee-perl libyaml-perl
+(gem5)# apt install libio-tee-perl libyaml-perl libcapture-tiny-perl libxml-simple-perl
 (gem5)# ln -s /usr/bin/clang-10 /usr/bin/clang
 (gem5)# ln -s /usr/bin/clang++-10 /usr/bin/clang++
 

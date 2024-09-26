@@ -19,6 +19,8 @@ def parse_args():
     parser.add_argument(
         "--prototxt", help="Path to the Caffe prototxt", required=True)
     parser.add_argument(
+        "--target-hw", default="nv_full", help="Target type of NVDLA, nv_full or nv_small")
+    parser.add_argument(
         "--nvdla-compiler", default="/usr/local/nvdla/compiler/nvdla_compiler",
         help="Path to NVDLA compiler")
     parser.add_argument(
@@ -176,8 +178,8 @@ def process_log(options):
         os.system("cd /usr/local/nvdla && mv sc.log " + options.out_dir)
         os.system("cd /usr/local/nvdla && mv qemu_log " + options.out_dir)
 
-    workload = Workload(options.out_dir, in_compilation=True, use_real_data=options.true_data,
-                        dump_results=options.dump_results)
+    workload = Workload(options.out_dir, target_hw=options.target_hw, in_compilation=True,
+                        use_real_data=options.true_data, dump_results=options.dump_results)
     assert os.path.exists(os.path.join(options.out_dir, "VP_mem_rd_wr"))
     # rtl_mem_rd_wr is generated during the remapping phase
     parse_mixed_type_trace(os.path.join(options.out_dir, "VP_mem_rd_wr"))

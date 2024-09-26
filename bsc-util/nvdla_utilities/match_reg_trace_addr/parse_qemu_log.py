@@ -81,7 +81,15 @@ class Surface:
 
 
 class Workload:
-    def __init__(self, in_dir, in_compilation=False, use_real_data=False, dump_results=False, axi_width=0x40):
+    def __init__(self, in_dir, target_hw, in_compilation=False, use_real_data=False, dump_results=False):
+        # target NVDLA info
+        self.target_hw = target_hw
+        self.axi_width = 0x40       # in bytes
+        self.intr_status_reg = 0x000c
+        if self.target_hw == "nv_small":
+            self.axi_width = 0x8
+            self.intr_status_reg = 0x100c
+
         self.in_dir = in_dir        # each workload corresponds to a directory of log files
         self.tb = {}                # tensor buffers = {tb_name: TensorBuffer}
         self.ts = {}                # tensor surfaces = {ts_name: TensorSurface}
@@ -93,8 +101,6 @@ class Workload:
         self.w_tb = []              # weight tensor buffers
 
         self.rd_only_tbs = []       # = [tb_name]
-
-        self.axi_width = axi_width  # in bytes
 
         self.addr_base_map = {}     # {addr_base_id: addr_base_val}; addr_base_val starts from 0xc0000000
 
@@ -110,7 +116,8 @@ class Workload:
         """sanity check"""
         if self.dump_results:
             assert self.use_real_data
-        assert self.axi_width == 0x40 or self.axi_width == 0x20
+        assert self.target_hw in {"nv_small", "nv_full"}
+        assert self.axi_width == 0x40 or self.axi_width == 0x8
 
         with open(os.path.join(self.in_dir, "qemu_log")) as fp:
             qemu_log_lines = fp.readlines()
@@ -260,7 +267,8 @@ class Workload:
             self.txn_lines = to_prepend_txn_lines + self.txn_lines + to_append_txn_lines
 
         if self.in_compilation:
-            self.txn_lines = fix_txn_lines_discontinuity(self.txn_lines)
+            if self.target_hw == "nv_full":     # temporarily untested for nv_small. skip if first
+                self.txn_lines = fix_txn_lines_discontinuity(self.txn_lines)
             with open(os.path.join(self.in_dir, "input.txn"), "w") as fp:
                 fp.writelines(self.txn_lines)
         else:
@@ -379,9 +387,10 @@ class Workload:
                     csb_exp_data = int(exp.group(2), 16)
                     csb_inputting = False
                     out_addr = 0xffff0000 + (0x0000ffff & ((csb_reg - 0) >> 2))
-                    if csb_reg == 0x000c and csb_exp_data != 0:
-                        txn_lines.append("until 0xffff0003 0x%08x\n" % csb_exp_data)
-                    elif csb_reg == 0xa004:
+                    if csb_reg == self.intr_status_reg and csb_exp_data != 0:
+                        # ignore those lines that obtained a reading result of 0 of intr_status_reg
+                        txn_lines.append("until 0x%08x 0x%08x\n" % (out_addr, csb_exp_data))
+                    elif csb_reg == 0xa004 and self.target_hw == "nv_full":
                         txn_lines.append("read_reg 0x%08x 0x00000000 0x%08x\t#0x%04x\n"
                                          % (out_addr, csb_exp_data, csb_reg))
                     else:
@@ -414,6 +423,10 @@ class Workload:
             fp.writelines(rd_lines)
         with open(os.path.join(self.in_dir, "VP_mem_wr"), "w") as fp:
             fp.writelines(wr_lines)
+
+        if self.target_hw == "nv_small":    # todo: only for testing purpose
+            with open(os.path.join(self.in_dir, "input.txn"), "w") as fp:
+                fp.writelines(self.txn_lines)
 
     # based on combining compilation info and runtime info
     def get_various_tensor_buffers(self):
