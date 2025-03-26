@@ -80,8 +80,8 @@ $(foreach verilator_lib,$(VERILATOR_LIBS),$(eval $(call verilator_lib_rules,$(ve
 library_vcd: sconscript_edit $(foreach file_name,$(VERILATOR_LIBS) $(INTERFACES),$(file_name).o)
 	ar rvs libVerilatorNVDLA.a $(foreach file_name,$(VERILATOR_LIBS) $(INTERFACES),$(file_name).o)
 
-VNV_nvdla: $(foreach file_name,$(INTERFACES),$(file_name).o)
-	$(CXX) nvdla.cpp $(foreach file_name,$(INTERFACES),$(file_name).o) $(PARAMS) \
+VNV_nvdla: $(foreach file_name,$(VERILATOR_LIBS),$(file_name).o)
+	$(CXX) nvdla.cpp $(foreach file_name,$(VERILATOR_LIBS),$(file_name).o) $(PARAMS) \
 	-I$(VERILATOR_ROOT)/include/vltstd -L $(DIR) -l VNV_nvdla__ALL -o VNV_nvdla
 
 .PHONY: clean
