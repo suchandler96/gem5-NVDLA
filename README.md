@@ -3,7 +3,7 @@ gem5-NVDLA is a specialized version of gem5-RTL that is designed to be used with
 
 Apart from specialized adaption of gem5 memory system for NVDLA, this project also enables the conversion from any NVDLA-supported caffe NN model to NVDLA register transaction traces (i.e., something like input.txn [here](https://github.com/nvdla/hw/tree/nvdlav1/verif/traces/traceplayer)). The code and detailed usage of this conversion utility can be found in `bsc-util/nvdla_utilities`.
 
-The NVDLA (NVIDIA Deep Learning Accelerator) is a full-stack utility demonstrating how a industry-level accelerator works. With its maintenance stopped in 2018, the public are on their own to make it work from compilation to runtime. Previously the only way to run NVDLA is to instantiate on an FPGA and run NNs physically on board, using the compiler and runtime provided with NVDLA. This, however, leaves memory architects unable to explore memory subsystem in AI accelerator systems, since they require **a simulator** to get statistics with different memory configuration. The aim of this repo is thus to bridge this gap. On one hand, it integrates solutions to all the undocumented bugs and usages required to run NVDLA compiler, runtime, and virtual platform. On the other hand, it provides new capabilities to run NVDLA in a simulator, i.e., to apply scheduling algorithms, SPM allocation and prefetching mechanisms, which enables further exploration with NVDLA.
+The NVDLA (NVIDIA Deep Learning Accelerator) is a full-stack utility demonstrating how an industry-level accelerator works. With its maintenance stopped in 2018, the public are on their own to make it work from compilation to runtime. Previously the only way to run NVDLA is to instantiate on an FPGA and run NNs physically on board, using the compiler and runtime provided with NVDLA. This, however, leaves memory architects unable to explore memory subsystem in AI accelerator systems, since they require **a simulator** to get statistics with different memory configuration. The aim of this repo is thus to bridge this gap. On one hand, it integrates solutions to all the undocumented bugs and usages required to run NVDLA compiler, runtime, and virtual platform. On the other hand, it provides new capabilities to run NVDLA in a simulator, i.e., to apply scheduling algorithms, SPM allocation and prefetching mechanisms, which enables further exploration with NVDLA.
 
 # Code Structure
 Here we list the structure of codes apart from the gem5 skeleton:
@@ -136,6 +136,8 @@ This section provides the process to generate the files in `bsc-util/nvdla_utili
 $ docker run -it --rm -v ~/:/home edwinlai99/advp:v1
 (advp)# cd /home/gem5-nvdla/bsc-util/nvdla_utilities/
 (advp)# python3.6 caffe2trace.py --model-name lenet --caffemodel example_usage/caffe_models/lenet/lenet_iter_10000.caffemodel --prototxt example_usage/caffe_models/lenet/Lenet.prototxt --out-dir /home/nvdla/traces/lenet/
+(advp)# exit
+$ sudo chown -R $USER:$USER ~/nvdla/traces/lenet/   # change the ownership of files generated in the docker container
 ```
 Then the log files and `*.txn` register trace will appear in `/home/nvdla/traces/lenet/`.
 

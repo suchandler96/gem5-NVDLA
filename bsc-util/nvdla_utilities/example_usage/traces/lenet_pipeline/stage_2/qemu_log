@@ -1,4 +1,4 @@
-spawn /home/lactose/nvdla/vp/aarch64_toplevel -c /usr/local/nvdla/aarch64_nvdla.lua
+spawn /usr/local/nvdla/vp/aarch64_toplevel -c /usr/local/nvdla/aarch64_nvdla.lua
 
              SystemC 2.3.0-ASI --- Oct  9 2017 04:21:14
         Copyright (c) 1996-2012 by all Contributors,
@@ -58,15 +58,6 @@ Info: NV_NVDLA_glb.cpp: 340:calling NV_NVDLA_glb::Update_nvdla_intr_cacc_0
 
 Info: NV_NVDLA_glb.cpp: 348:calling NV_NVDLA_glb::Update_nvdla_intr_cacc_1
 
-
-Info: NV_NVDLA_mcif.cpp: 3553:NV_NVDLA_mcif::ReadRequestArbiter, no pending request, waiting.
-
-
-Info: NV_NVDLA_mcif.cpp: 3718:Calling WriteRequestArbiter
-
-
-Info: NV_NVDLA_mcif.cpp: 2065:NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, num_available:0
-
 [    0.000000] Booting Linux on physical CPU 0x0
 [    0.000000] Linux version 4.13.3 (yali@unassigned) (gcc version 6.4.1 20170707 (Linaro GCC 6.4-2017.08)) #1 SMP PREEMPT Mon Nov 27 09:22:34 CST 2017
 [    0.000000] Boot CPU: AArch64 Processor [411fd070]
@@ -118,148 +109,148 @@ Info: NV_NVDLA_mcif.cpp: 2065:NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, num_availabl
 [    0.000000] GICv2m: range[mem 0x08020000-0x08020fff], SPI[80:143]
 [    0.000000] arch_timer: cp15 timer(s) running at 62.50MHz (virt).
 [    0.000000] clocksource: arch_sys_counter: mask: 0xffffffffffffff max_cycles: 0x1cd42e208c, max_idle_ns: 881590405314 ns
-[    0.000446] sched_clock: 56 bits at 62MHz, resolution 16ns, wraps every 4398046511096ns
-[    0.018151] Console: colour dummy device 80x25
-[    0.025760] console [tty0] enabled
-[    0.028811] Calibrating delay loop (skipped), value calculated using timer frequency.. 125.00 BogoMIPS (lpj=250000)
-[    0.029369] pid_max: default: 32768 minimum: 301
-[    0.032294] Security Framework initialized
-[    0.037129] Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes)
-[    0.038744] Inode-cache hash table entries: 65536 (order: 7, 524288 bytes)
-[    0.039255] Mount-cache hash table entries: 2048 (order: 2, 16384 bytes)
-[    0.039513] Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes)
-[    0.123697] ASID allocator initialised with 65536 entries
-[    0.128456] Hierarchical SRCU implementation.
-[    0.151120] EFI services will not be available.
-[    0.157944] smp: Bringing up secondary CPUs ...
-[    0.158453] smp: Brought up 1 node, 1 CPU
-[    0.158695] SMP: Total of 1 processors activated.
-[    0.159164] CPU features: detected feature: 32-bit EL0 Support
-[    0.165037] CPU: All CPU(s) started at EL1
-[    0.166874] alternatives: patching kernel code
-[    0.201539] devtmpfs: initialized
-[    0.227553] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
-[    0.228069] futex hash table entries: 256 (order: 3, 32768 bytes)
-[    0.238051] pinctrl core: initialized pinctrl subsystem
-[    0.277584] random: fast init done
-[    0.304242] DMI not present or invalid.
-[    0.320930] NET: Registered protocol family 16
-[    0.357904] cpuidle: using governor menu
-[    0.361302] vdso: 2 pages (1 code @ ffff0000089b6000, 1 data @ ffff000008ee5000)
-[    0.362000] hw-breakpoint: found 6 breakpoint and 4 watchpoint registers.
-[    0.380555] DMA: preallocated 256 KiB pool for atomic allocations
-[    0.390790] Serial: AMBA PL011 UART driver
-[    0.495753] 9000000.pl011: ttyAMA0 at MMIO 0x9000000 (irq = 40, base_baud = 0) is a PL011 rev1
-[    0.513774] console [ttyAMA0] enabled
-[    0.796501] HugeTLB registered 2.00 MiB page size, pre-allocated 0 pages
-[    0.818359] ACPI: Interpreter disabled.
-[    0.838441] vgaarb: loaded
-[    0.844041] SCSI subsystem initialized
-[    0.863688] usbcore: registered new interface driver usbfs
-[    0.865561] usbcore: registered new interface driver hub
-[    0.867585] usbcore: registered new device driver usb
-[    0.880282] pps_core: LinuxPPS API ver. 1 registered
-[    0.880576] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
-[    0.881483] PTP clock support registered
-[    0.885510] EDAC MC: Ver: 3.0.0
-[    0.892737] dmi: Firmware registration failed.
-[    0.900507] Advanced Linux Sound Architecture Driver Initialized.
-[    0.927091] clocksource: Switched to clocksource arch_sys_counter
-[    0.937752] VFS: Disk quotas dquot_6.6.0
-[    0.938684] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
-[    0.944294] pnp: PnP ACPI: disabled
-[    1.057983] NET: Registered protocol family 2
-[    1.073989] TCP established hash table entries: 8192 (order: 4, 65536 bytes)
-[    1.075590] TCP bind hash table entries: 8192 (order: 5, 131072 bytes)
-[    1.076344] TCP: Hash tables configured (established 8192 bind 8192)
-[    1.079897] UDP hash table entries: 512 (order: 2, 16384 bytes)
-[    1.080697] UDP-Lite hash table entries: 512 (order: 2, 16384 bytes)
-[    1.084488] NET: Registered protocol family 1
-[    1.100539] RPC: Registered named UNIX socket transport module.
-[    1.101039] RPC: Registered udp transport module.
-[    1.101478] RPC: Registered tcp transport module.
-[    1.101841] RPC: Registered tcp NFSv4.1 backchannel transport module.
-[    1.119026] hw perfevents: enabled with armv8_pmuv3 PMU driver, 1 counters available
-[    1.120351] kvm [1]: HYP mode not available
-[    1.151887] audit: initializing netlink subsys (disabled)
-[    1.157976] audit: type=2000 audit(1.107:1): state=initialized audit_enabled=0 res=1
-[    1.163948] workingset: timestamp_bits=44 max_order=18 bucket_order=0
-[    1.269174] squashfs: version 4.0 (2009/01/31) Phillip Lougher
-[    1.283978] NFS: Registering the id_resolver key type
-[    1.289132] Key type id_resolver registered
-[    1.289638] Key type id_legacy registered
-[    1.290914] nfs4filelayout_init: NFSv4 File Layout Driver Registering...
-[    1.293984] 9p: Installing v9fs 9p2000 file system support
-[    1.317461] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 247)
-[    1.318161] io scheduler noop registered
-[    1.321333] io scheduler cfq registered (default)
-[    1.321665] io scheduler mq-deadline registered
-[    1.321931] io scheduler kyber registered
-[    1.405061] pl061_gpio 9030000.pl061: PL061 GPIO chip @0x0000000009030000 registered
-[    1.425437] OF: PCI: host bridge /pcie@10000000 ranges:
-[    1.427398] OF: PCI:    IO 0x3eff0000..0x3effffff -> 0x00000000
-[    1.428479] OF: PCI:   MEM 0x10000000..0x3efeffff -> 0x10000000
-[    1.428852] OF: PCI:   MEM 0x8000000000..0xffffffffff -> 0x8000000000
-[    1.431170] pci-host-generic 3f000000.pcie: ECAM at [mem 0x3f000000-0x3fffffff] for [bus 00-0f]
-[    1.434246] pci-host-generic 3f000000.pcie: PCI host bridge to bus 0000:00
-[    1.435280] pci_bus 0000:00: root bus resource [bus 00-0f]
-[    1.435776] pci_bus 0000:00: root bus resource [io  0x0000-0xffff]
-[    1.436094] pci_bus 0000:00: root bus resource [mem 0x10000000-0x3efeffff]
-[    1.436414] pci_bus 0000:00: root bus resource [mem 0x8000000000-0xffffffffff]
-[    1.617546] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
-[    1.641205] SuperH (H)SCI(F) driver initialized
-[    1.650877] msm_serial: driver initialized
-[    1.663946] cacheinfo: Unable to detect cache hierarchy for CPU 0
-[    1.730374] loop: module loaded
-[    1.824465] hisi_sas: driver version v1.6
-[    1.876560] libphy: Fixed MDIO Bus: probed
-[    1.887796] tun: Universal TUN/TAP device driver, 1.6
-[    1.918243] e1000e: Intel(R) PRO/1000 Network Driver - 3.2.6-k
-[    1.918893] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
-[    1.920220] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
-[    1.920562] igb: Copyright (c) 2007-2014 Intel Corporation.
-[    1.921792] igbvf: Intel(R) Gigabit Virtual Function Network Driver - version 2.4.0-k
-[    1.922168] igbvf: Copyright (c) 2009 - 2012 Intel Corporation.
-[    1.928608] sky2: driver version 1.30
-[    1.936595] VFIO - User Level meta-driver version: 0.3
-[    1.964265] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
-[    1.964712] ehci-pci: EHCI PCI platform driver
-[    1.967198] ehci-platform: EHCI generic platform driver
-[    1.968824] ehci-orion: EHCI orion driver
-[    1.970126] ehci-exynos: EHCI EXYNOS driver
-[    1.972407] ehci-msm: Qualcomm On-Chip EHCI Host Controller
-[    1.974310] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
-[    1.975434] ohci-pci: OHCI PCI platform driver
-[    1.976573] ohci-platform: OHCI generic platform driver
-[    1.978049] ohci-exynos: OHCI EXYNOS driver
-[    1.986233] usbcore: registered new interface driver usb-storage
-[    2.023134] rtc-pl031 9010000.pl031: rtc core: registered pl031 as rtc0
-[    2.032562] i2c /dev entries driver
-[    2.085345] sdhci: Secure Digital Host Controller Interface driver
-[    2.085673] sdhci: Copyright(c) Pierre Ossman
-[    2.092081] Synopsys Designware Multimedia Card Interface Driver
-[    2.104680] sdhci-pltfm: SDHCI platform and OF driver helper
-[    2.124863] ledtrig-cpu: registered to indicate activity on CPUs
-[    2.144456] usbcore: registered new interface driver usbhid
-[    2.144786] usbhid: USB HID core driver
-[    2.181758] NET: Registered protocol family 17
-[    2.186085] 9pnet: Installing 9P2000 support
-[    2.189505] Key type dns_resolver registered
-[    2.196078] registered taskstats version 1
-[    2.218814] input: gpio-keys as /devices/platform/gpio-keys/input/input0
-[    2.227289] rtc-pl031 9010000.pl031: setting system clock to 2023-11-28 12:13:46 UTC (1701173626)
-[    2.229398] ALSA device list:
-[    2.229640]   No soundcards found.
-[    2.239056] uart-pl011 9000000.pl011: no DMA platform data
-[    2.252616] EXT4-fs (vda): couldn't mount as ext3 due to feature incompatibilities
-[    2.261111] EXT4-fs (vda): INFO: recovery required on readonly filesystem
-[    2.261485] EXT4-fs (vda): write access will be enabled during recovery
-[    2.375896] EXT4-fs (vda): recovery complete
-[    2.383369] EXT4-fs (vda): mounted filesystem with ordered data mode. Opts: (null)
-[    2.384339] VFS: Mounted root (ext4 filesystem) readonly on device 254:0.
-[    2.391066] devtmpfs: mounted
-[    2.532721] Freeing unused kernel memory: 1088K
-[    2.890921] EXT4-fs (vda): re-mounted. Opts: data=ordered
+[    0.000315] sched_clock: 56 bits at 62MHz, resolution 16ns, wraps every 4398046511096ns
+[    0.012542] Console: colour dummy device 80x25
+[    0.018226] console [tty0] enabled
+[    0.020342] Calibrating delay loop (skipped), value calculated using timer frequency.. 125.00 BogoMIPS (lpj=250000)
+[    0.020850] pid_max: default: 32768 minimum: 301
+[    0.022931] Security Framework initialized
+[    0.026731] Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes)
+[    0.028097] Inode-cache hash table entries: 65536 (order: 7, 524288 bytes)
+[    0.028509] Mount-cache hash table entries: 2048 (order: 2, 16384 bytes)
+[    0.028720] Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes)
+[    0.088704] ASID allocator initialised with 65536 entries
+[    0.090876] Hierarchical SRCU implementation.
+[    0.107221] EFI services will not be available.
+[    0.115977] smp: Bringing up secondary CPUs ...
+[    0.116294] smp: Brought up 1 node, 1 CPU
+[    0.116442] SMP: Total of 1 processors activated.
+[    0.116720] CPU features: detected feature: 32-bit EL0 Support
+[    0.119286] CPU: All CPU(s) started at EL1
+[    0.120688] alternatives: patching kernel code
+[    0.146410] devtmpfs: initialized
+[    0.167606] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.168002] futex hash table entries: 256 (order: 3, 32768 bytes)
+[    0.176081] pinctrl core: initialized pinctrl subsystem
+[    0.203791] random: fast init done
+[    0.226254] DMI not present or invalid.
+[    0.238114] NET: Registered protocol family 16
+[    0.270600] cpuidle: using governor menu
+[    0.273565] vdso: 2 pages (1 code @ ffff0000089b6000, 1 data @ ffff000008ee5000)
+[    0.274082] hw-breakpoint: found 6 breakpoint and 4 watchpoint registers.
+[    0.287972] DMA: preallocated 256 KiB pool for atomic allocations
+[    0.297620] Serial: AMBA PL011 UART driver
+[    0.388895] 9000000.pl011: ttyAMA0 at MMIO 0x9000000 (irq = 40, base_baud = 0) is a PL011 rev1
+[    0.410509] console [ttyAMA0] enabled
+[    0.662722] HugeTLB registered 2.00 MiB page size, pre-allocated 0 pages
+[    0.682153] ACPI: Interpreter disabled.
+[    0.697702] vgaarb: loaded
+[    0.702791] SCSI subsystem initialized
+[    0.714668] usbcore: registered new interface driver usbfs
+[    0.715787] usbcore: registered new interface driver hub
+[    0.716803] usbcore: registered new device driver usb
+[    0.729227] pps_core: LinuxPPS API ver. 1 registered
+[    0.730532] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.732079] PTP clock support registered
+[    0.735268] EDAC MC: Ver: 3.0.0
+[    0.744433] dmi: Firmware registration failed.
+[    0.751108] Advanced Linux Sound Architecture Driver Initialized.
+[    0.768675] clocksource: Switched to clocksource arch_sys_counter
+[    0.770294] VFS: Disk quotas dquot_6.6.0
+[    0.775217] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[    0.780225] pnp: PnP ACPI: disabled
+[    0.885169] NET: Registered protocol family 2
+[    0.897201] TCP established hash table entries: 8192 (order: 4, 65536 bytes)
+[    0.898339] TCP bind hash table entries: 8192 (order: 5, 131072 bytes)
+[    0.898944] TCP: Hash tables configured (established 8192 bind 8192)
+[    0.901706] UDP hash table entries: 512 (order: 2, 16384 bytes)
+[    0.902394] UDP-Lite hash table entries: 512 (order: 2, 16384 bytes)
+[    0.905613] NET: Registered protocol family 1
+[    0.920058] RPC: Registered named UNIX socket transport module.
+[    0.920644] RPC: Registered udp transport module.
+[    0.920965] RPC: Registered tcp transport module.
+[    0.921309] RPC: Registered tcp NFSv4.1 backchannel transport module.
+[    0.932984] hw perfevents: enabled with armv8_pmuv3 PMU driver, 1 counters available
+[    0.934343] kvm [1]: HYP mode not available
+[    0.960950] audit: initializing netlink subsys (disabled)
+[    0.965183] audit: type=2000 audit(0.926:1): state=initialized audit_enabled=0 res=1
+[    0.970409] workingset: timestamp_bits=44 max_order=18 bucket_order=0
+[    1.060030] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    1.073473] NFS: Registering the id_resolver key type
+[    1.075232] Key type id_resolver registered
+[    1.075544] Key type id_legacy registered
+[    1.076034] nfs4filelayout_init: NFSv4 File Layout Driver Registering...
+[    1.078613] 9p: Installing v9fs 9p2000 file system support
+[    1.099649] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 247)
+[    1.100334] io scheduler noop registered
+[    1.102879] io scheduler cfq registered (default)
+[    1.103221] io scheduler mq-deadline registered
+[    1.103497] io scheduler kyber registered
+[    1.177333] pl061_gpio 9030000.pl061: PL061 GPIO chip @0x0000000009030000 registered
+[    1.195081] OF: PCI: host bridge /pcie@10000000 ranges:
+[    1.196161] OF: PCI:    IO 0x3eff0000..0x3effffff -> 0x00000000
+[    1.198058] OF: PCI:   MEM 0x10000000..0x3efeffff -> 0x10000000
+[    1.198588] OF: PCI:   MEM 0x8000000000..0xffffffffff -> 0x8000000000
+[    1.200117] pci-host-generic 3f000000.pcie: ECAM at [mem 0x3f000000-0x3fffffff] for [bus 00-0f]
+[    1.203265] pci-host-generic 3f000000.pcie: PCI host bridge to bus 0000:00
+[    1.204031] pci_bus 0000:00: root bus resource [bus 00-0f]
+[    1.204912] pci_bus 0000:00: root bus resource [io  0x0000-0xffff]
+[    1.205341] pci_bus 0000:00: root bus resource [mem 0x10000000-0x3efeffff]
+[    1.205787] pci_bus 0000:00: root bus resource [mem 0x8000000000-0xffffffffff]
+[    1.362801] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+[    1.385623] SuperH (H)SCI(F) driver initialized
+[    1.391151] msm_serial: driver initialized
+[    1.401346] cacheinfo: Unable to detect cache hierarchy for CPU 0
+[    1.453932] loop: module loaded
+[    1.529464] hisi_sas: driver version v1.6
+[    1.571811] libphy: Fixed MDIO Bus: probed
+[    1.579017] tun: Universal TUN/TAP device driver, 1.6
+[    1.608208] e1000e: Intel(R) PRO/1000 Network Driver - 3.2.6-k
+[    1.609829] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    1.611148] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.4.0-k
+[    1.611598] igb: Copyright (c) 2007-2014 Intel Corporation.
+[    1.613250] igbvf: Intel(R) Gigabit Virtual Function Network Driver - version 2.4.0-k
+[    1.613777] igbvf: Copyright (c) 2009 - 2012 Intel Corporation.
+[    1.618931] sky2: driver version 1.30
+[    1.626732] VFIO - User Level meta-driver version: 0.3
+[    1.647903] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    1.649702] ehci-pci: EHCI PCI platform driver
+[    1.651366] ehci-platform: EHCI generic platform driver
+[    1.653598] ehci-orion: EHCI orion driver
+[    1.654899] ehci-exynos: EHCI EXYNOS driver
+[    1.656719] ehci-msm: Qualcomm On-Chip EHCI Host Controller
+[    1.658695] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+[    1.659282] ohci-pci: OHCI PCI platform driver
+[    1.661334] ohci-platform: OHCI generic platform driver
+[    1.663216] ohci-exynos: OHCI EXYNOS driver
+[    1.670520] usbcore: registered new interface driver usb-storage
+[    1.702490] rtc-pl031 9010000.pl031: rtc core: registered pl031 as rtc0
+[    1.711125] i2c /dev entries driver
+[    1.759602] sdhci: Secure Digital Host Controller Interface driver
+[    1.759991] sdhci: Copyright(c) Pierre Ossman
+[    1.765960] Synopsys Designware Multimedia Card Interface Driver
+[    1.777153] sdhci-pltfm: SDHCI platform and OF driver helper
+[    1.794190] ledtrig-cpu: registered to indicate activity on CPUs
+[    1.811773] usbcore: registered new interface driver usbhid
+[    1.812234] usbhid: USB HID core driver
+[    1.842913] NET: Registered protocol family 17
+[    1.846738] 9pnet: Installing 9P2000 support
+[    1.850146] Key type dns_resolver registered
+[    1.857740] registered taskstats version 1
+[    1.875537] input: gpio-keys as /devices/platform/gpio-keys/input/input0
+[    1.882286] rtc-pl031 9010000.pl031: setting system clock to 2025-03-27 13:08:55 UTC (1743080935)
+[    1.884268] ALSA device list:
+[    1.885582]   No soundcards found.
+[    1.892677] uart-pl011 9000000.pl011: no DMA platform data
+[    1.903206] EXT4-fs (vda): couldn't mount as ext3 due to feature incompatibilities
+[    1.910421] EXT4-fs (vda): INFO: recovery required on readonly filesystem
+[    1.910920] EXT4-fs (vda): write access will be enabled during recovery
+[    2.005386] EXT4-fs (vda): recovery complete
+[    2.011345] EXT4-fs (vda): mounted filesystem with ordered data mode. Opts: (null)
+[    2.012374] VFS: Mounted root (ext4 filesystem) readonly on device 254:0.
+[    2.027006] devtmpfs: mounted
+[    2.130680] Freeing unused kernel memory: 1088K
+[    2.396242] EXT4-fs (vda): re-mounted. Opts: data=ordered
 Starting logging: OK
 Initializing random number generator... done.
 Starting network: udhcpc: started, v1.27.2
@@ -269,8 +260,8 @@ udhcpc: lease of 10.0.2.15 obtained, lease time 86400
 deleting routers
 adding dns 10.0.2.3
 OK
-Starting sshd: [    6.914875] NET: Registered protocol family 10
-[    6.967029] Segment Routing with IPv6
+Starting sshd: [    5.438305] NET: Registered protocol family 10
+[    5.473405] Segment Routing with IPv6
 OK
 
 Welcome to Buildroot
@@ -279,135 +270,135 @@ Password: nvdla
 
 # mount -t 9p -o trans=virtio r /mnt && cd /mnt
 # insmod drm.ko && insmod opendla_1.ko
-[    8.570267] opendla: loading out-of-tree module taints kernel.
-[    8.581980] Probe NVDLA config nvidia,nvdla_os_initial
-[    8.585258] 0 . 12 . 5
-[    8.585771] reset engine done
-[    8.593801] [drm] Initialized nvdla 0.0.0 20171017 for 10200000.nvdla on minor 0
-# ./nvdla_runtime --loadable lenet_stage_2.nvdla
+[    7.010698] opendla: loading out-of-tree module taints kernel.
+[    7.021283] Probe NVDLA config nvidia,nvdla_os_initial
+[    7.022580] 0 . 12 . 5
+[    7.023057] reset engine done
+[    7.031124] [drm] Initialized nvdla 0.0.0 20171017 for 10200000.nvdla on minor 0
+# ./nvdla_runtime --loadable lenet_stage_2.nvdla 
 creating new runtime context...
-[    8.873516] DMA paddr allocated: 0xc0000000 for vaddr 0xffff000040000000
-[    8.880141] nvdla_gem_map_offset allocates args->offset = 0x100000000
+[    7.290967] DMA paddr allocated: 0xc0000000 for vaddr 0xffff000040000000
+[    7.297250] nvdla_gem_map_offset allocates args->offset = 0x100000000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff982a7000, size = 4096, offset = 0x100000000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff9943b000, size = 4096, offset = 0x100000000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[    9.951538] DMA paddr allocated: 0xc0200000 for vaddr 0xffff000040200000
-[    9.952467] nvdla_gem_map_offset allocates args->offset = 0x100001000
+[    8.137144] DMA paddr allocated: 0xc0200000 for vaddr 0xffff000040200000
+[    8.138072] nvdla_gem_map_offset allocates args->offset = 0x100001000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b16000, size = 1851392, offset = 0x100001000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98caa000, size = 1851392, offset = 0x100001000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.447730] DMA paddr allocated: 0xc0008000 for vaddr 0xffff000040008000
-[   10.448484] nvdla_gem_map_offset allocates args->offset = 0x1001c5000
+[    8.518024] DMA paddr allocated: 0xc0008000 for vaddr 0xffff000040008000
+[    8.518982] nvdla_gem_map_offset allocates args->offset = 0x1001c5000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff982a2000, size = 20480, offset = 0x1001c5000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff99436000, size = 20480, offset = 0x1001c5000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.453346] DMA paddr allocated: 0xc0001000 for vaddr 0xffff000040001000
-[   10.453918] nvdla_gem_map_offset allocates args->offset = 0x1001ca000
+[    8.524931] DMA paddr allocated: 0xc0001000 for vaddr 0xffff000040001000
+[    8.525839] nvdla_gem_map_offset allocates args->offset = 0x1001ca000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b15000, size = 40, offset = 0x1001ca000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98ca9000, size = 40, offset = 0x1001ca000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.459020] DMA paddr allocated: 0xc0002000 for vaddr 0xffff000040002000
-[   10.459544] nvdla_gem_map_offset allocates args->offset = 0x1001cb000
+[    8.530594] DMA paddr allocated: 0xc0002000 for vaddr 0xffff000040002000
+[    8.531303] nvdla_gem_map_offset allocates args->offset = 0x1001cb000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b14000, size = 252, offset = 0x1001cb000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98ca8000, size = 252, offset = 0x1001cb000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.464204] DMA paddr allocated: 0xc0003000 for vaddr 0xffff000040003000
-[   10.464768] nvdla_gem_map_offset allocates args->offset = 0x1001cc000
+[    8.536748] DMA paddr allocated: 0xc0003000 for vaddr 0xffff000040003000
+[    8.537374] nvdla_gem_map_offset allocates args->offset = 0x1001cc000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b13000, size = 812, offset = 0x1001cc000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98ca7000, size = 812, offset = 0x1001cc000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.472451] DMA paddr allocated: 0xc0004000 for vaddr 0xffff000040004000
-[   10.473011] nvdla_gem_map_offset allocates args->offset = 0x1001cd000
+[    8.544092] DMA paddr allocated: 0xc0004000 for vaddr 0xffff000040004000
+[    8.545025] nvdla_gem_map_offset allocates args->offset = 0x1001cd000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b11000, size = 4508, offset = 0x1001cd000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98ca5000, size = 4508, offset = 0x1001cd000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.480504] DMA paddr allocated: 0xc0006000 for vaddr 0xffff000040006000
-[   10.481108] nvdla_gem_map_offset allocates args->offset = 0x1001cf000
+[    8.551594] DMA paddr allocated: 0xc0006000 for vaddr 0xffff000040006000
+[    8.552313] nvdla_gem_map_offset allocates args->offset = 0x1001cf000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b10000, size = 700, offset = 0x1001cf000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98ca4000, size = 700, offset = 0x1001cf000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.486220] DMA paddr allocated: 0xc0007000 for vaddr 0xffff000040007000
-[   10.487015] nvdla_gem_map_offset allocates args->offset = 0x1001d0000
+[    8.558670] DMA paddr allocated: 0xc0007000 for vaddr 0xffff000040007000
+[    8.559310] nvdla_gem_map_offset allocates args->offset = 0x1001d0000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b0f000, size = 4096, offset = 0x1001d0000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98ca3000, size = 4096, offset = 0x1001d0000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.490316] DMA paddr allocated: 0xc0010000 for vaddr 0xffff000040010000
-[   10.492317] nvdla_gem_map_offset allocates args->offset = 0x1001d1000
+[    8.565223] DMA paddr allocated: 0xc0010000 for vaddr 0xffff000040010000
+[    8.565970] nvdla_gem_map_offset allocates args->offset = 0x1001d1000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b0e000, size = 256, offset = 0x1001d1000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98ca2000, size = 256, offset = 0x1001d1000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.497067] DMA paddr allocated: 0xc0011000 for vaddr 0xffff000040011000
-[   10.497637] nvdla_gem_map_offset allocates args->offset = 0x1001d2000
+[    8.571474] DMA paddr allocated: 0xc0011000 for vaddr 0xffff000040011000
+[    8.572296] nvdla_gem_map_offset allocates args->offset = 0x1001d2000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b0d000, size = 24, offset = 0x1001d2000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98ca1000, size = 24, offset = 0x1001d2000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.505144] DMA paddr allocated: 0xc0012000 for vaddr 0xffff000040012000
-[   10.506021] nvdla_gem_map_offset allocates args->offset = 0x1001d3000
+[    8.578902] DMA paddr allocated: 0xc0012000 for vaddr 0xffff000040012000
+[    8.579665] nvdla_gem_map_offset allocates args->offset = 0x1001d3000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b0c000, size = 512, offset = 0x1001d3000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98ca0000, size = 512, offset = 0x1001d3000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.511736] DMA paddr allocated: 0xc0013000 for vaddr 0xffff000040013000
-[   10.512308] nvdla_gem_map_offset allocates args->offset = 0x1001d4000
+[    8.586363] DMA paddr allocated: 0xc0013000 for vaddr 0xffff000040013000
+[    8.586975] nvdla_gem_map_offset allocates args->offset = 0x1001d4000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b0b000, size = 4096, offset = 0x1001d4000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98c9f000, size = 4096, offset = 0x1001d4000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.517025] DMA paddr allocated: 0xc0014000 for vaddr 0xffff000040014000
-[   10.517597] nvdla_gem_map_offset allocates args->offset = 0x1001d5000
+[    8.592024] DMA paddr allocated: 0xc0014000 for vaddr 0xffff000040014000
+[    8.592952] nvdla_gem_map_offset allocates args->offset = 0x1001d5000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b0a000, size = 4096, offset = 0x1001d5000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98c9e000, size = 4096, offset = 0x1001d5000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-[   10.522719] DMA paddr allocated: 0xc0015000 for vaddr 0xffff000040015000
-[   10.523244] nvdla_gem_map_offset allocates args->offset = 0x1001d6000
+[    8.598145] DMA paddr allocated: 0xc0015000 for vaddr 0xffff000040015000
+[    8.598964] nvdla_gem_map_offset allocates args->offset = 0x1001d6000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97b09000, size = 4096, offset = 0x1001d6000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98c9d000, size = 4096, offset = 0x1001d6000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
 Emulator starting
 entered allocateSystemMemory()
-[   10.754348] DMA paddr allocated: 0xc0018000 for vaddr 0xffff000040018000
-[   10.755005] nvdla_gem_map_offset allocates args->offset = 0x1001d7000
+[    8.822803] DMA paddr allocated: 0xc0018000 for vaddr 0xffff000040018000
+[    8.823704] nvdla_gem_map_offset allocates args->offset = 0x1001d7000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97306000, size = 9216, offset = 0x1001d7000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff9849a000, size = 9216, offset = 0x1001d7000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-*phMem = 0x15446a30, *pData = 0xffff97306000
+*phMem = 0x7f09a30, *pData = 0xffff9849a000
 exited allocateSystemMemory()
 
 Unknown image type: entered allocateSystemMemory()
-[   10.763756] DMA paddr allocated: 0xc0016000 for vaddr 0xffff000040016000
-[   10.764301] nvdla_gem_map_offset allocates args->offset = 0x1001da000
+[    8.834471] DMA paddr allocated: 0xc0016000 for vaddr 0xffff000040016000
+[    8.835244] nvdla_gem_map_offset allocates args->offset = 0x1001da000
 entered nvdla_mem_map()
-nvdla_mem_map: *pVirtAddr = 0xffff97305000, size = 32, offset = 0x1001da000, fd = 3, flags = 3
+nvdla_mem_map: *pVirtAddr = 0xffff98499000, size = 32, offset = 0x1001da000, fd = 3, flags = 3
 exited nvdla_mem_map()
 
-*phMem = 0x15446a80, *pData = 0xffff97305000
+*phMem = 0x7f09a80, *pData = 0xffff98499000
 exited allocateSystemMemory()
 
 submitting tasks...
-dla_task id 0 has set addr id 0: handle = 15445fa0, offset = 0
-dla_task id 0 has set addr id 1: handle = 15445f60, offset = 0
-dla_task id 0 has set addr id 2: handle = 15445f80, offset = 0
-dla_task id 0 has set addr id 3: handle = 15446a30, offset = 0
-dla_task id 0 has set addr id 4: handle = 15446a80, offset = 0
-dla_task id 0 has set addr id 5: handle = 15445fc0, offset = 0
-dla_task id 0 has set addr id 6: handle = 15445fe0, offset = 0
-dla_task id 0 has set addr id 7: handle = 15446000, offset = 0
-dla_task id 0 has set addr id 8: handle = 15446020, offset = 0
-dla_task id 0 has set addr id 9: handle = 15446040, offset = 0
+dla_task id 0 has set addr id 0: handle = 7f08fa0, offset = 0
+dla_task id 0 has set addr id 1: handle = 7f08f60, offset = 0
+dla_task id 0 has set addr id 2: handle = 7f08f80, offset = 0
+dla_task id 0 has set addr id 3: handle = 7f09a30, offset = 0
+dla_task id 0 has set addr id 4: handle = 7f09a80, offset = 0
+dla_task id 0 has set addr id 5: handle = 7f08fc0, offset = 0
+dla_task id 0 has set addr id 6: handle = 7f08fe0, offset = 0
+dla_task id 0 has set addr id 7: handle = 7f09000, offset = 0
+dla_task id 0 has set addr id 8: handle = 7f09020, offset = 0
+dla_task id 0 has set addr id 9: handle = 7f09040, offset = 0
 address_list[0][0].handle = 7
 address_list[0][0].offset = 0
 address_list[0][1].handle = 5
@@ -428,73 +419,73 @@ address_list[0][8].handle = 11
 address_list[0][8].offset = 0
 address_list[0][9].handle = 12
 address_list[0][9].offset = 0
-[   10.778519] Enter:dla_read_network_config
-[   10.778884] entered dla_get_dma_address(index = 0):
-[   10.779145]  in branch dla_get_dma_address(DESTINATION_PROCESSOR):
-[   10.779451] before: dst_ptr = 0xffff000000ac142c
-[   10.779539] before set: *temp = 0xffff000000ac142c
-[   10.780017] after set: *temp = 0x0
-[   10.780227] after: dst_ptr = 0x0
-[   10.780275] exiting dla_get_dma_address(), got dst_ptr = 0 (index = 0)
-[   10.781545] dla_data_read(src_index = 0): mapped dma_buf(handle = 7, offset = 0) to vaddr = 0xffff000040001000
-[   10.784762] *********************************************************
-[   10.785144] NVDLA FW dla_network_desc
-[   10.785362] ---------------------------------------------------------
-[   10.785688] op desc index      = 6
-[   10.785901] surface desc index = 7
-[   10.786117] dep graph index    = 5
-[   10.786332] lut data index     = 8
-[   10.788630] stat_list_index    = -1
-[   10.788906] roi array index    = -1
-[   10.789119] surface index      = -1
-[   10.789339] num rois           = 1
-[   10.789547] num ops            = 7
-[   10.789754] num luts           = 0
-[   10.789965] num addr           = 10
-[   10.790175] input layer        = 0
-[   10.792579] dynamic roi        = 0
-[   10.792909] entered dla_get_dma_address(index = 6):
-[   10.793144]  in branch dla_get_dma_address(DESTINATION_PROCESSOR):
-[   10.793431] before: dst_ptr = 0x0
-[   10.793457] before set: *temp = 0x0
-[   10.793812] after set: *temp = 0x6
-[   10.793995] after: dst_ptr = 0x6
-[   10.794017] exiting dla_get_dma_address(), got dst_ptr = 6 (index = 6)
-[   10.796798] getting surface_desc_addr:
-[   10.797080] before: task->surface_desc_addr = 0x0
-[   10.797126] entered dla_get_dma_address(index = 7):
-[   10.797577]  in branch dla_get_dma_address(DESTINATION_PROCESSOR):
-[   10.797853] before: dst_ptr = 0x0
-[   10.797874] before set: *temp = 0x0
-[   10.798216] after set: *temp = 0x7
-[   10.800486] after: dst_ptr = 0x7
-[   10.800520] exiting dla_get_dma_address(), got dst_ptr = 7 (index = 7)
-[   10.801050] after: task->surface_desc_addr = 0x7
-[   10.801094] 
-[   10.801454] entered dla_get_dma_address(index = 5):
-[   10.801692]  in branch dla_get_dma_address(DESTINATION_PROCESSOR):
-[   10.801973] before: dst_ptr = 0x0
-[   10.801995] before set: *temp = 0x0
-[   10.802347] after set: *temp = 0x5
-[   10.804876] after: dst_ptr = 0x5
-[   10.804909] exiting dla_get_dma_address(), got dst_ptr = 5 (index = 5)
-[   10.805518] Exit:dla_read_network_config status=0
-[   10.805802] *********************************************************
-[   10.806117] NVDLA FW address list
-[   10.806315] ---------------------------------------------------------
-[   10.808607] task base address        = 0
-[   10.808893] op desc address          = 6
-[   10.809127] surface desc address     = 7
-[   10.809359] dependency graph address = 5
-[   10.809591] LUT data address         = 0
-[   10.809826] stat address             = 0
-[   10.810055] ROI array address        = 0
-[   10.810284] surface address          = 0
-[   10.812791] Enter: dla_initiate_processors
-[   10.813489] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
-[   10.814160] Enter: dla_submit_operation
-[   10.815937] Prepare Convolution operation index 0 ROI 0 dep_count 1
-[   10.816331] Enter: dla_prepare_operation
+[    8.853790] Enter:dla_read_network_config
+[    8.854166] entered dla_get_dma_address(index = 0):
+[    8.854587]  in branch dla_get_dma_address(DESTINATION_PROCESSOR):
+[    8.855006] before: dst_ptr = 0xffff000000ac142c
+[    8.855083] before set: *temp = 0xffff000000ac142c
+[    8.855887] after set: *temp = 0x0
+[    8.856172] after: dst_ptr = 0x0
+[    8.856210] exiting dla_get_dma_address(), got dst_ptr = 0 (index = 0)
+[    8.859929] dla_data_read(src_index = 0): mapped dma_buf(handle = 7, offset = 0) to vaddr = 0xffff000040001000
+[    8.862191] *********************************************************
+[    8.862635] NVDLA FW dla_network_desc
+[    8.862910] ---------------------------------------------------------
+[    8.863357] op desc index      = 6
+[    8.863622] surface desc index = 7
+[    8.863881] dep graph index    = 5
+[    8.864139] lut data index     = 8
+[    8.866369] stat_list_index    = -1
+[    8.866696] roi array index    = -1
+[    8.866982] surface index      = -1
+[    8.867256] num rois           = 1
+[    8.867532] num ops            = 7
+[    8.867805] num luts           = 0
+[    8.868074] num addr           = 10
+[    8.868375] input layer        = 0
+[    8.870949] dynamic roi        = 0
+[    8.871250] entered dla_get_dma_address(index = 6):
+[    8.871531]  in branch dla_get_dma_address(DESTINATION_PROCESSOR):
+[    8.871864] before: dst_ptr = 0x0
+[    8.871889] before set: *temp = 0x0
+[    8.872326] after set: *temp = 0x6
+[    8.874581] after: dst_ptr = 0x6
+[    8.874616] exiting dla_get_dma_address(), got dst_ptr = 6 (index = 6)
+[    8.875294] getting surface_desc_addr:
+[    8.875603] before: task->surface_desc_addr = 0x0
+[    8.875657] entered dla_get_dma_address(index = 7):
+[    8.876265]  in branch dla_get_dma_address(DESTINATION_PROCESSOR):
+[    8.878708] before: dst_ptr = 0x0
+[    8.878740] before set: *temp = 0x0
+[    8.879282] after set: *temp = 0x7
+[    8.879538] after: dst_ptr = 0x7
+[    8.879561] exiting dla_get_dma_address(), got dst_ptr = 7 (index = 7)
+[    8.880218] after: task->surface_desc_addr = 0x7
+[    8.880255] 
+[    8.882795] entered dla_get_dma_address(index = 5):
+[    8.883138]  in branch dla_get_dma_address(DESTINATION_PROCESSOR):
+[    8.883534] before: dst_ptr = 0x0
+[    8.883557] before set: *temp = 0x0
+[    8.884050] after set: *temp = 0x5
+[    8.884303] after: dst_ptr = 0x5
+[    8.884325] exiting dla_get_dma_address(), got dst_ptr = 5 (index = 5)
+[    8.887100] Exit:dla_read_network_config status=0
+[    8.887448] *********************************************************
+[    8.887814] NVDLA FW address list
+[    8.888035] ---------------------------------------------------------
+[    8.890159] task base address        = 0
+[    8.890530] op desc address          = 6
+[    8.890802] surface desc address     = 7
+[    8.891044] dependency graph address = 5
+[    8.891382] LUT data address         = 0
+[    8.891675] stat address             = 0
+[    8.891939] ROI array address        = 0
+[    8.892236] surface address          = 0
+[    8.894778] Enter: dla_initiate_processors
+[    8.895454] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
+[    8.896260] Enter: dla_submit_operation
+[    8.898092] Prepare Convolution operation index 0 ROI 0 dep_count 1
+[    8.898708] Enter: dla_prepare_operation
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x9000
 
@@ -505,7 +496,7 @@ Info: NV_NVDLA_csb_master.cpp: 139:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 140:Addr: 0x9004
 
 
-Info: NV_NVDLA_csb_master.cpp: 141:Data: 0x3
+Info: NV_NVDLA_csb_master.cpp: 141:Data: 0x0
 
 
 Info: NV_NVDLA_csb_master.cpp: 142:Is write: 0x0
@@ -518,131 +509,131 @@ Info: NV_NVDLA_csb_master.cpp: 670:NV_NVDLA_csb_master::cacc2csb_resp_b_transpor
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=0 addr=0x9004 len=4 data=0x 00000000 resp=TLM_OK_RESPONSE
-[   10.817131] processor:Convolution group:0, rdma_group:0 available
-[   10.817589] Enter: dla_read_config
-[   10.817893] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
-[   10.820286] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
-[   10.821004] *********************************************************
-[   10.821321] NVDLA FW ROI[0]: dla_conv_surface_desc
-[   10.821568] ---------------------------------------------------------
-[   10.821870] weight_data         = [ dla_data_cube =>
-[   10.822152]     type          = 0
-[   10.822369]     address       = 1
-[   10.824820]     offset        = 0
-[   10.825035]     width         = 5
-[   10.825240]     height        = 5
-[   10.825445]     channel       = 14
-[   10.825660]     size          = 50048
-[   10.825876]     line_stride   = 0
-[   10.826080]     surf_stride   = 0
-[   10.826293]     plane_stride  = 0
-[   10.828707] ]
-[   10.828772] wmb_data            = [ dla_data_cube =>
-[   10.829191]     type          = 0
-[   10.829388]     address       = 0
-[   10.829576]     offset        = 0
-[   10.829763]     width         = 0
-[   10.829944]     height        = 0
-[   10.830132]     channel       = 0
-[   10.830321]     size          = 0
-[   10.832895]     line_stride   = 0
-[   10.833141]     surf_stride   = 0
-[   10.833325]     plane_stride  = 0
-[   10.833507] ]
-[   10.833552] wgs_data            = [ dla_data_cube =>
-[   10.833905]     type          = 0
-[   10.834092]     address       = 0
-[   10.834278]     offset        = 0
-[   10.836744]     width         = 0
-[   10.836993]     height        = 0
-[   10.837181]     channel       = 0
-[   10.837371]     size          = 0
-[   10.837580]     line_stride   = 0
-[   10.837772]     surf_stride   = 0
-[   10.837961]     plane_stride  = 0
-[   10.838151] ]
-[   10.838194] src_data            = [ dla_data_cube =>
-[   10.840964]     type          = 0
-[   10.841209]     address       = 3
-[   10.841396]     offset        = 0
-[   10.841591]     width         = c
-[   10.841782]     height        = c
-[   10.841970]     channel       = 14
-[   10.842166]     size          = 9216
-[   10.842369]     line_stride   = 384
-[   10.844882]     surf_stride   = 4608
-[   10.845083]     plane_stride  = 0
-[   10.845263] ]
-[   10.845305] dst_data            = [ dla_data_cube =>
-[   10.845662]     type          = 2
-[   10.845852]     address       = -1
-[   10.846041]     offset        = 0
-[   10.846230]     width         = 8
-[   10.848804]     height        = 8
-[   10.849050]     channel       = 32
-[   10.849244]     size          = 8192
-[   10.849444]     line_stride   = 256
-[   10.849643]     surf_stride   = 2048
-[   10.849827]     plane_stride  = 0
-[   10.850013] ]
-[   10.850066] offset_u            = 0
-[   10.852573] in_line_uv_stride   = 0
-[   10.852573] 
-[   10.853011] *********************************************************
-[   10.853332] NVDLA FW ROI[0]: dla_conv_op_desc
-[   10.853567] ---------------------------------------------------------
-[   10.853886] conv_mode          = 0
-[   10.854103] data_reuse         = 0
-[   10.854310] weight_reuse       = 0
-[   10.856752] skip_data_rls      = 0
-[   10.857025] skip_weight_rls    = 0
-[   10.857235] entry_per_slice    = 6
-[   10.857444] data_format        = 36
-[   10.857657] pixel_mapping      = 0
-[   10.857868] fetch_grain        = 1
-[   10.858078] batch              = 1
-[   10.858291] weight_format      = 0
-[   10.860736] data_bank          = 1
-[   10.861004] weight_bank        = 2
-[   10.861215] batch_stride       = 0
-[   10.861427] post_extension     = 0
-[   10.861636] pixel_override     = 1
-[   10.861845] release            = 12
-[   10.862058] input_width_csc    = 12
-[   10.862275] input_height_csc   = 12
-[   10.864712] input_channel_csc  = 20
-[   10.864981] kernel_width_csc   = 5
-[   10.865195] kernel_height_csc  = 5
-[   10.865406] kernel_channel_csc = 20
-[   10.865622] input_width_cmac   = 8
-[   10.865837] input_height_cmac  = 8
-[   10.866056] bytes_per_kernel   = 1000
-[   10.866275] mean_ry            = 0
-[   10.868712] mean_gu            = 0
-[   10.868986] mean_bv            = 0
-[   10.869198] mean_ax            = 0
-[   10.869414] mean_format        = 0
-[   10.869626] conv_stride_x      = 1
-[   10.869839] conv_stride_y      = 1
-[   10.870049] pad_x_left         = 0
-[   10.870259] pad_x_right        = 0
-[   10.872696] pad_y_top          = 0
-[   10.872971] pad_y_bottom       = 0
-[   10.873182] dilation_x         = 1
-[   10.873404] dilation_y         = 1
-[   10.873617] pra_truncate       = 0
-[   10.873831] in_precision       = 2
-[   10.874052] out_precision      = 2
-[   10.874267] pad_val            = 0
-[   10.876831] in_cvt             =
-[   10.877119] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
-[   10.877413] out_cvt            =
-[   10.877636] [ scale = 1, truncate = 0, enable = 1, offset = 0 ]
-[   10.877927] 
-[   10.878123] Exit: dla_read_config
-[   10.880391] Exit: dla_prepare_operation status=0
-[   10.880837] Enter: dla_program_operation
-[   10.881098] Program Convolution operation index 0 ROI 0 Group[0]
+[    8.899751] processor:Convolution group:0, rdma_group:0 available
+[    8.902397] Enter: dla_read_config
+[    8.902899] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
+[    8.903657] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
+[    8.906346] *********************************************************
+[    8.906869] NVDLA FW ROI[0]: dla_conv_surface_desc
+[    8.907269] ---------------------------------------------------------
+[    8.907749] weight_data         = [ dla_data_cube =>
+[    8.908180]     type          = 0
+[    8.914422]     address       = 1
+[    8.914921]     offset        = 0
+[    8.915307]     width         = 5
+[    8.915689]     height        = 5
+[    8.916064]     channel       = 14
+[    8.919917]     size          = 50048
+[    8.923149]     line_stride   = 0
+[    8.923631]     surf_stride   = 0
+[    8.924054]     plane_stride  = 0
+[    8.927486] ]
+[    8.927609] wmb_data            = [ dla_data_cube =>
+[    8.931085]     type          = 0
+[    8.931563]     address       = 0
+[    8.931909]     offset        = 0
+[    8.932251]     width         = 0
+[    8.935734]     height        = 0
+[    8.936182]     channel       = 0
+[    8.939998]     size          = 0
+[    8.940286]     line_stride   = 0
+[    8.942810]     surf_stride   = 0
+[    8.943106]     plane_stride  = 0
+[    8.943351] ]
+[    8.943405] wgs_data            = [ dla_data_cube =>
+[    8.943904]     type          = 0
+[    8.944158]     address       = 0
+[    8.946317]     offset        = 0
+[    8.946620]     width         = 0
+[    8.946861]     height        = 0
+[    8.947118]     channel       = 0
+[    8.947393]     size          = 0
+[    8.947662]     line_stride   = 0
+[    8.947904]     surf_stride   = 0
+[    8.948147]     plane_stride  = 0
+[    8.950415] ]
+[    8.950465] src_data            = [ dla_data_cube =>
+[    8.950955]     type          = 0
+[    8.951207]     address       = 3
+[    8.951469]     offset        = 0
+[    8.951743]     width         = c
+[    8.951995]     height        = c
+[    8.952257]     channel       = 14
+[    8.954575]     size          = 9216
+[    8.954971]     line_stride   = 384
+[    8.955250]     surf_stride   = 4608
+[    8.955499]     plane_stride  = 0
+[    8.955753] ]
+[    8.955803] dst_data            = [ dla_data_cube =>
+[    8.958683]     type          = 2
+[    8.959032]     address       = -1
+[    8.959412]     offset        = 0
+[    8.959649]     width         = 8
+[    8.959872]     height        = 8
+[    8.960114]     channel       = 32
+[    8.960366]     size          = 8192
+[    8.962848]     line_stride   = 256
+[    8.963106]     surf_stride   = 2048
+[    8.963388]     plane_stride  = 0
+[    8.963652] ]
+[    8.963714] offset_u            = 0
+[    8.964100] in_line_uv_stride   = 0
+[    8.964100] 
+[    8.967125] *********************************************************
+[    8.967629] NVDLA FW ROI[0]: dla_conv_op_desc
+[    8.967980] ---------------------------------------------------------
+[    8.969904] conv_mode          = 0
+[    8.970222] data_reuse         = 0
+[    8.970473] weight_reuse       = 0
+[    8.970721] skip_data_rls      = 0
+[    8.970991] skip_weight_rls    = 0
+[    8.971250] entry_per_slice    = 6
+[    8.971510] data_format        = 36
+[    8.971779] pixel_mapping      = 0
+[    8.972041] fetch_grain        = 1
+[    8.972306] batch              = 1
+[    8.975381] weight_format      = 0
+[    8.975706] data_bank          = 1
+[    8.975949] weight_bank        = 2
+[    8.976262] batch_stride       = 0
+[    8.978180] post_extension     = 0
+[    8.978448] pixel_override     = 1
+[    8.978659] release            = 12
+[    8.978913] input_width_csc    = 12
+[    8.979189] input_height_csc   = 12
+[    8.979483] input_channel_csc  = 20
+[    8.979760] kernel_width_csc   = 5
+[    8.979981] kernel_height_csc  = 5
+[    8.980227] kernel_channel_csc = 20
+[    8.982720] input_width_cmac   = 8
+[    8.983041] input_height_cmac  = 8
+[    8.983344] bytes_per_kernel   = 1000
+[    8.983627] mean_ry            = 0
+[    8.983886] mean_gu            = 0
+[    8.984155] mean_bv            = 0
+[    8.986286] mean_ax            = 0
+[    8.986572] mean_format        = 0
+[    8.986859] conv_stride_x      = 1
+[    8.987143] conv_stride_y      = 1
+[    8.987408] pad_x_left         = 0
+[    8.987692] pad_x_right        = 0
+[    8.987952] pad_y_top          = 0
+[    8.988283] pad_y_bottom       = 0
+[    8.990773] dilation_x         = 1
+[    8.991094] dilation_y         = 1
+[    8.991394] pra_truncate       = 0
+[    8.991663] in_precision       = 2
+[    8.991920] out_precision      = 2
+[    8.992184] pad_val            = 0
+[    8.994556] in_cvt             =
+[    8.994880] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
+[    8.995301] out_cvt            =
+[    8.995558] [ scale = 1, truncate = 0, enable = 1, offset = 0 ]
+[    8.995964] 
+[    8.996206] Exit: dla_read_config
+[    8.998424] Exit: dla_prepare_operation status=0
+[    8.998832] Enter: dla_program_operation
+[    8.999156] Program Convolution operation index 0 ROI 0 Group[0]
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x9000
 
@@ -743,32 +734,32 @@ Info: NV_NVDLA_csb_master.cpp: 107:nposted: 0x0
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0x5004 len=4 data=0x 00000000 resp=TLM_OK_RESPONSE
-[   10.882177] 
-[   10.882177] entered processor_conv_program():
-[   10.884439] conv getting weight_address:
-[   10.884801] entered dla_get_dma_cube_address(index = 1, offset = 0x0):
-[   10.885127] entered dla_get_dma_address(index = 1):
-[   10.885398] in branch dla_get_dma_address(DESTINATION_DMA):
-[   10.885663] entered dla_read_dma_address(index = 1):
-[   10.885979] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
-[   10.888578] *phys_addr = 0xc0200000 + 0x0
-[   10.888896] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
-[   10.889256] back to dla_get_dma_cube_address: dst_ptr += 0x0
-[   10.889576] conv weight_addr = 0xc0200000
-[   10.889576] 
-[   10.889889] conv getting input_address:
-[   10.890191] entered dla_read_input_address():
-[   10.892546] passed to dla_get_dma_cube_address(data->address = 3, data->offset = 0)
-[   10.893006] entered dla_get_dma_cube_address(index = 3, offset = 0x0):
-[   10.893310] entered dla_get_dma_address(index = 3):
-[   10.893543] in branch dla_get_dma_address(DESTINATION_DMA):
-[   10.893801] entered dla_read_dma_address(index = 3):
-[   10.894044] pass to nvdla_gem_dma_addr(fd = handles[index=3] = 19):
-[   10.896507] *phys_addr = 0xc0018000 + 0x0
-[   10.896798] exiting dla_get_dma_address(), got dst_ptr = c0018000 (index = 3)
-[   10.897111] back to dla_get_dma_cube_address: dst_ptr += 0x0
-[   10.897437] conv input_addr = 0xc0018000
-[   10.897437] 
+[    9.001943] 
+[    9.001943] entered processor_conv_program():
+[    9.002485] conv getting weight_address:
+[    9.002872] entered dla_get_dma_cube_address(index = 1, offset = 0x0):
+[    9.003320] entered dla_get_dma_address(index = 1):
+[    9.003648] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.004019] entered dla_read_dma_address(index = 1):
+[    9.006488] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
+[    9.007724] *phys_addr = 0xc0200000 + 0x0
+[    9.008090] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
+[    9.010393] back to dla_get_dma_cube_address: dst_ptr += 0x0
+[    9.010776] conv weight_addr = 0xc0200000
+[    9.010776] 
+[    9.011105] conv getting input_address:
+[    9.011391] entered dla_read_input_address():
+[    9.011680] passed to dla_get_dma_cube_address(data->address = 3, data->offset = 0)
+[    9.012092] entered dla_get_dma_cube_address(index = 3, offset = 0x0):
+[    9.014430] entered dla_get_dma_address(index = 3):
+[    9.014738] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.015016] entered dla_read_dma_address(index = 3):
+[    9.015279] pass to nvdla_gem_dma_addr(fd = handles[index=3] = 19):
+[    9.015663] *phys_addr = 0xc0018000 + 0x0
+[    9.015888] exiting dla_get_dma_address(), got dst_ptr = c0018000 (index = 3)
+[    9.016240] back to dla_get_dma_cube_address: dst_ptr += 0x0
+[    9.018537] conv input_addr = 0xc0018000
+[    9.018537] 
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x9000
 
@@ -779,7 +770,7 @@ Info: NV_NVDLA_csb_master.cpp: 139:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 140:Addr: 0x9000
 
 
-Info: NV_NVDLA_csb_master.cpp: 141:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 141:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 142:Is write: 0x0
@@ -802,7 +793,7 @@ Info: NV_NVDLA_csb_master.cpp: 121:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 122:Addr: 0x7000
 
 
-Info: NV_NVDLA_csb_master.cpp: 123:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 123:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 124:Is write: 0x0
@@ -825,7 +816,7 @@ Info: NV_NVDLA_csb_master.cpp: 130:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 131:Addr: 0x8000
 
 
-Info: NV_NVDLA_csb_master.cpp: 132:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 132:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 133:Is write: 0x0
@@ -848,7 +839,7 @@ Info: NV_NVDLA_csb_master.cpp: 112:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 113:Addr: 0x6000
 
 
-Info: NV_NVDLA_csb_master.cpp: 114:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 114:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 115:Is write: 0x0
@@ -871,7 +862,7 @@ Info: NV_NVDLA_csb_master.cpp: 103:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 104:Addr: 0x5000
 
 
-Info: NV_NVDLA_csb_master.cpp: 105:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 105:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 106:Is write: 0x0
@@ -2164,28 +2155,28 @@ Info: NV_NVDLA_csb_master.cpp: 107:nposted: 0x0
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0x50bc len=4 data=0x 00010000 resp=TLM_OK_RESPONSE
-[   10.908052] no desc get due to index==-1
-[   10.908621] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
-[   10.909470] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
-[   10.913473] no desc get due to index==-1
-[   10.913964] no desc get due to index==-1
-[   10.914370] no desc get due to index==-1
-[   10.917670] no desc get due to index==-1
-[   10.918114] Enter: dla_op_programmed
-[   10.921348] Update dependency operation index 3 ROI 0 DEP_COUNT=3
-[   10.922068] Update dependency operation index 1 ROI 0 DEP_COUNT=1
-[   10.924710] enable SDP in dla_update_dependency as depdency are resolved
-[   10.925463] Enter: dla_enable_operation
-[   10.925948] exit dla_enable_operation without actual enable due to processor hasn't been programmed
-[   10.928902] Exit: dla_enable_operation status=0
-[   10.929655] Exit: dla_op_programmed
-[   10.930046] Exit: dla_program_operation status=0
-[   10.932727] Exit: dla_submit_operation
-[   10.933398] Enter: dla_dequeue_operation
-[   10.933734] Dequeue op from Convolution processor, index=3 ROI=0
-[   10.934186] Enter: dla_submit_operation
-[   10.936026] Prepare Convolution operation index 3 ROI 0 dep_count 2
-[   10.936377] Enter: dla_prepare_operation
+[    9.031144] no desc get due to index==-1
+[    9.031605] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
+[    9.032231] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
+[    9.034776] no desc get due to index==-1
+[    9.035172] no desc get due to index==-1
+[    9.035403] no desc get due to index==-1
+[    9.035647] no desc get due to index==-1
+[    9.035892] Enter: dla_op_programmed
+[    9.039822] Update dependency operation index 3 ROI 0 DEP_COUNT=3
+[    9.040870] Update dependency operation index 1 ROI 0 DEP_COUNT=1
+[    9.041437] enable SDP in dla_update_dependency as depdency are resolved
+[    9.042030] Enter: dla_enable_operation
+[    9.042463] exit dla_enable_operation without actual enable due to processor hasn't been programmed
+[    9.043090] Exit: dla_enable_operation status=0
+[    9.043440] Exit: dla_op_programmed
+[    9.043657] Exit: dla_program_operation status=0
+[    9.044025] Exit: dla_submit_operation
+[    9.046726] Enter: dla_dequeue_operation
+[    9.047141] Dequeue op from Convolution processor, index=3 ROI=0
+[    9.047614] Enter: dla_submit_operation
+[    9.047867] Prepare Convolution operation index 3 ROI 0 dep_count 2
+[    9.048228] Enter: dla_prepare_operation
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x9000
 
@@ -2196,7 +2187,7 @@ Info: NV_NVDLA_csb_master.cpp: 139:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 140:Addr: 0x9004
 
 
-Info: NV_NVDLA_csb_master.cpp: 141:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 141:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 142:Is write: 0x0
@@ -2209,131 +2200,131 @@ Info: NV_NVDLA_csb_master.cpp: 670:NV_NVDLA_csb_master::cacc2csb_resp_b_transpor
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=0 addr=0x9004 len=4 data=0x 00000000 resp=TLM_OK_RESPONSE
-[   10.936758] processor:Convolution group:1, rdma_group:0 available
-[   10.937086] Enter: dla_read_config
-[   10.937322] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
-[   10.937831] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
-[   10.940248] *********************************************************
-[   10.940633] NVDLA FW ROI[0]: dla_conv_surface_desc
-[   10.940877] ---------------------------------------------------------
-[   10.941179] weight_data         = [ dla_data_cube =>
-[   10.941437]     type          = 0
-[   10.941631]     address       = 1
-[   10.941827]     offset        = 100000
-[   10.942037]     width         = 4
-[   10.942238]     height        = 4
-[   10.944705]     channel       = 32
-[   10.944960]     size          = 800000
-[   10.945170]     line_stride   = 0
-[   10.945361]     surf_stride   = 0
-[   10.945557]     plane_stride  = 0
-[   10.945752] ]
-[   10.945774] wmb_data            = [ dla_data_cube =>
-[   10.946108]     type          = 0
-[   10.946286]     address       = 0
-[   10.948762]     offset        = 0
-[   10.948997]     width         = 0
-[   10.949180]     height        = 0
-[   10.949363]     channel       = 0
-[   10.949546]     size          = 0
-[   10.949697]     line_stride   = 0
-[   10.949875]     surf_stride   = 0
-[   10.950054]     plane_stride  = 0
-[   10.950235] ]
-[   10.950256] wgs_data            = [ dla_data_cube =>
-[   10.953106]     type          = 0
-[   10.953353]     address       = 0
-[   10.953544]     offset        = 0
-[   10.953736]     width         = 0
-[   10.953940]     height        = 0
-[   10.954132]     channel       = 0
-[   10.954334]     size          = 0
-[   10.956561]     line_stride   = 0
-[   10.956808]     surf_stride   = 0
-[   10.957006]     plane_stride  = 0
-[   10.957195] ]
-[   10.957216] src_data            = [ dla_data_cube =>
-[   10.957576]     type          = 0
-[   10.957769]     address       = 2
-[   10.957963]     offset        = 2000
-[   10.958169]     width         = 4
-[   10.960646]     height        = 4
-[   10.960912]     channel       = 32
-[   10.961111]     size          = 2048
-[   10.961312]     line_stride   = 128
-[   10.961516]     surf_stride   = 512
-[   10.961722]     plane_stride  = 0
-[   10.961916] ]
-[   10.961938] dst_data            = [ dla_data_cube =>
-[   10.962295]     type          = 2
-[   10.964784]     address       = -1
-[   10.965048]     offset        = 0
-[   10.965248]     width         = 1
-[   10.965439]     height        = 1
-[   10.965634]     channel       = 1f4
-[   10.965842]     size          = 1024
-[   10.966048]     line_stride   = 32
-[   10.966252]     surf_stride   = 32
-[   10.968590]     plane_stride  = 0
-[   10.968845] ]
-[   10.968869] offset_u            = 0
-[   10.969188] in_line_uv_stride   = 0
-[   10.969188] 
-[   10.969482] *********************************************************
-[   10.969805] NVDLA FW ROI[0]: dla_conv_op_desc
-[   10.970036] ---------------------------------------------------------
-[   10.970322] conv_mode          = 0
-[   10.972821] data_reuse         = 0
-[   10.973047] weight_reuse       = 0
-[   10.973232] skip_data_rls      = 0
-[   10.973414] skip_weight_rls    = 0
-[   10.973603] entry_per_slice    = 4
-[   10.973786] data_format        = 36
-[   10.973976] pixel_mapping      = 0
-[   10.974160] fetch_grain        = 1
-[   10.974345] batch              = 1
-[   10.978177] weight_format      = 0
-[   10.980605] data_bank          = 1
-[   10.980991] weight_bank        = 2
-[   10.981275] batch_stride       = 0
-[   10.981562] post_extension     = 0
-[   10.981845] pixel_override     = 0
-[   10.982156] release            = 4
-[   10.985339] input_width_csc    = 4
-[   10.985562] input_height_csc   = 4
-[   10.985739] input_channel_csc  = 50
-[   10.985916] kernel_width_csc   = 4
-[   10.986089] kernel_height_csc  = 4
-[   10.986265] kernel_channel_csc = 50
-[   10.988349] input_width_cmac   = 1
-[   10.988588] input_height_cmac  = 1
-[   10.988770] bytes_per_kernel   = 1600
-[   10.988954] mean_ry            = 0
-[   10.989128] mean_gu            = 0
-[   10.989303] mean_bv            = 0
-[   10.989479] mean_ax            = 0
-[   10.989656] mean_format        = 0
-[   10.989830] conv_stride_x      = 1
-[   10.990008] conv_stride_y      = 1
-[   10.990181] pad_x_left         = 0
-[   10.990361] pad_x_right        = 0
-[   10.993837] pad_y_top          = 0
-[   10.994017] pad_y_bottom       = 0
-[   10.994193] dilation_x         = 1
-[   10.995879] dilation_y         = 1
-[   10.996116] pra_truncate       = 0
-[   10.996291] in_precision       = 2
-[   10.996468] out_precision      = 2
-[   10.996643] pad_val            = 0
-[   10.996814] in_cvt             =
-[   10.996988] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
-[   10.997246] out_cvt            =
-[   10.997429] [ scale = 1, truncate = 0, enable = 1, offset = 0 ]
-[   10.997682] 
-[   10.997799] Exit: dla_read_config
-[   10.997987] Exit: dla_prepare_operation status=0
-[   10.998221] Enter: dla_program_operation
-[   11.002129] Program Convolution operation index 3 ROI 0 Group[1]
+[    9.050552] processor:Convolution group:1, rdma_group:0 available
+[    9.051017] Enter: dla_read_config
+[    9.051325] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
+[    9.051919] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
+[    9.054289] *********************************************************
+[    9.054696] NVDLA FW ROI[0]: dla_conv_surface_desc
+[    9.054994] ---------------------------------------------------------
+[    9.055398] weight_data         = [ dla_data_cube =>
+[    9.055708]     type          = 0
+[    9.055929]     address       = 1
+[    9.056175]     offset        = 100000
+[    9.058661]     width         = 4
+[    9.058960]     height        = 4
+[    9.059237]     channel       = 32
+[    9.059486]     size          = 800000
+[    9.059781]     line_stride   = 0
+[    9.060038]     surf_stride   = 0
+[    9.060311]     plane_stride  = 0
+[    9.062576] ]
+[    9.062609] wmb_data            = [ dla_data_cube =>
+[    9.063118]     type          = 0
+[    9.063366]     address       = 0
+[    9.063629]     offset        = 0
+[    9.063891]     width         = 0
+[    9.064134]     height        = 0
+[    9.066441]     channel       = 0
+[    9.066781]     size          = 0
+[    9.067033]     line_stride   = 0
+[    9.067286]     surf_stride   = 0
+[    9.067545]     plane_stride  = 0
+[    9.067785] ]
+[    9.067807] wgs_data            = [ dla_data_cube =>
+[    9.068247]     type          = 0
+[    9.070743]     address       = 0
+[    9.071048]     offset        = 0
+[    9.071293]     width         = 0
+[    9.071528]     height        = 0
+[    9.071785]     channel       = 0
+[    9.072019]     size          = 0
+[    9.072252]     line_stride   = 0
+[    9.074563]     surf_stride   = 0
+[    9.074909]     plane_stride  = 0
+[    9.075181] ]
+[    9.075203] src_data            = [ dla_data_cube =>
+[    9.075654]     type          = 0
+[    9.075886]     address       = 2
+[    9.076155]     offset        = 2000
+[    9.078597]     width         = 4
+[    9.078897]     height        = 4
+[    9.079107]     channel       = 32
+[    9.079379]     size          = 2048
+[    9.079641]     line_stride   = 128
+[    9.079887]     surf_stride   = 512
+[    9.080131]     plane_stride  = 0
+[    9.082366] ]
+[    9.082398] dst_data            = [ dla_data_cube =>
+[    9.082918]     type          = 2
+[    9.083180]     address       = -1
+[    9.083441]     offset        = 0
+[    9.083711]     width         = 1
+[    9.083980]     height        = 1
+[    9.084231]     channel       = 1f4
+[    9.086518]     size          = 1024
+[    9.086790]     line_stride   = 32
+[    9.086979]     surf_stride   = 32
+[    9.087174]     plane_stride  = 0
+[    9.087364] ]
+[    9.087387] offset_u            = 0
+[    9.087668] in_line_uv_stride   = 0
+[    9.087668] 
+[    9.087933] *********************************************************
+[    9.088258] NVDLA FW ROI[0]: dla_conv_op_desc
+[    9.090885] ---------------------------------------------------------
+[    9.091400] conv_mode          = 0
+[    9.091652] data_reuse         = 0
+[    9.091919] weight_reuse       = 0
+[    9.092173] skip_data_rls      = 0
+[    9.094322] skip_weight_rls    = 0
+[    9.094592] entry_per_slice    = 4
+[    9.094823] data_format        = 36
+[    9.095074] pixel_mapping      = 0
+[    9.095356] fetch_grain        = 1
+[    9.095635] batch              = 1
+[    9.095859] weight_format      = 0
+[    9.096081] data_bank          = 1
+[    9.096312] weight_bank        = 2
+[    9.098906] batch_stride       = 0
+[    9.099201] post_extension     = 0
+[    9.099466] pixel_override     = 0
+[    9.099679] release            = 4
+[    9.099878] input_width_csc    = 4
+[    9.100079] input_height_csc   = 4
+[    9.100290] input_channel_csc  = 50
+[    9.102642] kernel_width_csc   = 4
+[    9.102903] kernel_height_csc  = 4
+[    9.103112] kernel_channel_csc = 50
+[    9.103326] input_width_cmac   = 1
+[    9.103532] input_height_cmac  = 1
+[    9.103730] bytes_per_kernel   = 1600
+[    9.103935] mean_ry            = 0
+[    9.104138] mean_gu            = 0
+[    9.106432] mean_bv            = 0
+[    9.106672] mean_ax            = 0
+[    9.106859] mean_format        = 0
+[    9.107126] conv_stride_x      = 1
+[    9.107348] conv_stride_y      = 1
+[    9.107613] pad_x_left         = 0
+[    9.107868] pad_x_right        = 0
+[    9.108114] pad_y_top          = 0
+[    9.108349] pad_y_bottom       = 0
+[    9.110865] dilation_x         = 1
+[    9.111110] dilation_y         = 1
+[    9.111343] pra_truncate       = 0
+[    9.111557] in_precision       = 2
+[    9.111785] out_precision      = 2
+[    9.112011] pad_val            = 0
+[    9.112239] in_cvt             =
+[    9.114536] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
+[    9.114903] out_cvt            =
+[    9.115535] [ scale = 1, truncate = 0, enable = 1, offset = 0 ]
+[    9.115853] 
+[    9.115996] Exit: dla_read_config
+[    9.116224] Exit: dla_prepare_operation status=0
+[    9.118371] Enter: dla_program_operation
+[    9.118690] Program Convolution operation index 3 ROI 0 Group[1]
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x9000
 
@@ -2434,32 +2425,32 @@ Info: NV_NVDLA_csb_master.cpp: 107:nposted: 0x0
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0x5004 len=4 data=0x 00000001 resp=TLM_OK_RESPONSE
-[   11.004076] 
-[   11.004076] entered processor_conv_program():
-[   11.004416] conv getting weight_address:
-[   11.004617] entered dla_get_dma_cube_address(index = 1, offset = 0x100000):
-[   11.004913] entered dla_get_dma_address(index = 1):
-[   11.005133] in branch dla_get_dma_address(DESTINATION_DMA):
-[   11.005394] entered dla_read_dma_address(index = 1):
-[   11.005628] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
-[   11.005920] *phys_addr = 0xc0200000 + 0x0
-[   11.006116] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
-[   11.008974] back to dla_get_dma_cube_address: dst_ptr += 0x100000
-[   11.009293] conv weight_addr = 0xc0300000
-[   11.009293] 
-[   11.009573] conv getting input_address:
-[   11.009767] entered dla_read_input_address():
-[   11.009974] passed to dla_get_dma_cube_address(data->address = 2, data->offset = 8192)
-[   11.010323] entered dla_get_dma_cube_address(index = 2, offset = 0x2000):
-[   11.012697] entered dla_get_dma_address(index = 2):
-[   11.012977] in branch dla_get_dma_address(DESTINATION_DMA):
-[   11.013229] entered dla_read_dma_address(index = 2):
-[   11.013463] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
-[   11.013763] *phys_addr = 0xc0008000 + 0x0
-[   11.013959] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
-[   11.014253] back to dla_get_dma_cube_address: dst_ptr += 0x2000
-[   11.016579] conv input_addr = 0xc000a000
-[   11.016579] 
+[    9.119686] 
+[    9.119686] entered processor_conv_program():
+[    9.120072] conv getting weight_address:
+[    9.120340] entered dla_get_dma_cube_address(index = 1, offset = 0x100000):
+[    9.122635] entered dla_get_dma_address(index = 1):
+[    9.123006] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.123344] entered dla_read_dma_address(index = 1):
+[    9.123671] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
+[    9.124096] *phys_addr = 0xc0200000 + 0x0
+[    9.126334] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
+[    9.126766] back to dla_get_dma_cube_address: dst_ptr += 0x100000
+[    9.127080] conv weight_addr = 0xc0300000
+[    9.127080] 
+[    9.127444] conv getting input_address:
+[    9.127681] entered dla_read_input_address():
+[    9.127924] passed to dla_get_dma_cube_address(data->address = 2, data->offset = 8192)
+[    9.128319] entered dla_get_dma_cube_address(index = 2, offset = 0x2000):
+[    9.130874] entered dla_get_dma_address(index = 2):
+[    9.131206] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.131483] entered dla_read_dma_address(index = 2):
+[    9.131747] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
+[    9.132093] *phys_addr = 0xc0008000 + 0x0
+[    9.132339] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
+[    9.134561] back to dla_get_dma_cube_address: dst_ptr += 0x2000
+[    9.134993] conv input_addr = 0xc000a000
+[    9.134993] 
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x9000
 
@@ -2470,7 +2461,7 @@ Info: NV_NVDLA_csb_master.cpp: 139:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 140:Addr: 0x9000
 
 
-Info: NV_NVDLA_csb_master.cpp: 141:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 141:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 142:Is write: 0x0
@@ -2493,7 +2484,7 @@ Info: NV_NVDLA_csb_master.cpp: 121:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 122:Addr: 0x7000
 
 
-Info: NV_NVDLA_csb_master.cpp: 123:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 123:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 124:Is write: 0x0
@@ -2516,7 +2507,7 @@ Info: NV_NVDLA_csb_master.cpp: 130:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 131:Addr: 0x8000
 
 
-Info: NV_NVDLA_csb_master.cpp: 132:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 132:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 133:Is write: 0x0
@@ -2539,7 +2530,7 @@ Info: NV_NVDLA_csb_master.cpp: 112:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 113:Addr: 0x6000
 
 
-Info: NV_NVDLA_csb_master.cpp: 114:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 114:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 115:Is write: 0x0
@@ -2562,7 +2553,7 @@ Info: NV_NVDLA_csb_master.cpp: 103:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 104:Addr: 0x5000
 
 
-Info: NV_NVDLA_csb_master.cpp: 105:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 105:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 106:Is write: 0x0
@@ -3855,23 +3846,23 @@ Info: NV_NVDLA_csb_master.cpp: 107:nposted: 0x0
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0x50bc len=4 data=0x 00010000 resp=TLM_OK_RESPONSE
-[   11.024156] no desc get due to index==-1
-[   11.024476] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
-[   11.024958] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
-[   11.025426] no desc get due to index==-1
-[   11.025647] no desc get due to index==-1
-[   11.025862] no desc get due to index==-1
-[   11.026073] no desc get due to index==-1
-[   11.026285] Enter: dla_op_programmed
-[   11.028606] Update dependency operation index 5 ROI 0 DEP_COUNT=3
-[   11.029005] Update dependency operation index 4 ROI 0 DEP_COUNT=2
-[   11.029534] Exit: dla_op_programmed
-[   11.029886] Exit: dla_program_operation status=0
-[   11.030292] Exit: dla_submit_operation
-[   11.033781] Exit: dla_dequeue_operation
-[   11.034331] Enter: dla_submit_operation
-[   11.037049] Prepare SDP operation index 1 ROI 0 dep_count 0
-[   11.037372] Enter: dla_prepare_operation
+[    9.143937] no desc get due to index==-1
+[    9.144303] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
+[    9.146239] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
+[    9.146855] no desc get due to index==-1
+[    9.147067] no desc get due to index==-1
+[    9.147283] no desc get due to index==-1
+[    9.147483] no desc get due to index==-1
+[    9.147739] Enter: dla_op_programmed
+[    9.147939] Update dependency operation index 5 ROI 0 DEP_COUNT=3
+[    9.148245] Update dependency operation index 4 ROI 0 DEP_COUNT=2
+[    9.150714] Exit: dla_op_programmed
+[    9.151011] Exit: dla_program_operation status=0
+[    9.151320] Exit: dla_submit_operation
+[    9.151680] Exit: dla_dequeue_operation
+[    9.151982] Enter: dla_submit_operation
+[    9.152206] Prepare SDP operation index 1 ROI 0 dep_count 0
+[    9.154423] Enter: dla_prepare_operation
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0xb000
 
@@ -3882,7 +3873,7 @@ Info: NV_NVDLA_csb_master.cpp: 157:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 158:Addr: 0xb004
 
 
-Info: NV_NVDLA_csb_master.cpp: 159:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 159:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 160:Is write: 0x0
@@ -3905,7 +3896,7 @@ Info: NV_NVDLA_csb_master.cpp: 148:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 149:Addr: 0xa004
 
 
-Info: NV_NVDLA_csb_master.cpp: 150:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 150:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 151:Is write: 0x0
@@ -3918,136 +3909,136 @@ Info: NV_NVDLA_csb_master.cpp: 714:NV_NVDLA_csb_master::sdp_rdma2csb_resp_b_tran
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=0 addr=0xa004 len=4 data=0x 00000000 resp=TLM_OK_RESPONSE
-[   11.037893] processor:SDP group:0, rdma_group:0 available
-[   11.038173] Enter: dla_read_config
-[   11.040054] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
-[   11.040608] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
-[   11.041512] *********************************************************
-[   11.041813] NVDLA FW ROI[0]: dla_sdp_surface_desc
-[   11.042039] ---------------------------------------------------------
-[   11.042321] src_data            = [ dla_data_cube =>
-[   11.044541]     type          = 2
-[   11.044777]     address       = -1
-[   11.044953]     offset        = 0
-[   11.045127]     width         = 8
-[   11.045300]     height        = 8
-[   11.045475]     channel       = 32
-[   11.045653]     size          = 8192
-[   11.045836]     line_stride   = 256
-[   11.046015]     surf_stride   = 2048
-[   11.046191]     plane_stride  = 0
-[   11.048764] ]
-[   11.048819] x1_data             = [ dla_data_cube =>
-[   11.049224]     type          = 0
-[   11.049402]     address       = 1
-[   11.049583]     offset        = 10000
-[   11.049766]     width         = 1
-[   11.049937]     height        = 1
-[   11.050114]     channel       = 32
-[   11.050289]     size          = 100
-[   11.052825]     line_stride   = 32
-[   11.053058]     surf_stride   = 32
-[   11.053238]     plane_stride  = 0
-[   11.053406] ]
-[   11.053443] x2_data             = [ dla_data_cube =>
-[   11.053777]     type          = 0
-[   11.053955]     address       = 0
-[   11.054128]     offset        = 0
-[   11.054303]     width         = 0
-[   11.056792]     height        = 0
-[   11.057029]     channel       = 0
-[   11.057203]     size          = 0
-[   11.057375]     line_stride   = 0
-[   11.057546]     surf_stride   = 0
-[   11.057723]     plane_stride  = 0
-[   11.057891] ]
-[   11.057928] y_data              = [ dla_data_cube =>
-[   11.058256]     type          = 0
-[   11.060748]     address       = 0
-[   11.060975]     offset        = 0
-[   11.061153]     width         = 0
-[   11.061327]     height        = 0
-[   11.061501]     channel       = 0
-[   11.061679]     size          = 0
-[   11.061854]     line_stride   = 0
-[   11.062030]     surf_stride   = 0
-[   11.062201]     plane_stride  = 0
-[   11.064697] ]
-[   11.064743] dst_data            = [ dla_data_cube =>
-[   11.065134]     type          = 0
-[   11.065312]     address       = 2
-[   11.065488]     offset        = 0
-[   11.065661]     width         = 8
-[   11.065832]     height        = 8
-[   11.066007]     channel       = 32
-[   11.066182]     size          = 8192
-[   11.066370]     line_stride   = 256
-[   11.069139]     surf_stride   = 2048
-[   11.069325]     plane_stride  = 0
-[   11.069495] ]
-[   11.069592] *********************************************************
-[   11.070002] NVDLA FW ROI[0]: dla_sdp_op_desc
-[   11.070219] ---------------------------------------------------------
-[   11.072445] src_precision    = 2
-[   11.072696] dst_precision    = 2
-[   11.072890] lut_index        = -1
-[   11.073074] out_cvt          =
-[   11.073272] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
-[   11.073549] conv_mode        = 0
-[   11.073734] batch_num        = 1
-[   11.073923] batch_stride     = 0
-[   11.074100] x1_op            = [ dla_sdp_op =>
-[   11.074349]     enable         = 1
-[   11.077011]     alu_type       = 2
-[   11.077263]     type           = 2
-[   11.077465]     mode           = 1
-[   11.077661]     act            = 0
-[   11.077861]     shift_value    = 0
-[   11.078057]     truncate       = 0
-[   11.078256]     precision      = 2
-[   11.080545]     alu_operand    = 0
-[   11.080799]     mul_operand    = 1
-[   11.080993] cvt.alu_cvt          =
-[   11.081211] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.081492] cvt.mul_cvt          =
-[   11.081706] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.081975] ]
-[   11.082132] x2_op            = [ dla_sdp_op =>
-[   11.082367]     enable         = 0
-[   11.084905]     alu_type       = 0
-[   11.085086]     type           = 0
-[   11.085265]     mode           = 0
-[   11.085441]     act            = 0
-[   11.085650]     shift_value    = 0
-[   11.085834]     truncate       = 0
-[   11.086013]     precision      = 0
-[   11.086192]     alu_operand    = 0
-[   11.086378]     mul_operand    = 0
-[   11.088928] cvt.alu_cvt          =
-[   11.089117] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.089370] cvt.mul_cvt          =
-[   11.089554] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.089817] ]
-[   11.089953] y_op             = [ dla_sdp_op =>
-[   11.090182]     enable         = 0
-[   11.090372]     alu_type       = 0
-[   11.092886]     type           = 0
-[   11.093066]     mode           = 0
-[   11.093245]     act            = 0
-[   11.093423]     shift_value    = 0
-[   11.093597]     truncate       = 0
-[   11.093778]     precision      = 0
-[   11.093956]     alu_operand    = 0
-[   11.094133]     mul_operand    = 0
-[   11.094307] cvt.alu_cvt          =
-[   11.096835] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.097145] cvt.mul_cvt          =
-[   11.097336] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.097594] ]
-[   11.097787] Exit: dla_read_config
-[   11.098117] Exit: dla_prepare_operation status=0
-[   11.100324] Enter: dla_program_operation
-[   11.100603] Program SDP operation index 1 ROI 0 Group[0]
+[    9.155108] processor:SDP group:0, rdma_group:0 available
+[    9.155551] Enter: dla_read_config
+[    9.155930] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
+[    9.158452] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
+[    9.159163] *********************************************************
+[    9.159493] NVDLA FW ROI[0]: dla_sdp_surface_desc
+[    9.159766] ---------------------------------------------------------
+[    9.160151] src_data            = [ dla_data_cube =>
+[    9.162438]     type          = 2
+[    9.162712]     address       = -1
+[    9.162944]     offset        = 0
+[    9.163194]     width         = 8
+[    9.163437]     height        = 8
+[    9.163663]     channel       = 32
+[    9.163861]     size          = 8192
+[    9.164082]     line_stride   = 256
+[    9.164299]     surf_stride   = 2048
+[    9.166814]     plane_stride  = 0
+[    9.167074] ]
+[    9.167114] x1_data             = [ dla_data_cube =>
+[    9.167526]     type          = 0
+[    9.167737]     address       = 1
+[    9.167965]     offset        = 10000
+[    9.168215]     width         = 1
+[    9.170424]     height        = 1
+[    9.170691]     channel       = 32
+[    9.170906]     size          = 100
+[    9.171119]     line_stride   = 32
+[    9.171372]     surf_stride   = 32
+[    9.171603]     plane_stride  = 0
+[    9.171854] ]
+[    9.171895] x2_data             = [ dla_data_cube =>
+[    9.172329]     type          = 0
+[    9.175043]     address       = 0
+[    9.175327]     offset        = 0
+[    9.175583]     width         = 0
+[    9.175796]     height        = 0
+[    9.175995]     channel       = 0
+[    9.176231]     size          = 0
+[    9.178396]     line_stride   = 0
+[    9.178669]     surf_stride   = 0
+[    9.178929]     plane_stride  = 0
+[    9.179175] ]
+[    9.179219] y_data              = [ dla_data_cube =>
+[    9.179689]     type          = 0
+[    9.179933]     address       = 0
+[    9.180189]     offset        = 0
+[    9.182542]     width         = 0
+[    9.182816]     height        = 0
+[    9.183053]     channel       = 0
+[    9.183286]     size          = 0
+[    9.183547]     line_stride   = 0
+[    9.183803]     surf_stride   = 0
+[    9.184045]     plane_stride  = 0
+[    9.184306] ]
+[    9.184361] dst_data            = [ dla_data_cube =>
+[    9.187318]     type          = 0
+[    9.187563]     address       = 2
+[    9.187795]     offset        = 0
+[    9.188013]     width         = 8
+[    9.188254]     height        = 8
+[    9.190383]     channel       = 32
+[    9.190684]     size          = 8192
+[    9.190952]     line_stride   = 256
+[    9.191251]     surf_stride   = 2048
+[    9.191490]     plane_stride  = 0
+[    9.191679] ]
+[    9.191770] *********************************************************
+[    9.192228] NVDLA FW ROI[0]: dla_sdp_op_desc
+[    9.194622] ---------------------------------------------------------
+[    9.195045] src_precision    = 2
+[    9.195277] dst_precision    = 2
+[    9.195498] lut_index        = -1
+[    9.195713] out_cvt          =
+[    9.195948] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
+[    9.196336] conv_mode        = 0
+[    9.198571] batch_num        = 1
+[    9.198861] batch_stride     = 0
+[    9.199110] x1_op            = [ dla_sdp_op =>
+[    9.199445]     enable         = 1
+[    9.199695]     alu_type       = 2
+[    9.199976]     type           = 2
+[    9.200239]     mode           = 1
+[    9.202564]     act            = 0
+[    9.202855]     shift_value    = 0
+[    9.203100]     truncate       = 0
+[    9.203390]     precision      = 2
+[    9.203671]     alu_operand    = 0
+[    9.203924]     mul_operand    = 1
+[    9.204187] cvt.alu_cvt          =
+[    9.206617] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.207060] cvt.mul_cvt          =
+[    9.207373] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.207751] ]
+[    9.207944] x2_op            = [ dla_sdp_op =>
+[    9.208307]     enable         = 0
+[    9.210565]     alu_type       = 0
+[    9.210819]     type           = 0
+[    9.211067]     mode           = 0
+[    9.211271]     act            = 0
+[    9.211456]     shift_value    = 0
+[    9.211643]     truncate       = 0
+[    9.211834]     precision      = 0
+[    9.212036]     alu_operand    = 0
+[    9.212237]     mul_operand    = 0
+[    9.214709] cvt.alu_cvt          =
+[    9.214965] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.215332] cvt.mul_cvt          =
+[    9.215571] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.215913] ]
+[    9.216096] y_op             = [ dla_sdp_op =>
+[    9.219258]     enable         = 0
+[    9.219610]     alu_type       = 0
+[    9.219924]     type           = 0
+[    9.220219]     mode           = 0
+[    9.222183]     act            = 0
+[    9.222438]     shift_value    = 0
+[    9.222668]     truncate       = 0
+[    9.222901]     precision      = 0
+[    9.223135]     alu_operand    = 0
+[    9.223349]     mul_operand    = 0
+[    9.223613] cvt.alu_cvt          =
+[    9.223895] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.224287] cvt.mul_cvt          =
+[    9.226897] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.227333] ]
+[    9.227568] Exit: dla_read_config
+[    9.227941] Exit: dla_prepare_operation status=0
+[    9.228315] Enter: dla_program_operation
+[    9.230427] Program SDP operation index 1 ROI 0 Group[0]
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0xb000
 
@@ -4098,7 +4089,7 @@ Info: NV_NVDLA_csb_master.cpp: 58:NV_NVDLA_csb_master::nvdla2csb_b_transport, cs
 Info: NV_NVDLA_csb_master.cpp: 59:Addr: 0x4
 
 
-Info: NV_NVDLA_csb_master.cpp: 60:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 60:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 61:Is write: 0x0
@@ -4131,36 +4122,36 @@ Info: NV_NVDLA_csb_master.cpp: 62:nposted: 0x0
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0x4 len=4 data=0x 00000000 resp=TLM_OK_RESPONSE
-[   11.101435] 
-[   11.101435] entered processor_sdp_program():
-[   11.101843] sdp skip getting src_addr
-[   11.101843] 
-[   11.102139] sdp getting dst_addr:
-[   11.102353] entered dla_get_dma_cube_address(index = 2, offset = 0x0):
-[   11.104808] entered dla_get_dma_address(index = 2):
-[   11.105091] in branch dla_get_dma_address(DESTINATION_DMA):
-[   11.105342] entered dla_read_dma_address(index = 2):
-[   11.105574] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
-[   11.105883] *phys_addr = 0xc0008000 + 0x0
-[   11.106085] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
-[   11.108295] back to dla_get_dma_cube_address: dst_ptr += 0x0
-[   11.108628] sdp dst_addr = 0xc0008000
-[   11.108628] 
-[   11.108992] sdp getting x1_addr:
-[   11.109204] entered dla_get_dma_cube_address(index = 1, offset = 0x10000):
-[   11.109503] entered dla_get_dma_address(index = 1):
-[   11.109787] in branch dla_get_dma_address(DESTINATION_DMA):
-[   11.110069] entered dla_read_dma_address(index = 1):
-[   11.110307] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
-[   11.112960] *phys_addr = 0xc0200000 + 0x0
-[   11.113215] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
-[   11.113513] back to dla_get_dma_cube_address: dst_ptr += 0x10000
-[   11.113797] sdp x1_addr = 0xc0210000
-[   11.113797] 
-[   11.114074] sdp skip getting x2_addr
-[   11.114074] 
-[   11.114346] sdp skip getting y_addr
-[   11.114346] 
+[    9.231547] 
+[    9.231547] entered processor_sdp_program():
+[    9.232035] sdp skip getting src_addr
+[    9.232035] 
+[    9.234178] sdp getting dst_addr:
+[    9.234525] entered dla_get_dma_cube_address(index = 2, offset = 0x0):
+[    9.234901] entered dla_get_dma_address(index = 2):
+[    9.235149] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.235430] entered dla_read_dma_address(index = 2):
+[    9.235684] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
+[    9.236025] *phys_addr = 0xc0008000 + 0x0
+[    9.236245] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
+[    9.238657] back to dla_get_dma_cube_address: dst_ptr += 0x0
+[    9.239029] sdp dst_addr = 0xc0008000
+[    9.239029] 
+[    9.239388] sdp getting x1_addr:
+[    9.239664] entered dla_get_dma_cube_address(index = 1, offset = 0x10000):
+[    9.240110] entered dla_get_dma_address(index = 1):
+[    9.242285] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.242713] entered dla_read_dma_address(index = 1):
+[    9.243053] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
+[    9.243478] *phys_addr = 0xc0200000 + 0x0
+[    9.243761] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
+[    9.244200] back to dla_get_dma_cube_address: dst_ptr += 0x10000
+[    9.246684] sdp x1_addr = 0xc0210000
+[    9.246684] 
+[    9.247123] sdp skip getting x2_addr
+[    9.247123] 
+[    9.247508] sdp skip getting y_addr
+[    9.247508] 
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0xa000
 
@@ -4821,21 +4812,21 @@ Info: NV_NVDLA_csb_master.cpp: 161:nposted: 0x0
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0xb0c8 len=4 data=0x 00000000 resp=TLM_OK_RESPONSE
-[   11.121317] no desc get due to index==-1
-[   11.121603] no desc get due to index==-1
-[   11.121855] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
-[   11.122289] no desc get due to index==-1
-[   11.124175] no desc get due to index==-1
-[   11.124480] Enter: dla_op_programmed
-[   11.124682] Update dependency operation index 4 ROI 0 DEP_COUNT=1
-[   11.124954] enable SDP in dla_update_dependency as depdency are resolved
-[   11.125244] Enter: dla_enable_operation
-[   11.125484] exit dla_enable_operation without actual enable due to processor hasn't been programmed
-[   11.125881] Exit: dla_enable_operation status=0
-[   11.126117] Exit: dla_op_programmed
-[   11.126315] Exit: dla_program_operation status=0
-[   11.128897] Enter: dla_enable_operation
-[   11.129270] Enable SDP operation index 1 ROI 0
+[    9.254376] no desc get due to index==-1
+[    9.254738] no desc get due to index==-1
+[    9.255062] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
+[    9.255663] no desc get due to index==-1
+[    9.255928] no desc get due to index==-1
+[    9.256249] Enter: dla_op_programmed
+[    9.258450] Update dependency operation index 4 ROI 0 DEP_COUNT=1
+[    9.258825] enable SDP in dla_update_dependency as depdency are resolved
+[    9.259268] Enter: dla_enable_operation
+[    9.259585] exit dla_enable_operation without actual enable due to processor hasn't been programmed
+[    9.260166] Exit: dla_enable_operation status=0
+[    9.262272] Exit: dla_op_programmed
+[    9.262592] Exit: dla_program_operation status=0
+[    9.262928] Enter: dla_enable_operation
+[    9.263308] Enable SDP operation index 1 ROI 0
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0xb000
 
@@ -4916,29 +4907,11 @@ Info: NV_NVDLA_csb_master.cpp: 161:nposted: 0x0
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0xb038 len=4 data=0x 00000001 resp=TLM_OK_RESPONSE
-[   11.129941] Enter: dla_op_enabled
-[   11.130167] Update dependency operation index 0 ROI 0 DEP_COUNT=1
-[   11.132127] enable Convolution in dla_update_dependency as depdency are resolved
-[   11.132515] Enter: dla_enable_operation
-[   11.132726] Enable Convolution operation index 0 ROI 0
-
-Info: NV_NVDLA_mcif.cpp: 1244:NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, prepare AXI transaction for address: 0xc0210000
-
-
-Info: NV_NVDLA_mcif.cpp: 1244:NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, prepare AXI transaction for address: 0xc0210040
-
-
-Info: NV_NVDLA_mcif.cpp: 3555:NV_NVDLA_mcif::ReadRequestArbiter, get new request, wake up.
-
-
-Info: NV_NVDLA_mcif.cpp: 3641:NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp_b, begin, atom:2, num_free:81920 credit_mcif2sdp_b_rd_rsp_fifo_=81918.
-
-
-Info: NV_NVDLA_mcif.cpp: 3643:NV_NVDLA_mcif::ReadRequestArbiter, send read request, sdp_b_rd_req_payload_ from sdp_b, end.
-
-
-Info: NV_NVDLA_mcif.cpp: 3641:NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp_b, begin, atom:2, num_free:81920 credit_mcif2sdp_b_rd_rsp_fifo_=81916.
-
+[    9.264212] Enter: dla_op_enabled
+[    9.266257] Update dependency operation index 0 ROI 0 DEP_COUNT=1
+[    9.266702] enable Convolution in dla_update_dependency as depdency are resolved
+[    9.267173] Enter: dla_enable_operation
+[    9.267464] Enable Convolution operation index 0 ROI 0
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x9000
 
@@ -4960,253 +4933,10 @@ Info: NV_NVDLA_csb_master.cpp: 143:nposted: 0x0
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0x9004 len=4 data=0x 00000000 resp=TLM_OK_RESPONSE
 
-Info: NV_NVDLA_mcif.cpp: 2333:write to sdp2mcif_wr_cmd_fifo_, addr:c0008000, size:256, num_free:40960
-
-
 Info: NvdlaAxiAdaptor.cpp: 71:NvdlaAxiAdaptor::axi_rd_wr_thread, send read request start. address=0xc0210000
 
 
 Info: nvdla.dbb_adaptor: GP: iswrite=0 addr=0xc0210000 len=64 data=0x a5469f9a abfbac6d a1f7a93f 998aaa6d acee2359 a4d5ab9d a921acc3 a6feab67 9f8dad8f 2431aed7 af82abd1 a983ac92 ae45ad3c aca3ad01 ad3cad2a a761aafe resp=TLM_OK_RESPONSE
-
-Info: NV_NVDLA_mcif.cpp: 3128:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport
-
-
-Info: NV_NVDLA_mcif.cpp: 3129:axi_id: 0x5
-
-
-Info: NV_NVDLA_mcif.cpp: 3130:axi_data_ptr: 0x0x15800b0
-
-
-Info: NV_NVDLA_mcif.cpp: 3131:axi_length: 64
-
-
-Info: NV_NVDLA_mcif.cpp: 3132:axi_byte_enable_ptr: 0x0x1551fa0
-
-
-Info: NV_NVDLA_mcif.cpp: 3133:axi_byte_enable_length: 64
-
-
-Info: NV_NVDLA_mcif.cpp: 3150:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, dma_sent_size: 0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3175:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_b_rd_atom_enable_fifo_, sdp_b payload atom mask is 0x1
-
-
-Info: NV_NVDLA_mcif.cpp: 3246:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:81920, axi_atom_ptr value:
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x9a
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x9f
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x46
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa5
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x6d
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xac
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xfb
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xab
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x3f
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa9
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xf7
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa1
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x6d
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xaa
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x8a
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x99
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x59
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x23
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xee
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xac
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x9d
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xab
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xd5
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa4
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xc3
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xac
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x21
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa9
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x67
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xab
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xfe
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa6
-
-
-Info: NV_NVDLA_mcif.cpp: 3251:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp_b payload atom mask is 0x1, write an atom to mcif2sdp_b_rd_rsp_fifo_, num_free:81919.
-
-
-Info: NV_NVDLA_mcif.cpp: 3150:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, dma_sent_size: 0x20
-
-
-Info: NV_NVDLA_mcif.cpp: 3175:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_b_rd_atom_enable_fifo_, sdp_b payload atom mask is 0x1
-
-
-Info: NV_NVDLA_mcif.cpp: 3246:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:81919, axi_atom_ptr value:
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x8f
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xad
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x8d
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x9f
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xd7
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xae
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x31
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x24
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xd1
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xab
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x82
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xaf
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x92
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xac
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x83
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa9
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x3c
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xad
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x45
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xae
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x1
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xad
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa3
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xac
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x2a
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xad
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x3c
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xad
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xfe
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xaa
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x61
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa7
-
-
-Info: NV_NVDLA_mcif.cpp: 3251:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp_b payload atom mask is 0x1, write an atom to mcif2sdp_b_rd_rsp_fifo_, num_free:81918.
-
-
-Info: NV_NVDLA_mcif.cpp: 2402:XXXXXXX NV_NVDLA_mcif::WriteRequest_sdp2mcif, first_base_addr=0xc0008000 total_axi_size is 0x100 payload_addr=0xc0008000 payload_size=0x100
-
-
-Info: NV_NVDLA_mcif.cpp: 2416:NV_NVDLA_mcif::WriteRequest_sdp2mcif, before spliting DMA transaction. user_size_first=0x3 user_size_first=0x3
-
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x7000
 
@@ -5227,36 +4957,6 @@ Info: NV_NVDLA_csb_master.cpp: 125:nposted: 0x0
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0x7004 len=4 data=0x 00000000 resp=TLM_OK_RESPONSE
-
-Info: NV_NVDLA_mcif.cpp: 3643:NV_NVDLA_mcif::ReadRequestArbiter, send read request, sdp_b_rd_req_payload_ from sdp_b, end.
-
-
-Info: NV_NVDLA_mcif.cpp: 3553:NV_NVDLA_mcif::ReadRequestArbiter, no pending request, waiting.
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0xabfbac6da5469f9a
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0x998aaa6da1f7a93f
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0xa4d5ab9dacee2359
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0xa6feab67a921acc3
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0x2431aed79f8dad8f
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0xa983ac92af82abd1
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0xaca3ad01ae45ad3c
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0xa761aafead3cad2a
-
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x8000
 
@@ -5283,246 +4983,6 @@ Info: NvdlaAxiAdaptor.cpp: 71:NvdlaAxiAdaptor::axi_rd_wr_thread, send read reque
 
 Info: nvdla.dbb_adaptor: GP: iswrite=0 addr=0xc0210040 len=64 data=0x a9cdabbf af35ace3 206e238b ace3abf6 addf2490 af76ad64 a308a9eb a5b8a9b8 ad28aee5 00000000 00000000 00000000 00000000 00000000 00000000 00000000 resp=TLM_OK_RESPONSE
 
-Info: NV_NVDLA_mcif.cpp: 3128:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport
-
-
-Info: NV_NVDLA_mcif.cpp: 3129:axi_id: 0x5
-
-
-Info: NV_NVDLA_mcif.cpp: 3130:axi_data_ptr: 0x0x1542a80
-
-
-Info: NV_NVDLA_mcif.cpp: 3131:axi_length: 64
-
-
-Info: NV_NVDLA_mcif.cpp: 3132:axi_byte_enable_ptr: 0x0x1541610
-
-
-Info: NV_NVDLA_mcif.cpp: 3133:axi_byte_enable_length: 64
-
-
-Info: NV_NVDLA_mcif.cpp: 3150:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, dma_sent_size: 0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3175:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_b_rd_atom_enable_fifo_, sdp_b payload atom mask is 0x1
-
-
-Info: NV_NVDLA_mcif.cpp: 3246:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:81920, axi_atom_ptr value:
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xbf
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xab
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xcd
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa9
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xe3
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xac
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x35
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xaf
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x8b
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x23
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x6e
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x20
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xf6
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xab
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xe3
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xac
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x90
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x24
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xdf
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xad
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x64
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xad
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x76
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xaf
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xeb
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa9
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x8
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa3
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xb8
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa9
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xb8
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xa5
-
-
-Info: NV_NVDLA_mcif.cpp: 3251:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp_b payload atom mask is 0x1, write an atom to mcif2sdp_b_rd_rsp_fifo_, num_free:81919.
-
-
-Info: NV_NVDLA_mcif.cpp: 3150:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, dma_sent_size: 0x20
-
-
-Info: NV_NVDLA_mcif.cpp: 3175:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, read sdp_b_rd_atom_enable_fifo_, sdp_b payload atom mask is 0x1
-
-
-Info: NV_NVDLA_mcif.cpp: 3246:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:81919, axi_atom_ptr value:
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xe5
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xae
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x28
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0xad
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3248:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 3251:NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, sdp_b payload atom mask is 0x1, write an atom to mcif2sdp_b_rd_rsp_fifo_, num_free:81918.
-
-
-Info: NV_NVDLA_mcif.cpp: 3555:NV_NVDLA_mcif::ReadRequestArbiter, get new request, wake up.
-
-
-Info: NV_NVDLA_mcif.cpp: 3553:NV_NVDLA_mcif::ReadRequestArbiter, no pending request, waiting.
-
-
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x6000
 
 
@@ -5542,30 +5002,6 @@ Info: NV_NVDLA_csb_master.cpp: 116:nposted: 0x0
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0x6004 len=4 data=0x 00000000 resp=TLM_OK_RESPONSE
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0xaf35ace3a9cdabbf
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0xace3abf6206e238b
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0xaf76ad64addf2490
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0xa5b8a9b8a308a9eb
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0xad28aee5
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0x0
-
-
-Info: NV_NVDLA_mcif.cpp: 1370:    0x0
-
 
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x5000
 
@@ -5587,12 +5023,6 @@ Info: NV_NVDLA_csb_master.cpp: 107:nposted: 0x0
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0x5004 len=4 data=0x 00000000 resp=TLM_OK_RESPONSE
 
-Info: NV_NVDLA_mcif.cpp: 3555:NV_NVDLA_mcif::ReadRequestArbiter, get new request, wake up.
-
-
-Info: NV_NVDLA_mcif.cpp: 3553:NV_NVDLA_mcif::ReadRequestArbiter, no pending request, waiting.
-
-
 Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0x5000
 
 
@@ -5602,7 +5032,7 @@ Info: NV_NVDLA_csb_master.cpp: 103:NV_NVDLA_csb_master::nvdla2csb_b_transport, c
 Info: NV_NVDLA_csb_master.cpp: 104:Addr: 0x500c
 
 
-Info: NV_NVDLA_csb_master.cpp: 105:Data: 0x0
+Info: NV_NVDLA_csb_master.cpp: 105:Data: 0x7a0e
 
 
 Info: NV_NVDLA_csb_master.cpp: 106:Is write: 0x0
@@ -5715,916 +5145,902 @@ Info: NV_NVDLA_csb_master.cpp: 107:nposted: 0x0
 
 
 Info: nvdla.csb_adaptor: GP: iswrite=1 addr=0x5010 len=4 data=0x 00000001 resp=TLM_OK_RESPONSE
-[   11.137570] Enter: dla_op_enabled
+[    9.271012] Enter: dla_op_enabled
+[    9.271373] Exit: dla_op_enabled
+[    9.271626] Exit: dla_enable_operation status=0
+[    9.271940] Exit: dla_op_enabled
+[    9.272187] Exit: dla_enable_operation status=0
+[    9.274249] Exit: dla_submit_operation
+[    9.274597] Enter: dla_dequeue_operation
+[    9.274874] Dequeue op from SDP processor, index=4 ROI=0
+[    9.275205] Enter: dla_submit_operation
+[    9.275479] Prepare SDP operation index 4 ROI 0 dep_count 0
+[    9.275857] Enter: dla_prepare_operation
 
-Info: NV_NVDLA_mcif.cpp: 3555:NV_NVDLA_mcif::ReadRequestArbiter, get new request, wake up.
-
-
-Info: NV_NVDLA_mcif.cpp: 3686:NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from cdma_dat, begin, atom:2, num_free:81920 credit_mcif2cdma_dat_rd_rsp_fifo_=81918.
-
-
-Info: NV_NVDLA_mcif.cpp: 3688:NV_NVDLA_mcif::ReadRequestArbiter, send read request, cdma_dat_rd_req_payload_ from cdma_dat, end.
-
-
-Info: NV_NVDLA_mcif.cpp: 3686:NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from cdma_dat, begin, atom:2, num_free:81920 credit_mcif2cdma_dat_rd_rsp_fifo_=81916.
-
-
-Info: NV_NVDLA_mcif.cpp: 1974:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x3 user_size_last=0x3
+Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0xb000
 
 
-Info: NV_NVDLA_mcif.cpp: 1976:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, prepare AXI transaction for address: 0xc0200000
+Info: NV_NVDLA_csb_master.cpp: 157:NV_NVDLA_csb_master::nvdla2csb_b_transport, csb req to SDP_BASE, 
 
 
-Info: NV_NVDLA_mcif.cpp: 2018:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:163840
+Info: NV_NVDLA_csb_master.cpp: 158:Addr: 0xb004
 
 
-Info: NV_NVDLA_mcif.cpp: 2018:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:163839
+Info: NV_NVDLA_csb_master.cpp: 159:Data: 0x7a0e
 
 
-Info: NV_NVDLA_mcif.cpp: 2046:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, before sending data to cdma_wt_rd_req_fifo_ addr=0xc0200000, , num_free:81920
+Info: NV_NVDLA_csb_master.cpp: 160:Is write: 0x0
 
 
-Info: NV_NVDLA_mcif.cpp: 2048:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, after sending data to cdma_wt_rd_req_fifo_ addr=0xc0200000
+Info: NV_NVDLA_csb_master.cpp: 161:nposted: 0x0
 
 
-Info: NV_NVDLA_mcif.cpp: 1976:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, prepare AXI transaction for address: 0xc0200040
+Info: NV_NVDLA_csb_master.cpp: 758:NV_NVDLA_csb_master::sdp2csb_resp_b_transport. Err bit: 0x0 Data: 0x0
 
 
-Info: NV_NVDLA_mcif.cpp: 2032:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:163838
+Info: nvdla.csb_adaptor: GP: iswrite=0 addr=0xb004 len=4 data=0x 00000000 resp=TLM_OK_RESPONSE
+
+Info: NvdlaAxiAdaptor.cpp: 71:NvdlaAxiAdaptor::axi_rd_wr_thread, send read request start. address=0xc0018000
 
 
-Info: NV_NVDLA_mcif.cpp: 2032:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:163837
+Info: nvdla.dbb_adaptor: GP: iswrite=0 addr=0xc0018000 len=64 data=0x 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 resp=TLM_OK_RESPONSE
+
+Info: NV_NVDLA_csb_master.cpp: 54:NV_NVDLA_csb_master::nvdla2csb_b_transport, base_addr: 0xa000
 
 
-Info: NV_NVDLA_mcif.cpp: 2046:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, before sending data to cdma_wt_rd_req_fifo_ addr=0xc0200040, , num_free:81919
+Info: NV_NVDLA_csb_master.cpp: 148:NV_NVDLA_csb_master::nvdla2csb_b_transport, csb req to SDP_RDMA_BASE, 
 
 
-Info: NV_NVDLA_mcif.cpp: 2048:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, after sending data to cdma_wt_rd_req_fifo_ addr=0xc0200040
+Info: NV_NVDLA_csb_master.cpp: 149:Addr: 0xa004
 
 
-Info: NV_NVDLA_mcif.cpp: 1976:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, prepare AXI transaction for address: 0xc0200080
+Info: NV_NVDLA_csb_master.cpp: 150:Data: 0x7a0e
 
 
-Info: NV_NVDLA_mcif.cpp: 2032:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:163836
+Info: NV_NVDLA_csb_master.cpp: 151:Is write: 0x0
 
 
-Info: NV_NVDLA_mcif.cpp: 2032:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:163835
+Info: NV_NVDLA_csb_master.cpp: 152:nposted: 0x0
 
 
-Info: NV_NVDLA_mcif.cpp: 2046:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, before sending data to cdma_wt_rd_req_fifo_ addr=0xc0200080, , num_free:81918
+Info: NV_NVDLA_csb_master.cpp: 714:NV_NVDLA_csb_master::sdp_rdma2csb_resp_b_transport. Err bit: 0x0 Data: 0x10000
 
 
-Info: NV_NVDLA_mcif.cpp: 2048:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, after sending data to cdma_wt_rd_req_fifo_ addr=0xc0200080
+Info: nvdla.csb_adaptor: GP: iswrite=0 addr=0xa004 len=4 data=0x 00010000 resp=TLM_OK_RESPONSE
+[    9.278908] processor:SDP group:1, rdma_group:1 available
+[    9.279285] Enter: dla_read_config
+[    9.279580] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
+[    9.280109] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
+[    9.282394] *********************************************************
+[    9.282834] NVDLA FW ROI[0]: dla_sdp_surface_desc
+[    9.283156] ---------------------------------------------------------
+[    9.283574] src_data            = [ dla_data_cube =>
+[    9.283910]     type          = 2
+[    9.284155]     address       = -1
+[    9.286409]     offset        = 0
+[    9.286653]     width         = 1
+[    9.286844]     height        = 1
+[    9.287037]     channel       = 1f4
+[    9.287238]     size          = 1024
+[    9.287433]     line_stride   = 32
+[    9.287624]     surf_stride   = 32
+[    9.287812]     plane_stride  = 0
+[    9.287995] ]
+[    9.288015] x1_data             = [ dla_data_cube =>
+[    9.288369]     type          = 0
+[    9.291079]     address       = 1
+[    9.291349]     offset        = 11000
+[    9.291585]     width         = 1
+[    9.291765]     height        = 1
+[    9.291938]     channel       = 1f4
+[    9.292126]     size          = 1000
+[    9.294283]     line_stride   = 32
+[    9.294604]     surf_stride   = 32
+[    9.294873]     plane_stride  = 0
+[    9.295113] ]
+[    9.295140] x2_data             = [ dla_data_cube =>
+[    9.295607]     type          = 0
+[    9.295843]     address       = 0
+[    9.296104]     offset        = 0
+[    9.296370]     width         = 0
+[    9.298892]     height        = 0
+[    9.299162]     channel       = 0
+[    9.299374]     size          = 0
+[    9.299613]     line_stride   = 0
+[    9.299876]     surf_stride   = 0
+[    9.300132]     plane_stride  = 0
+[    9.302226] ]
+[    9.302265] y_data              = [ dla_data_cube =>
+[    9.302770]     type          = 0
+[    9.303030]     address       = 0
+[    9.303306]     offset        = 0
+[    9.303578]     width         = 0
+[    9.303816]     height        = 0
+[    9.304078]     channel       = 0
+[    9.304327]     size          = 0
+[    9.306789]     line_stride   = 0
+[    9.307086]     surf_stride   = 0
+[    9.307299]     plane_stride  = 0
+[    9.307516] ]
+[    9.307535] dst_data            = [ dla_data_cube =>
+[    9.307975]     type          = 0
+[    9.308209]     address       = 2
+[    9.310580]     offset        = 3000
+[    9.310837]     width         = 1
+[    9.311069]     height        = 1
+[    9.311312]     channel       = 1f4
+[    9.311556]     size          = 1024
+[    9.311806]     line_stride   = 32
+[    9.312071]     surf_stride   = 32
+[    9.312331]     plane_stride  = 0
+[    9.314715] ]
+[    9.314747] *********************************************************
+[    9.315336] NVDLA FW ROI[0]: dla_sdp_op_desc
+[    9.315618] ---------------------------------------------------------
+[    9.316054] src_precision    = 2
+[    9.316299] dst_precision    = 2
+[    9.318503] lut_index        = -1
+[    9.318797] out_cvt          =
+[    9.319036] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
+[    9.319398] conv_mode        = 0
+[    9.319650] batch_num        = 1
+
+Info: NvdlaAxiAdaptor.cpp: 71:NvdlaAxiAdaptor::axi_rd_wr_thread, send read request start. address=0xc0018040
+
+[    9.31988
+Info: nvdla.dbb_adaptor: GP: iswrite=0 addr=0xc0018040 len=64 data=0x 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 resp=TLM_OK_RESPONSE
+
+Info: NvdlaAxiAdaptor.cpp: 71:NvdlaAxiAdaptor::axi_rd_wr_thread, send read request start. address=0xc0018080
 
 
-Info: NV_NVDLA_mcif.cpp: 1976:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, prepare AXI transaction for address: 0xc02000c0
+Info: nvdla.dbb_adaptor: GP: iswrite=0 addr=0xc0018080 len=64 data=0x 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 resp=TLM_OK_RESPONSE
 
+Info: NvdlaAxiAdaptor.cpp: 71:NvdlaAxiAdaptor::axi_rd_wr_thread, send read request start. address=0xc0200000
 
-Info: NV_NVDLA_mcif.cpp: 2003:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:163834
-
-
-Info: NV_NVDLA_mcif.cpp: 2003:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:163833
-
-
-Info: NV_NVDLA_mcif.cpp: 2046:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, before sending data to cdma_wt_rd_req_fifo_ addr=0xc02000c0, , num_free:81917
-
-
-Info: NV_NVDLA_mcif.cpp: 2048:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, after sending data to cdma_wt_rd_req_fifo_ addr=0xc02000c0
-
-
-Info: NV_NVDLA_mcif.cpp: 2052:NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, after spliting DMA transaction
-
-[   11.137854] Exit: dla_op_enabled
-[   11.138255] Exit: dla_enable_operation status=0
-[   11.140028] Exit: dla_op_enabled
-[   11.140261] Exit: dla_enable_operation status=0
-[   11.140494] Exit: dla_submit_operation
-[   11.140695] Enter: dla_dequeue_operation
-[   11.140913] Dequeue op from SDP processor, index=4 ROI=0
-[   11.141313] Enter: dla_submit_operation
-[   11.141648] Prepare SDP operation index 4 ROI 0 dep_count 0
-[   11.142069] Enter: dla_prepare_operation
-[   11.156396] processor:SDP group:1, rdma_group:1 available
-[   11.156790] Enter: dla_read_config
-[   11.157038] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
-[   11.157487] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
-[   11.157985] *********************************************************
-[   11.158262] NVDLA FW ROI[0]: dla_sdp_surface_desc
-[   11.160908] ---------------------------------------------------------
-[   11.161326] src_data            = [ dla_data_cube =>
-[   11.161615]     type          = 2
-[   11.161834]     address       = -1
-[   11.162058]     offset        = 0
-[   11.162275]     width         = 1
-[   11.164936]     height        = 1
-[   11.165221]     channel       = 1f4
-[   11.165443]     size          = 1024
-[   11.165671]     line_stride   = 32
-[   11.165884]     surf_stride   = 32
-[   11.166095]     plane_stride  = 0
-[   11.166300] ]
-[   11.166325] x1_data             = [ dla_data_cube =>
-[   11.169349]     type          = 0
-[   11.169529]     address       = 1
-[   11.169697]     offset        = 11000
-[   11.169880]     width         = 1
-[   11.170049]     height        = 1
-[   11.170228]     channel       = 1f4
-[   11.172314]     size          = 1000
-[   11.172556]     line_stride   = 32
-[   11.172733]     surf_stride   = 32
-[   11.172910]     plane_stride  = 0
-[   11.173078] ]
-[   11.173097] x2_data             = [ dla_data_cube =>
-[   11.173416]     type          = 0
-[   11.173590]     address       = 0
-[   11.173762]     offset        = 0
-[   11.173934]     width         = 0
-[   11.174107]     height        = 0
-[   11.174279]     channel       = 0
-[   11.177739]     size          = 0
-[   11.177970]     line_stride   = 0
-[   11.178142]     surf_stride   = 0
-[   11.178311]     plane_stride  = 0
-[   11.180147] ]
-[   11.180176] y_data              = [ dla_data_cube =>
-[   11.180559]     type          = 0
-[   11.180735]     address       = 0
-[   11.180911]     offset        = 0
-[   11.181083]     width         = 0
-[   11.181257]     height        = 0
-[   11.181429]     channel       = 0
-[   11.181601]     size          = 0
-[   11.181770]     line_stride   = 0
-[   11.181939]     surf_stride   = 0
-[   11.182111]     plane_stride  = 0
-[   11.182278] ]
-[   11.182295] dst_data            = [ dla_data_cube =>
-[   11.186367]     type          = 0
-[   11.187871]     address       = 2
-[   11.188054]     offset        = 3000
-[   11.188240]     width         = 1
-[   11.188417]     height        = 1
-[   11.188597]     channel       = 1f4
-[   11.188778]     size          = 1024
-[   11.188969]     line_stride   = 32
-[   11.189150]     surf_stride   = 32
-[   11.189331]     plane_stride  = 0
-[   11.189512] ]
-[   11.189536] *********************************************************
-[   11.189918] NVDLA FW ROI[0]: dla_sdp_op_desc
-[   11.190128] ---------------------------------------------------------
-[   11.194163] src_precision    = 2
-[   11.195626] dst_precision    = 2
-[   11.195873] lut_index        = -1
-[   11.196048] out_cvt          =
-[   11.196220] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
-[   11.196486] conv_mode        = 0
-[   11.196655] batch_num        = 1
-[   11.196829] batch_stride     = 0
-[   11.197002] x1_op            = [ dla_sdp_op =>
-[   11.197213]     enable         = 1
-[   11.197392]     alu_type       = 2
-[   11.197569]     type           = 2
-[   11.197742]     mode           = 1
-[   11.197920]     act            = 1
-[   11.198094]     shift_value    = 0
-[   11.198269]     truncate       = 0
-[   11.202368]     precision      = 2
-[   11.203825]     alu_operand    = 0
-[   11.204024]     mul_operand    = 1
-[   11.204196] cvt.alu_cvt          =
-[   11.204380] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.204632] cvt.mul_cvt          =
-[   11.204815] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.205076] ]
-[   11.205191] x2_op            = [ dla_sdp_op =>
-[   11.205405]     enable         = 0
-[   11.205596]     alu_type       = 0
-[   11.205778]     type           = 0
-[   11.205963]     mode           = 0
-[   11.206142]     act            = 0
-[   11.206323]     shift_value    = 0
-[   11.210205]     truncate       = 0
-[   11.211721]     precision      = 0
-[   11.211979]     alu_operand    = 0
-[   11.212164]     mul_operand    = 0
-[   11.212342] cvt.alu_cvt          =
-[   11.212536] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.212806] cvt.mul_cvt          =
-[   11.213002] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.213270] ]
-[   11.213393] y_op             = [ dla_sdp_op =>
-[   11.213617]     enable         = 0
-[   11.213801]     alu_type       = 0
-[   11.213984]     type           = 0
-[   11.214169]     mode           = 0
-[   11.214362]     act            = 0
-[   11.218677]     shift_value    = 0
-[   11.218869]     truncate       = 0
-[   11.219051]     precision      = 0
-[   11.219230]     alu_operand    = 0
-[   11.219406]     mul_operand    = 0
-[   11.219578] cvt.alu_cvt          =
-[   11.219763] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.220042] cvt.mul_cvt          =
-[   11.220226] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   11.220478] ]
-[   11.220602] Exit: dla_read_config
-[   11.220786] Exit: dla_prepare_operation status=0
-[   11.221016] Enter: dla_program_operation
-[   11.221222] Program SDP operation index 4 ROI 0 Group[1]
-[   11.228222] 
-[   11.228222] entered processor_sdp_program():
-[   11.228579] sdp skip getting src_addr
-[   11.228579] 
-[   11.228843] sdp getting dst_addr:
-[   11.229032] entered dla_get_dma_cube_address(index = 2, offset = 0x3000):
-[   11.229323] entered dla_get_dma_address(index = 2):
-[   11.229543] in branch dla_get_dma_address(DESTINATION_DMA):
-[   11.229788] entered dla_read_dma_address(index = 2):
-[   11.230020] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
-[   11.230333] *phys_addr = 0xc0008000 + 0x0
-[   11.234716] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
-[   11.235079] back to dla_get_dma_cube_address: dst_ptr += 0x3000
-[   11.235346] sdp dst_addr = 0xc000b000
-[   11.235346] 
-[   11.235603] sdp getting x1_addr:
-[   11.235780] entered dla_get_dma_cube_address(index = 1, offset = 0x11000):
-[   11.236079] entered dla_get_dma_address(index = 1):
-[   11.236312] in branch dla_get_dma_address(DESTINATION_DMA):
-[   11.236567] entered dla_read_dma_address(index = 1):
-[   11.236814] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
-[   11.237120] *phys_addr = 0xc0200000 + 0x0
-[   11.237328] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
-[   13.362024] back to dla_get_dma_cube_address: dst_ptr += 0x11000
-[   13.375648] sdp x1_addr = 0xc0211000
-[   13.375648] 
-[   13.375938] sdp skip getting x2_addr
-[   13.375938] 
-[   13.376242] sdp skip getting y_addr
-[   13.376242] 
-[   13.377670] no desc get due to index==-1
-[   13.377953] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
-[   13.386665] no desc get due to index==-1
-[   13.386950] no desc get due to index==-1
-[   13.387164] no desc get due to index==-1
-[   13.387380] Enter: dla_op_programmed
-[   13.387600] Update dependency operation index 6 ROI 0 DEP_COUNT=2
-[   13.387909] Exit: dla_op_programmed
-[   13.388124] Exit: dla_program_operation status=0
-[   13.388363] Enter: dla_enable_operation
-[   13.388665] Enable SDP operation index 4 ROI 0
-[   13.389067] Enter: dla_op_enabled
-[   13.389278] Update dependency operation index 3 ROI 0 DEP_COUNT=2
-[   13.389568] Exit: dla_op_enabled
-[   13.389760] Exit: dla_enable_operation status=0
-[   13.389993] Exit: dla_submit_operation
-[   13.390209] Exit: dla_dequeue_operation
-[   13.397922] Enter: dla_submit_operation
-[   13.398226] Prepare PDP operation index 2 ROI 0 dep_count 1
-[   13.406636] Enter: dla_prepare_operation
-[   13.407702] processor:PDP group:0, rdma_group:0 available
-[   13.407991] Enter: dla_read_config
-[   13.408243] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
-[   13.408751] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
-[   13.409374] *********************************************************
-[   13.409715] NVDLA FW ROI[0]: dla_pdp_surface_desc
-[   13.409972] ---------------------------------------------------------
-[   13.410307] src_data            = [ dla_data_cube =>
-[   13.413002]     type          = 0
-[   13.413248]     address       = 2
-[   13.413434]     offset        = 0
-[   13.413626]     width         = 8
-[   13.413812]     height        = 8
-[   13.414020]     channel       = 32
-[   13.414223]     size          = 8192
-[   13.416512]     line_stride   = 256
-[   13.416782]     surf_stride   = 2048
-[   13.416984]     plane_stride  = 0
-[   13.417180] ]
-[   13.417223] dst_data            = [ dla_data_cube =>
-[   13.417606]     type          = 0
-[   13.417809]     address       = 2
-[   13.418015]     offset        = 2000
-[   13.418224]     width         = 4
-[   13.426610]     height        = 4
-[   13.426863]     channel       = 32
-[   13.427061]     size          = 2048
-[   13.427265]     line_stride   = 128
-[   13.427480]     surf_stride   = 512
-[   13.427683]     plane_stride  = 0
-[   13.427885] ]
-[   13.427995] *********************************************************
-[   13.428461] NVDLA FW ROI[0]: dla_pdp_op_desc
-[   13.428723] ---------------------------------------------------------
-[   13.429075] precision               = 2
-[   13.429313] padding_value           = [
-[   13.429570]  0
-[   13.429764]  0
-[   13.429907]  0
-[   13.430051]  0
-[   13.430191]  0
-[   13.430327]  0
-[   13.439380]  0
-[   13.439593] ]
-[   13.439746] split_num               = 1
-[   13.439988] partial_in_width_first  = 0
-[   13.440222] partial_in_width_mid    = 0
-[   13.440466] partial_in_width_last   = 0
-[   13.440706] partial_width_first     = 0
-[   13.440947] partial_width_mid       = 0
-[   13.441182] partial_width_last      = 0
-[   13.441422] pool_mode               = 1
-[   13.441672] pool_width              = 1
-[   13.441917] pool_height             = 1
-[   13.442165] stride_x                = 2
-[   13.446004] stride_y                = 2
-[   13.446292] pad_left                = 0
-[   13.447972] pad_right               = 0
-[   13.448273] pad_top                 = 0
-[   13.448499] pad_bottom              = 0
-[   13.448782] Exit: dla_read_config
-[   13.449036] Exit: dla_prepare_operation status=0
-[   13.449303] Enter: dla_program_operation
-[   13.449538] Program PDP operation index 2 ROI 0 Group[0]
-[   13.449829] group id 0 rdma id 0
-[   13.454320] entered dla_read_input_address():
-[   13.454859] passed to dla_get_dma_cube_address(data->address = 2, data->offset = 0)
-[   13.455237] entered dla_get_dma_cube_address(index = 2, offset = 0x0):
-[   13.455553] entered dla_get_dma_address(index = 2):
-[   13.455808] in branch dla_get_dma_address(DESTINATION_DMA):
-[   13.456102] entered dla_read_dma_address(index = 2):
-[   13.456366] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
-[   13.456713] *phys_addr = 0xc0008000 + 0x0
-[   13.456944] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
-[   13.457279] back to dla_get_dma_cube_address: dst_ptr += 0x0
-[   13.457627] entered dla_get_dma_cube_address(index = 2, offset = 0x2000):
-[   13.457966] entered dla_get_dma_address(index = 2):
-[   13.458214] in branch dla_get_dma_address(DESTINATION_DMA):
-[   13.462121] entered dla_read_dma_address(index = 2):
-[   13.463697] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
-[   13.464097] *phys_addr = 0xc0008000 + 0x0
-[   13.464346] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
-[   13.464716] back to dla_get_dma_cube_address: dst_ptr += 0x2000
-[   13.469405] no desc get due to index==-1
-[   13.469704] no desc get due to index==-1
-[   13.469922] no desc get due to index==-1
-[   13.470142] no desc get due to index==-1
-[   13.470368] no desc get due to index==-1
-[   13.472450] no desc get due to index==-1
-[   13.472676] Enter: dla_op_programmed
-[   13.472892] Exit: dla_op_programmed
-[   13.473102] Exit: dla_program_operation status=0
-[   13.473345] Exit: dla_submit_operation
-[   13.473565] Enter: dla_dequeue_operation
-[   13.473814] exit PDP as there's no further operation
-[   13.474087] Exit: dla_dequeue_operation
-[   13.474329] Exit: dla_initiate_processors status=0
-[   13.478410] Enter:dla_handle_events, processor:BDMA
-[   13.479212] Exit:dla_handle_events, ret:0
-[   13.479669] Enter:dla_handle_events, processor:Convolution
-[   13.480170] Handle cdma weight done event, processor Convolution group 0
-[   13.480839] Handle cdma data done event, processor Convolution group 0
-[   13.481449] Handle op complete event, processor Convolution group 0
-[   13.481952] Enter:dla_op_completion processor Convolution group0
-[   13.482371] Completed Convolution operation index 0 ROI 0
-[   13.482965] 1 HWLs done, totally 7 layers
-[   13.483600] Enter: dla_dequeue_operation
-[   13.483981] Dequeue op from Convolution processor, index=5 ROI=0
-[   13.484472] Enter: dla_submit_operation
-[   13.484844] Prepare Convolution operation index 5 ROI 0 dep_count 2
-[   13.485381] Enter: dla_prepare_operation
-[   13.485904] processor:Convolution group:0, rdma_group:0 available
-[   13.486268] Enter: dla_read_config
-[   13.486509] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
-[   13.487015] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
-[   13.487569] *********************************************************
-[   13.487880] NVDLA FW ROI[0]: dla_conv_surface_desc
-[   13.488118] ---------------------------------------------------------
-[   13.488408] weight_data         = [ dla_data_cube =>
-[   13.488655]     type          = 0
-[   13.488842]     address       = 1
-[   13.489032]     offset        = 14000
-[   13.489244]     width         = 1
-[   13.489443]     height        = 1
-[   13.489643]     channel       = 1f4
-[   13.489853]     size          = 10112
-[   13.490069]     line_stride   = 0
-[   13.490272]     surf_stride   = 0
-[   13.490473]     plane_stride  = 0
-[   13.490670] ]
-[   13.490691] wmb_data            = [ dla_data_cube =>
-[   13.491067]     type          = 0
-[   13.491262]     address       = 0
-[   13.491499]     offset        = 0
-[   13.491696]     width         = 0
-[   13.491904]     height        = 0
-[   13.492103]     channel       = 0
-[   13.492303]     size          = 0
-[   13.492506]     line_stride   = 0
-[   13.492707]     surf_stride   = 0
-[   13.492910]     plane_stride  = 0
-[   13.493109] ]
-[   13.493128] wgs_data            = [ dla_data_cube =>
-[   13.493501]     type          = 0
-[   13.493703]     address       = 0
-[   13.493910]     offset        = 0
-[   13.494108]     width         = 0
-[   13.494306]     height        = 0
-[   13.494538]     channel       = 0
-[   13.494754]     size          = 0
-[   13.494930]     line_stride   = 0
-[   13.495109]     surf_stride   = 0
-[   13.495284]     plane_stride  = 0
-[   13.495459] ]
-[   13.495476] src_data            = [ dla_data_cube =>
-[   13.495803]     type          = 0
-[   13.495993]     address       = 2
-[   13.496167]     offset        = 3000
-[   13.496356]     width         = 1
-[   13.496534]     height        = 1
-[   13.496713]     channel       = 1f4
-[   13.496897]     size          = 1024
-[   13.497087]     line_stride   = 32
-[   13.497269]     surf_stride   = 32
-[   13.497450]     plane_stride  = 0
-[   13.497625] ]
-[   13.497642] dst_data            = [ dla_data_cube =>
-[   13.497967]     type          = 2
-[   13.498145]     address       = -1
-[   13.498330]     offset        = 0
-[   13.498506]     width         = 1
-[   13.498687]     height        = 1
-[   13.498865]     channel       = a
-[   13.499048]     size          = 32
-[   13.499230]     line_stride   = 32
-[   13.499414]     surf_stride   = 32
-[   13.499599]     plane_stride  = 0
-[   13.499774] ]
-[   13.499795] offset_u            = 0
-[   13.500077] in_line_uv_stride   = 0
-[   13.500077] 
-[   13.500329] *********************************************************
-[   13.500609] NVDLA FW ROI[0]: dla_conv_op_desc
-[   13.500820] ---------------------------------------------------------
-[   13.501095] conv_mode          = 0
-[   13.501281] data_reuse         = 0
-[   13.501516] weight_reuse       = 0
-[   13.501711] skip_data_rls      = 0
-[   13.501899] skip_weight_rls    = 0
-[   13.502088] entry_per_slice    = 8
-[   13.502282] data_format        = 36
-[   13.502477] pixel_mapping      = 0
-[   13.502665] fetch_grain        = 1
-[   13.502857] batch              = 1
-[   13.503045] weight_format      = 0
-[   13.503235] data_bank          = 1
-[   13.503429] weight_bank        = 1
-[   13.503616] batch_stride       = 0
-[   13.503805] post_extension     = 0
-[   13.503996] pixel_override     = 0
-[   13.504185] release            = 1
-[   13.504378] input_width_csc    = 1
-[   13.504571] input_height_csc   = 1
-[   13.504763] input_channel_csc  = 500
-[   13.504959] kernel_width_csc   = 1
-[   13.505150] kernel_height_csc  = 1
-[   13.505342] kernel_channel_csc = 500
-[   13.505536] input_width_cmac   = 1
-[   13.505730] input_height_cmac  = 1
-[   13.505926] bytes_per_kernel   = 1000
-[   13.506127] mean_ry            = 0
-[   13.506325] mean_gu            = 0
-[   13.506515] mean_bv            = 0
-[   13.506703] mean_ax            = 0
-[   13.506895] mean_format        = 0
-[   13.507084] conv_stride_x      = 1
-[   13.507279] conv_stride_y      = 1
-[   13.507467] pad_x_left         = 0
-[   13.507657] pad_x_right        = 0
-[   13.507856] pad_y_top          = 0
-[   13.508046] pad_y_bottom       = 0
-[   13.508234] dilation_x         = 1
-[   13.508419] dilation_y         = 1
-[   13.508602] pra_truncate       = 0
-[   13.508786] in_precision       = 2
-[   13.508971] out_precision      = 2
-[   13.509157] pad_val            = 0
-[   13.509340] in_cvt             =
-[   13.509526] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
-[   13.509791] out_cvt            =
-[   13.509972] [ scale = 1, truncate = 0, enable = 1, offset = 0 ]
-[   13.510237] 
-[   13.510360] Exit: dla_read_config
-[   13.510546] Exit: dla_prepare_operation status=0
-[   13.510775] Enter: dla_program_operation
-[   13.510985] Program Convolution operation index 5 ROI 0 Group[0]
-[   13.511515] 
-[   13.511515] entered processor_conv_program():
-[   13.511824] conv getting weight_address:
-[   13.512047] entered dla_get_dma_cube_address(index = 1, offset = 0x14000):
-[   13.512359] entered dla_get_dma_address(index = 1):
-[   13.512590] in branch dla_get_dma_address(DESTINATION_DMA):
-[   13.512845] entered dla_read_dma_address(index = 1):
-[   13.513084] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
-[   13.513388] *phys_addr = 0xc0200000 + 0x0
-[   13.513602] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
-[   13.513915] back to dla_get_dma_cube_address: dst_ptr += 0x14000
-[   13.514186] conv weight_addr = 0xc0214000
-[   13.514186] 
-[   13.514461] conv getting input_address:
-[   13.514670] entered dla_read_input_address():
-[   13.514899] passed to dla_get_dma_cube_address(data->address = 2, data->offset = 12288)
-[   13.515259] entered dla_get_dma_cube_address(index = 2, offset = 0x3000):
-[   13.515573] entered dla_get_dma_address(index = 2):
-[   13.515809] in branch dla_get_dma_address(DESTINATION_DMA):
-[   13.516063] entered dla_read_dma_address(index = 2):
-[   13.516306] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
-[   13.516610] *phys_addr = 0xc0008000 + 0x0
-[   13.516824] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
-[   13.517139] back to dla_get_dma_cube_address: dst_ptr += 0x3000
-[   13.517427] conv input_addr = 0xc000b000
-[   13.517427] 
-[   13.520000] no desc get due to index==-1
-[   13.520212] no desc get due to index==-1
-[   13.520418] no desc get due to index==-1
-[   13.520624] no desc get due to index==-1
-[   13.520832] no desc get due to index==-1
-[   13.521039] no desc get due to index==-1
-[   13.521255] Enter: dla_op_programmed
-[   13.521496] Update dependency operation index 6 ROI 0 DEP_COUNT=1
-[   13.521784] enable SDP in dla_update_dependency as depdency are resolved
-[   13.522083] Enter: dla_enable_operation
-[   13.522290] exit dla_enable_operation without actual enable due to processor hasn't been programmed
-[   13.522690] Exit: dla_enable_operation status=0
-[   13.522917] Exit: dla_op_programmed
-[   13.523118] Exit: dla_program_operation status=0
-[   13.523351] Exit: dla_submit_operation
-[   13.523563] Exit: dla_dequeue_operation
-[   13.523834] Exit:dla_op_completion processor Convolution group0 status=0
-[   13.524208] Exit:dla_handle_events, ret:0
-[   13.524428] Enter:dla_handle_events, processor:SDP
-[   13.524674] Handle op complete event, processor SDP group 0
-[   13.524942] Enter:dla_op_completion processor SDP group0
-[   13.525257] Completed SDP operation index 1 ROI 0
-[   13.525579] Update dependency operation index 2 ROI 0 DEP_COUNT=1
-[   13.525857] enable PDP in dla_update_dependency as depdency are resolved
-[   13.526152] Enter: dla_enable_operation
-[   13.526357] Enable PDP operation index 2 ROI 0
-[   13.526577] group id 0 rdma id 0
-[   13.526937] rdma needed 1
-[   13.527266] Enter: dla_op_enabled
-[   13.527461] Exit: dla_op_enabled
-[   13.527647] Exit: dla_enable_operation status=0
-[   13.527881] 2 HWLs done, totally 7 layers
-[   13.528148] Enter: dla_free_op_desc op desc index 0 ROI 0
-[   13.528720] Exit: dla_free_op_desc
-[   13.528946] Enter: dla_dequeue_operation
-[   13.529150] Dequeue op from SDP processor, index=6 ROI=0
-[   13.529395] Enter: dla_submit_operation
-[   13.529601] Prepare SDP operation index 6 ROI 0 dep_count 0
-[   13.529852] Enter: dla_prepare_operation
-[   13.531253] processor:SDP group:0, rdma_group:0 available
-[   13.531555] Enter: dla_read_config
-[   13.531756] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
-[   13.532221] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
-[   13.532725] *********************************************************
-[   13.533004] NVDLA FW ROI[0]: dla_sdp_surface_desc
-[   13.533223] ---------------------------------------------------------
-[   13.533499] src_data            = [ dla_data_cube =>
-[   13.533727]     type          = 2
-[   13.533901]     address       = -1
-[   13.534075]     offset        = 0
-[   13.534251]     width         = 1
-[   13.534430]     height        = 1
-[   13.534606]     channel       = a
-[   13.534783]     size          = 32
-[   13.534962]     line_stride   = 32
-[   13.535142]     surf_stride   = 32
-[   13.535325]     plane_stride  = 0
-[   13.535497] ]
-[   13.535515] x1_data             = [ dla_data_cube =>
-[   13.535842]     type          = 0
-[   13.536030]     address       = 1
-[   13.536207]     offset        = 12000
-[   13.536400]     width         = 1
-[   13.536577]     height        = 1
-[   13.536754]     channel       = a
-[   13.536929]     size          = 20
-[   13.537109]     line_stride   = 32
-[   13.537289]     surf_stride   = 32
-[   13.537475]     plane_stride  = 0
-[   13.537652] ]
-[   13.537669] x2_data             = [ dla_data_cube =>
-[   13.537989]     type          = 0
-[   13.538168]     address       = 0
-[   13.538347]     offset        = 0
-[   13.538524]     width         = 0
-[   13.538699]     height        = 0
-[   13.538878]     channel       = 0
-[   13.539054]     size          = 0
-[   13.539231]     line_stride   = 0
-[   13.539416]     surf_stride   = 0
-[   13.539590]     plane_stride  = 0
-[   13.539765] ]
-[   13.539782] y_data              = [ dla_data_cube =>
-[   13.540116]     type          = 0
-[   13.540297]     address       = 0
-[   13.540477]     offset        = 0
-[   13.540652]     width         = 0
-[   13.540826]     height        = 0
-[   13.541000]     channel       = 0
-[   13.541178]     size          = 0
-[   13.541354]     line_stride   = 0
-[   13.541530]     surf_stride   = 0
-[   13.541737]     plane_stride  = 0
-[   13.541914] ]
-[   13.541932] dst_data            = [ dla_data_cube =>
-[   13.542254]     type          = 0
-[   13.542431]     address       = 2
-[   13.542608]     offset        = 4000
-[   13.542796]     width         = 1
-[   13.542974]     height        = 1
-[   13.543150]     channel       = a
-[   13.543327]     size          = 32
-[   13.543506]     line_stride   = 32
-[   13.543684]     surf_stride   = 32
-[   13.543873]     plane_stride  = 0
-[   13.544050] ]
-[   13.544071] *********************************************************
-[   13.544447] NVDLA FW ROI[0]: dla_sdp_op_desc
-[   13.544655] ---------------------------------------------------------
-[   13.544949] src_precision    = 2
-[   13.545125] dst_precision    = 2
-[   13.545301] lut_index        = -1
-[   13.545475] out_cvt          =
-[   13.545649] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
-[   13.545905] conv_mode        = 0
-[   13.546078] batch_num        = 1
-[   13.546252] batch_stride     = 0
-[   13.546420] x1_op            = [ dla_sdp_op =>
-[   13.546640]     enable         = 1
-[   13.546818]     alu_type       = 2
-[   13.546996]     type           = 2
-[   13.547176]     mode           = 1
-[   13.547357]     act            = 0
-[   13.547534]     shift_value    = 0
-[   13.547716]     truncate       = 0
-[   13.547902]     precision      = 2
-[   13.548092]     alu_operand    = 0
-[   13.548279]     mul_operand    = 1
-[   13.548460] cvt.alu_cvt          =
-[   13.548647] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   13.548904] cvt.mul_cvt          =
-[   13.549090] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   13.549353] ]
-[   13.549471] x2_op            = [ dla_sdp_op =>
-[   13.549682]     enable         = 0
-[   13.549858]     alu_type       = 0
-[   13.550037]     type           = 0
-[   13.550215]     mode           = 0
-[   13.550391]     act            = 0
-[   13.550567]     shift_value    = 0
-[   13.550743]     truncate       = 0
-[   13.550921]     precision      = 0
-[   13.551098]     alu_operand    = 0
-[   13.551275]     mul_operand    = 0
-[   13.551448] cvt.alu_cvt          =
-[   13.551683] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   13.551954] cvt.mul_cvt          =
-[   13.552144] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   13.552408] ]
-[   13.552526] y_op             = [ dla_sdp_op =>
-[   13.552746]     enable         = 0
-[   13.552927]     alu_type       = 0
-[   13.553108]     type           = 0
-[   13.553285]     mode           = 0
-[   13.553465]     act            = 0
-[   13.553642]     shift_value    = 0
-[   13.553821]     truncate       = 0
-[   13.554004]     precision      = 0
-[   13.554183]     alu_operand    = 0
-[   13.554365]     mul_operand    = 0
-[   13.554541] cvt.alu_cvt          =
-[   13.554732] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   13.554996] cvt.mul_cvt          =
-[   13.555184] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
-[   13.555444] ]
-[   13.555567] Exit: dla_read_config
-[   13.555751] Exit: dla_prepare_operation status=0
-[   13.556048] Enter: dla_program_operation
-[   13.556271] Program SDP operation index 6 ROI 0 Group[0]
-[   13.557642] 
-[   13.557642] entered processor_sdp_program():
-[   13.557929] sdp skip getting src_addr
-[   13.557929] 
-[   13.558258] sdp getting dst_addr:
-[   13.558489] entered dla_get_dma_cube_address(index = 2, offset = 0x4000):
-[   13.558870] entered dla_get_dma_address(index = 2):
-[   13.559127] in branch dla_get_dma_address(DESTINATION_DMA):
-[   13.559379] entered dla_read_dma_address(index = 2):
-[   13.559609] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
-[   13.559908] *phys_addr = 0xc0008000 + 0x0
-[   13.560116] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
-[   13.560426] back to dla_get_dma_cube_address: dst_ptr += 0x4000
-[   13.560694] sdp dst_addr = 0xc000c000
-[   13.560694] 
-[   13.560963] sdp getting x1_addr:
-[   13.561140] entered dla_get_dma_cube_address(index = 1, offset = 0x12000):
-[   13.561439] entered dla_get_dma_address(index = 1):
-[   13.561702] in branch dla_get_dma_address(DESTINATION_DMA):
-[   13.561959] entered dla_read_dma_address(index = 1):
-[   13.562222] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
-[   13.562507] *phys_addr = 0xc0200000 + 0x0
-[   13.562718] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
-[   13.563022] back to dla_get_dma_cube_address: dst_ptr += 0x12000
-[   13.563280] sdp x1_addr = 0xc0212000
-[   13.563280] 
-[   13.563526] sdp skip getting x2_addr
-[   13.563526] 
-[   13.563772] sdp skip getting y_addr
-[   13.563772] 
-[   13.580961] no desc get due to index==-1
-[   13.581214] no desc get due to index==-1
-[   13.581453] no desc get due to index==-1
-[   13.581719] no desc get due to index==-1
-[   13.581977] no desc get due to index==-1
-[   13.582215] no desc get due to index==-1
-[   13.582452] Enter: dla_op_programmed
-[   13.582696] Exit: dla_op_programmed
-[   13.582916] Exit: dla_program_operation status=0
-[   13.583170] Enter: dla_enable_operation
-[   13.583412] Enable SDP operation index 6 ROI 0
-[   13.585604] Enter: dla_op_enabled
-[   13.585834] Update dependency operation index 5 ROI 0 DEP_COUNT=2
-[   13.586146] Exit: dla_op_enabled
-[   13.586381] Exit: dla_enable_operation status=0
-[   13.586686] Exit: dla_submit_operation
-[   13.586921] Exit: dla_dequeue_operation
-[   13.587165] Enter: dla_free_op_desc op desc index 1 ROI 0
-[   13.587504] Exit: dla_free_op_desc
-[   13.587737] Exit:dla_op_completion processor SDP group0 status=0
-[   13.588062] Exit:dla_handle_events, ret:0
-[   13.588304] Enter:dla_handle_events, processor:PDP
-[   13.588575] Exit:dla_handle_events, ret:0
-[   13.588814] Enter:dla_handle_events, processor:CDP
-[   13.589091] Exit:dla_handle_events, ret:0
-[   13.589329] Enter:dla_handle_events, processor:RUBIK
-[   13.589606] Exit:dla_handle_events, ret:0
-[   13.598281] Enter:dla_handle_events, processor:BDMA
-[   13.598607] Exit:dla_handle_events, ret:0
-[   13.598809] Enter:dla_handle_events, processor:Convolution
-[   13.599061] Exit:dla_handle_events, ret:0
-[   13.599260] Enter:dla_handle_events, processor:SDP
-[   13.599492] Exit:dla_handle_events, ret:0
-[   13.599692] Enter:dla_handle_events, processor:PDP
-[   13.599925] Exit:dla_handle_events, ret:0
-[   13.600131] Enter:dla_handle_events, processor:CDP
-[   13.600361] Exit:dla_handle_events, ret:0
-[   13.600563] Enter:dla_handle_events, processor:RUBIK
-[   13.600794] Exit:dla_handle_events, ret:0
-[   13.618354] Enter:dla_handle_events, processor:BDMA
-[   13.618670] Exit:dla_handle_events, ret:0
-[   13.618873] Enter:dla_handle_events, processor:Convolution
-[   13.619133] Exit:dla_handle_events, ret:0
-[   13.619339] Enter:dla_handle_events, processor:SDP
-[   13.619570] Exit:dla_handle_events, ret:0
-[   13.619774] Enter:dla_handle_events, processor:PDP
-[   13.620016] Handle op complete event, processor PDP group 0
-[   13.620278] Enter:dla_op_completion processor PDP group0
-[   13.620535] Completed PDP operation index 2 ROI 0
-[   13.620771] Update dependency operation index 3 ROI 0 DEP_COUNT=1
-[   13.621046] enable Convolution in dla_update_dependency as depdency are resolved
-[   13.621378] Enter: dla_enable_operation
-[   13.621584] Enable Convolution operation index 3 ROI 0
-[   13.622299] Enter: dla_op_enabled
-[   13.622497] Exit: dla_op_enabled
-[   13.622675] Exit: dla_enable_operation status=0
-[   13.622897] 3 HWLs done, totally 7 layers
-[   13.623103] Enter: dla_dequeue_operation
-[   13.623304] exit PDP as there's no further operation
-[   13.623537] Exit: dla_dequeue_operation
-[   13.623744] Enter: dla_free_op_desc op desc index 2 ROI 0
-[   13.624048] Exit: dla_free_op_desc
-[   13.624244] Exit:dla_op_completion processor PDP group0 status=0
-[   13.624517] Exit:dla_handle_events, ret:0
-[   13.624719] Enter:dla_handle_events, processor:CDP
-[   13.624950] Exit:dla_handle_events, ret:0
-[   13.625157] Enter:dla_handle_events, processor:RUBIK
-[   13.625394] Exit:dla_handle_events, ret:0
-[   13.698882] Enter:dla_handle_events, processor:BDMA
-[   13.699217] Exit:dla_handle_events, ret:0
-[   13.699424] Enter:dla_handle_events, processor:Convolution
-[   13.699681] Handle cdma data done event, processor Convolution group 1
-[   13.699991] Exit:dla_handle_events, ret:0
-[   13.700195] Enter:dla_handle_events, processor:SDP
-[   13.700427] Exit:dla_handle_events, ret:0
-[   13.700625] Enter:dla_handle_events, processor:PDP
-[   13.700849] Exit:dla_handle_events, ret:0
-[   13.701053] Enter:dla_handle_events, processor:CDP
-[   13.701285] Exit:dla_handle_events, ret:0
-[   13.701484] Enter:dla_handle_events, processor:RUBIK
-[   13.701720] Exit:dla_handle_events, ret:0
-[   17.360794] Enter:dla_handle_events, processor:BDMA
-[   17.361186] Exit:dla_handle_events, ret:0
-[   17.361436] Enter:dla_handle_events, processor:Convolution
-[   17.361732] Handle cdma weight done event, processor Convolution group 1
-[   17.362137] Handle op complete event, processor Convolution group 1
-[   17.362618] Enter:dla_op_completion processor Convolution group1
-[   17.363047] Completed Convolution operation index 3 ROI 0
-[   17.363368] 4 HWLs done, totally 7 layers
-[   17.363618] Enter: dla_dequeue_operation
-[   17.363861] exit Convolution as there's no further operation
-[   17.364165] Exit: dla_dequeue_operation
-[   17.364447] Exit:dla_op_completion processor Convolution group1 status=0
-[   17.364806] Exit:dla_handle_events, ret:0
-[   17.365049] Enter:dla_handle_events, processor:SDP
-[   17.365327] Handle op complete event, processor SDP group 1
-[   17.365633] Enter:dla_op_completion processor SDP group1
-[   17.365929] Completed SDP operation index 4 ROI 0
-[   17.366208] Update dependency operation index 5 ROI 0 DEP_COUNT=1
-[   17.366529] enable Convolution in dla_update_dependency as depdency are resolved
-[   17.366921] Enter: dla_enable_operation
-[   17.367160] Enable Convolution operation index 5 ROI 0
-[   17.367800] Enter: dla_op_enabled
-[   17.368032] Exit: dla_op_enabled
-[   17.368330] Exit: dla_enable_operation status=0
-[   17.368703] 5 HWLs done, totally 7 layers
-[   17.369045] Enter: dla_free_op_desc op desc index 3 ROI 0
-[   17.369534] Exit: dla_free_op_desc
-[   17.369843] Enter: dla_dequeue_operation
-[   17.370175] exit SDP as there's no further operation
-[   17.370552] Exit: dla_dequeue_operation
-[   17.370881] Enter: dla_free_op_desc op desc index 4 ROI 0
-[   17.371344] Exit: dla_free_op_desc
-[   17.371663] Exit:dla_op_completion processor SDP group1 status=0
-[   17.372120] Exit:dla_handle_events, ret:0
-[   17.372553] Enter:dla_handle_events, processor:PDP
-[   17.372950] Exit:dla_handle_events, ret:0
-[   17.373220] Enter:dla_handle_events, processor:CDP
-[   17.373449] Exit:dla_handle_events, ret:0
-[   17.373646] Enter:dla_handle_events, processor:RUBIK
-[   17.373879] Exit:dla_handle_events, ret:0
-[   17.477419] Enter:dla_handle_events, processor:BDMA
-[   17.477811] Exit:dla_handle_events, ret:0
-[   17.478062] Enter:dla_handle_events, processor:Convolution
-[   17.478388] Handle cdma data done event, processor Convolution group 0
-[   17.478760] Exit:dla_handle_events, ret:0
-[   17.479011] Enter:dla_handle_events, processor:SDP
-[   17.479293] Exit:dla_handle_events, ret:0
-[   17.479543] Enter:dla_handle_events, processor:PDP
-[   17.479830] Exit:dla_handle_events, ret:0
-[   17.480096] Enter:dla_handle_events, processor:CDP
-[   17.480385] Exit:dla_handle_events, ret:0
-[   17.480639] Enter:dla_handle_events, processor:RUBIK
-[   17.480938] Exit:dla_handle_events, ret:0
-[   17.514910] Enter:dla_handle_events, processor:BDMA
-[   17.515327] Exit:dla_handle_events, ret:0
-[   17.515616] Enter:dla_handle_events, processor:Convolution
-[   17.515965] Handle cdma weight done event, processor Convolution group 0
-[   17.516287] Exit:dla_handle_events, ret:0
-[   17.516491] Enter:dla_handle_events, processor:SDP
-[   17.516732] Exit:dla_handle_events, ret:0
-[   17.516938] Enter:dla_handle_events, processor:PDP
-[   17.517173] Exit:dla_handle_events, ret:0
-[   17.517380] Enter:dla_handle_events, processor:CDP
-[   17.517614] Exit:dla_handle_events, ret:0
-[   17.517818] Enter:dla_handle_events, processor:RUBIK
-[   17.518059] Exit:dla_handle_events, ret:0
-[   17.523482] Enter:dla_handle_events, processor:BDMA
-[   17.524002] Exit:dla_handle_events, ret:0
-[   17.524329] Enter:dla_handle_events, processor:Convolution
-[   17.524750] Handle op complete event, processor Convolution group 0
-[   17.525230] Enter:dla_op_completion processor Convolution group0
-[   17.525702] Completed Convolution operation index 5 ROI 0
-[   17.526139] 6 HWLs done, totally 7 layers
-[   17.526504] Enter: dla_dequeue_operation
-[   17.526849] exit Convolution as there's no further operation
-[   17.527284] Exit: dla_dequeue_operation
-[   17.527635] Exit:dla_op_completion processor Convolution group0 status=0
-[   17.528175] Exit:dla_handle_events, ret:0
-[   17.528519] Enter:dla_handle_events, processor:SDP
-[   17.528919] Handle op complete event, processor SDP group 0
-[   17.529264] Enter:dla_op_completion processor SDP group0
-[   17.529519] Completed SDP operation index 6 ROI 0
-[   17.529760] 7 HWLs done, totally 7 layers
-[   17.529975] Enter: dla_free_op_desc op desc index 5 ROI 0
-[   17.530288] Exit: dla_free_op_desc
-[   17.530507] Enter: dla_free_op_desc op desc index 6 ROI 0
-[   17.530783] Exit: dla_free_op_desc
-[   17.530998] Exit:dla_op_completion processor SDP group0 status=0
-[   17.531276] Exit:dla_handle_events, ret:0
-[   17.531481] Enter:dla_handle_events, processor:PDP
-[   17.531718] Exit:dla_handle_events, ret:0
-[   17.531929] Enter:dla_handle_events, processor:CDP
-[   17.532162] Exit:dla_handle_events, ret:0
-[   17.532368] Enter:dla_handle_events, processor:RUBIK
-[   17.532615] Exit:dla_handle_events, ret:0
-[   17.539909] reset engine done
+7] batch_stride     = 0
+[    9.320213] x1_op            = [ dla_sdp_op =>
+[    9.322603]     enable         = 1
+[    9.322851]     alu_type       = 2
+[    9.323077]     type           = 2
+[    9.323321]     mode           = 1
+[    9.323563]     act            = 1
+[    9.323829]     shift_value    = 0
+[    9.324082]     truncate       = 0
+[    9.324310]     precision      = 2
+[    9.327384]     alu_operand    = 0
+[    9.327627]     mul_operand    = 1
+[    9.327812] cvt.alu_cvt          =
+[    9.328012] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.328302] cvt.mul_cvt          =
+[    9.330253] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.330663] ]
+[    9.330819] x2_op            = [ dla_sdp_op =>
+[    9.331153]     enable         = 0
+[    9.331380]     alu_type       = 0
+[    9.331618]     type           = 0
+[    9.331852]     mode           = 0
+[    9.332118]     act            = 0
+[    9.334457]     shift_value    = 0
+[    9.334756]     truncate       = 0
+[    9.335021]     precision      = 0
+[    9.335278]     alu_operand    = 0
+[    9.335515]     mul_operand    = 0
+[    9.335775] cvt.alu_cvt          =
+[    9.336020] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.338367] cvt.mul_cvt          =
+[    9.338714] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.339122] ]
+[    9.339299] y_op             = [ dla_sdp_op =>
+[    9.339635]     enable         = 0
+[    9.339908]     alu_type       = 0
+[    9.340190]     type           = 0
+[    9.342667]     mode           = 0
+[    9.342967]     act            = 0
+[    9.343235]     shift_value    = 0
+[    9.343512]     truncate       = 0
+[    9.343767]     precision      = 0
+[    9.344010]     alu_operand    = 0
+[    9.344251]     mul_operand    = 0
+[    9.346618] cvt.alu_cvt          =
+[    9.346891] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.347190] cvt.mul_cvt          =
+[    9.347442] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.347845] ]
+[    9.348007] Exit: dla_read_config
+[    9.348286] Exit: dla_prepare_operation status=0
+[    9.350701] Enter: dla_program_operation
+[    9.351023] Program SDP operation index 4 ROI 0 Group[1]
+[    9.351841] 
+[    9.351841] entered processor_sdp_program():
+[    9.352241] sdp skip getting src_addr
+[    9.352241] 
+[    9.354495] sdp getting dst_addr:
+[    9.354833] entered dla_get_dma_cube_address(index = 2, offset = 0x3000):
+[    9.355292] entered dla_get_dma_address(index = 2):
+[    9.355611] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.355964] entered dla_read_dma_address(index = 2):
+[    9.356345] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
+[    9.358838] *phys_addr = 0xc0008000 + 0x0
+[    9.359222] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
+[    9.359607] back to dla_get_dma_cube_address: dst_ptr += 0x3000
+[    9.359943] sdp dst_addr = 0xc000b000
+[    9.359943] 
+[    9.360259] sdp getting x1_addr:
+[    9.362363] entered dla_get_dma_cube_address(index = 1, offset = 0x11000):
+[    9.362740] entered dla_get_dma_address(index = 1):
+[    9.363046] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.363411] entered dla_read_dma_address(index = 1):
+[    9.363784] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
+[    9.364255] *phys_addr = 0xc0200000 + 0x0
+[    9.366474] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
+[    9.366882] back to dla_get_dma_cube_address: dst_ptr += 0x11000
+[    9.367204] sdp x1_addr = 0xc0211000
+[    9.367204] 
+[    9.367495] sdp skip getting x2_addr
+[    9.367495] 
+[    9.367772] sdp skip getting y_addr
+[    9.367772] 
+[    9.374164] no desc get due to index==-1
+[    9.374657] dla_data_read(src_index = 5): mapped dma_buf(handle = 8, offset = 0) to vaddr = 0xffff000040002000
+[    9.375288] no desc get due to index==-1
+[    9.375523] no desc get due to index==-1
+[    9.375777] no desc get due to index==-1
+[    9.376041] Enter: dla_op_programmed
+[    9.376287] Update dependency operation index 6 ROI 0 DEP_COUNT=2
+[    9.378660] Exit: dla_op_programmed
+[    9.378919] Exit: dla_program_operation status=0
+[    9.379188] Enter: dla_enable_operation
+[    9.379527] Enable SDP operation index 4 ROI 0
+[    9.380168] Enter: dla_op_enabled
+[    9.382485] Update dependency operation index 3 ROI 0 DEP_COUNT=2
+[    9.382859] Exit: dla_op_enabled
+[    9.383082] Exit: dla_enable_operation status=0
+[    9.383355] Exit: dla_submit_operation
+[    9.383602] Exit: dla_dequeue_operation
+[    9.383840] Enter: dla_submit_operation
+[    9.384090] Prepare PDP operation index 2 ROI 0 dep_count 1
+[    9.386553] Enter: dla_prepare_operation
+[    9.387103] processor:PDP group:0, rdma_group:0 available
+[    9.387388] Enter: dla_read_config
+[    9.387653] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
+[    9.388229] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
+[    9.390903] *********************************************************
+[    9.391388] NVDLA FW ROI[0]: dla_pdp_surface_desc
+[    9.391679] ---------------------------------------------------------
+[    9.392022] src_data            = [ dla_data_cube =>
+[    9.392294]     type          = 0
+[    9.394435]     address       = 2
+[    9.394679]     offset        = 0
+[    9.394887]     width         = 8
+[    9.395104]     height        = 8
+[    9.395345]     channel       = 32
+[    9.395571]     size          = 8192
+[    9.395800]     line_stride   = 256
+[    9.396025]     surf_stride   = 2048
+[    9.396254]     plane_stride  = 0
+[    9.398748] ]
+[    9.398803] dst_data            = [ dla_data_cube =>
+[    9.399265]     type          = 0
+[    9.399489]     address       = 2
+[    9.399741]     offset        = 2000
+[    9.400021]     width         = 4
+[    9.400255]     height        = 4
+[    9.402673]     channel       = 32
+[    9.402977]     size          = 2048
+[    9.403215]     line_stride   = 128
+[    9.403463]     surf_stride   = 512
+[    9.403702]     plane_stride  = 0
+[    9.403928] ]
+[    9.404044] *********************************************************
+[    9.406603] NVDLA FW ROI[0]: dla_pdp_op_desc
+[    9.406949] ---------------------------------------------------------
+[    9.407402] precision               = 2
+[    9.407671] padding_value           = [
+[    9.407999]  0
+[    9.408257]  0
+[    9.410418]  0
+[    9.410600]  0
+[    9.410723]  0
+[    9.410873]  0
+[    9.411010]  0
+[    9.411179] ]
+[    9.411352] split_num               = 1
+[    9.411615] partial_in_width_first  = 0
+[    9.411878] partial_in_width_mid    = 0
+[    9.412125] partial_in_width_last   = 0
+[    9.414775] partial_width_first     = 0
+[    9.415060] partial_width_mid       = 0
+[    9.415399] partial_width_last      = 0
+[    9.415744] pool_mode               = 1
+[    9.416096] pool_width              = 1
+[    9.418124] pool_height             = 1
+[    9.418436] stride_x                = 2
+[    9.418658] stride_y                = 2
+[    9.418886] pad_left                = 0
+[    9.419118] pad_right               = 0
+[    9.419346] pad_top                 = 0
+[    9.419567] pad_bottom              = 0
+[    9.419822] Exit: dla_read_config
+[    9.607690] Exit: dla_prepare_operation status=0
+[    9.608033] Enter: dla_program_operation
+[    9.608316] Program PDP operation index 2 ROI 0 Group[0]
+[    9.608967] group id 0 rdma id 0
+[    9.609920] entered dla_read_input_address():
+[    9.610265] passed to dla_get_dma_cube_address(data->address = 2, data->offset = 0)
+[    9.610811] entered dla_get_dma_cube_address(index = 2, offset = 0x0):
+[    9.611250] entered dla_get_dma_address(index = 2):
+[    9.611600] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.611971] entered dla_read_dma_address(index = 2):
+[    9.612325] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
+[    9.620979] *phys_addr = 0xc0008000 + 0x0
+[    9.621369] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
+[    9.621883] back to dla_get_dma_cube_address: dst_ptr += 0x0
+[    9.622361] entered dla_get_dma_cube_address(index = 2, offset = 0x2000):
+[    9.622792] entered dla_get_dma_address(index = 2):
+[    9.623119] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.623470] entered dla_read_dma_address(index = 2):
+[    9.623849] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
+[    9.624246] *phys_addr = 0xc0008000 + 0x0
+[    9.627056] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
+[    9.627590] back to dla_get_dma_cube_address: dst_ptr += 0x2000
+[    9.632111] no desc get due to index==-1
+[    9.632736] no desc get due to index==-1
+[    9.632974] no desc get due to index==-1
+[    9.633276] no desc get due to index==-1
+[    9.633563] no desc get due to index==-1
+[    9.633839] no desc get due to index==-1
+[    9.634120] Enter: dla_op_programmed
+[    9.634331] Exit: dla_op_programmed
+[    9.634582] Exit: dla_program_operation status=0
+[    9.634927] Exit: dla_submit_operation
+[    9.635236] Enter: dla_dequeue_operation
+[    9.635562] exit PDP as there's no further operation
+[    9.635865] Exit: dla_dequeue_operation
+[    9.636101] Exit: dla_initiate_processors status=0
+[    9.640003] Enter:dla_handle_events, processor:BDMA
+[    9.640575] Exit:dla_handle_events, ret:0
+[    9.640914] Enter:dla_handle_events, processor:Convolution
+[    9.641355] Handle cdma weight done event, processor Convolution group 0
+[    9.641812] Handle cdma data done event, processor Convolution group 0
+[    9.642402] Handle op complete event, processor Convolution group 0
+[    9.642853] Enter:dla_op_completion processor Convolution group0
+[    9.643264] Completed Convolution operation index 0 ROI 0
+[    9.643698] 1 HWLs done, totally 7 layers
+[    9.644055] Enter: dla_dequeue_operation
+[    9.644333] Dequeue op from Convolution processor, index=5 ROI=0
+[    9.644671] Enter: dla_submit_operation
+[    9.644889] Prepare Convolution operation index 5 ROI 0 dep_count 2
+[    9.645202] Enter: dla_prepare_operation
+[    9.645576] processor:Convolution group:0, rdma_group:0 available
+[    9.645916] Enter: dla_read_config
+[    9.646170] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
+[    9.646681] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
+[    9.647220] *********************************************************
+[    9.647579] NVDLA FW ROI[0]: dla_conv_surface_desc
+[    9.647903] ---------------------------------------------------------
+[    9.648355] weight_data         = [ dla_data_cube =>
+[    9.648726]     type          = 0
+[    9.649022]     address       = 1
+[    9.649320]     offset        = 14000
+[    9.649624]     width         = 1
+[    9.649922]     height        = 1
+[    9.650216]     channel       = 1f4
+[    9.650519]     size          = 10112
+[    9.650832]     line_stride   = 0
+[    9.651133]     surf_stride   = 0
+[    9.651439]     plane_stride  = 0
+[    9.651725] ]
+[    9.651759] wmb_data            = [ dla_data_cube =>
+[    9.652291]     type          = 0
+[    9.652586]     address       = 0
+[    9.652880]     offset        = 0
+[    9.653179]     width         = 0
+[    9.653470]     height        = 0
+[    9.653757]     channel       = 0
+[    9.654045]     size          = 0
+[    9.654345]     line_stride   = 0
+[    9.654640]     surf_stride   = 0
+[    9.654932]     plane_stride  = 0
+[    9.655221] ]
+[    9.655252] wgs_data            = [ dla_data_cube =>
+[    9.655781]     type          = 0
+[    9.656079]     address       = 0
+[    9.656373]     offset        = 0
+[    9.656661]     width         = 0
+[    9.656949]     height        = 0
+[    9.657238]     channel       = 0
+[    9.657536]     size          = 0
+[    9.657830]     line_stride   = 0
+[    9.658121]     surf_stride   = 0
+[    9.658423]     plane_stride  = 0
+[    9.658704] ]
+[    9.658733] src_data            = [ dla_data_cube =>
+[    9.659286]     type          = 0
+[    9.659582]     address       = 2
+[    9.659874]     offset        = 3000
+[    9.660184]     width         = 1
+[    9.660464]     height        = 1
+[    9.660654]     channel       = 1f4
+[    9.660847]     size          = 1024
+[    9.661043]     line_stride   = 32
+[    9.661246]     surf_stride   = 32
+[    9.661437]     plane_stride  = 0
+[    9.661618] ]
+[    9.661634] dst_data            = [ dla_data_cube =>
+[    9.661971]     type          = 2
+[    9.662156]     address       = -1
+[    9.662342]     offset        = 0
+[    9.662534]     width         = 1
+[    9.662712]     height        = 1
+[    9.662894]     channel       = a
+[    9.663080]     size          = 32
+[    9.663274]     line_stride   = 32
+[    9.663463]     surf_stride   = 32
+[    9.663650]     plane_stride  = 0
+[    9.663826] ]
+[    9.663846] offset_u            = 0
+[    9.664163] in_line_uv_stride   = 0
+[    9.664163] 
+[    9.664471] *********************************************************
+[    9.664811] NVDLA FW ROI[0]: dla_conv_op_desc
+[    9.665069] ---------------------------------------------------------
+[    9.665423] conv_mode          = 0
+[    9.665641] data_reuse         = 0
+[    9.665878] weight_reuse       = 0
+[    9.666104] skip_data_rls      = 0
+[    9.666342] skip_weight_rls    = 0
+[    9.666563] entry_per_slice    = 8
+[    9.666795] data_format        = 36
+[    9.667047] pixel_mapping      = 0
+[    9.667302] fetch_grain        = 1
+[    9.667552] batch              = 1
+[    9.667818] weight_format      = 0
+[    9.668070] data_bank          = 1
+[    9.668313] weight_bank        = 1
+[    9.668564] batch_stride       = 0
+[    9.668828] post_extension     = 0
+[    9.669095] pixel_override     = 0
+[    9.669386] release            = 1
+[    9.669583] input_width_csc    = 1
+[    9.669774] input_height_csc   = 1
+[    9.669971] input_channel_csc  = 500
+[    9.670179] kernel_width_csc   = 1
+[    9.670370] kernel_height_csc  = 1
+[    9.670591] kernel_channel_csc = 500
+[    9.670835] input_width_cmac   = 1
+[    9.671058] input_height_cmac  = 1
+[    9.671298] bytes_per_kernel   = 1000
+[    9.671521] mean_ry            = 0
+[    9.671738] mean_gu            = 0
+[    9.671973] mean_bv            = 0
+[    9.672238] mean_ax            = 0
+[    9.672487] mean_format        = 0
+[    9.672736] conv_stride_x      = 1
+[    9.672971] conv_stride_y      = 1
+[    9.673228] pad_x_left         = 0
+[    9.673480] pad_x_right        = 0
+[    9.673740] pad_y_top          = 0
+[    9.673976] pad_y_bottom       = 0
+[    9.674230] dilation_x         = 1
+[    9.674452] dilation_y         = 1
+[    9.674662] pra_truncate       = 0
+[    9.674883] in_precision       = 2
+[    9.675100] out_precision      = 2
+[    9.675382] pad_val            = 0
+[    9.675649] in_cvt             =
+[    9.675916] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
+[    9.676311] out_cvt            =
+[    9.676556] [ scale = 1, truncate = 0, enable = 1, offset = 0 ]
+[    9.676944] 
+[    9.677109] Exit: dla_read_config
+[    9.677366] Exit: dla_prepare_operation status=0
+[    9.677691] Enter: dla_program_operation
+[    9.677957] Program Convolution operation index 5 ROI 0 Group[0]
+[    9.678635] 
+[    9.678635] entered processor_conv_program():
+[    9.678988] conv getting weight_address:
+[    9.679256] entered dla_get_dma_cube_address(index = 1, offset = 0x14000):
+[    9.679658] entered dla_get_dma_address(index = 1):
+[    9.679957] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.680293] entered dla_read_dma_address(index = 1):
+[    9.680590] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
+[    9.681003] *phys_addr = 0xc0200000 + 0x0
+[    9.681268] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
+[    9.681698] back to dla_get_dma_cube_address: dst_ptr += 0x14000
+[    9.682056] conv weight_addr = 0xc0214000
+[    9.682056] 
+[    9.682404] conv getting input_address:
+[    9.682634] entered dla_read_input_address():
+[    9.682924] passed to dla_get_dma_cube_address(data->address = 2, data->offset = 12288)
+[    9.683396] entered dla_get_dma_cube_address(index = 2, offset = 0x3000):
+[    9.683786] entered dla_get_dma_address(index = 2):
+[    9.684081] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.684398] entered dla_read_dma_address(index = 2):
+[    9.684654] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
+[    9.684966] *phys_addr = 0xc0008000 + 0x0
+[    9.685190] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
+[    9.685574] back to dla_get_dma_cube_address: dst_ptr += 0x3000
+[    9.685865] conv input_addr = 0xc000b000
+[    9.685865] 
+[    9.688565] no desc get due to index==-1
+[    9.688779] no desc get due to index==-1
+[    9.688982] no desc get due to index==-1
+[    9.689193] no desc get due to index==-1
+[    9.689400] no desc get due to index==-1
+[    9.689604] no desc get due to index==-1
+[    9.689811] Enter: dla_op_programmed
+[    9.690011] Update dependency operation index 6 ROI 0 DEP_COUNT=1
+[    9.690311] enable SDP in dla_update_dependency as depdency are resolved
+[    9.690617] Enter: dla_enable_operation
+[    9.690830] exit dla_enable_operation without actual enable due to processor hasn't been programmed
+[    9.691259] Exit: dla_enable_operation status=0
+[    9.691501] Exit: dla_op_programmed
+[    9.691716] Exit: dla_program_operation status=0
+[    9.691954] Exit: dla_submit_operation
+[    9.692167] Exit: dla_dequeue_operation
+[    9.692447] Exit:dla_op_completion processor Convolution group0 status=0
+[    9.692818] Exit:dla_handle_events, ret:0
+[    9.693035] Enter:dla_handle_events, processor:SDP
+[    9.693293] Handle op complete event, processor SDP group 0
+[    9.693602] Enter:dla_op_completion processor SDP group0
+[    9.693865] Completed SDP operation index 1 ROI 0
+[    9.694178] Update dependency operation index 2 ROI 0 DEP_COUNT=1
+[    9.694480] enable PDP in dla_update_dependency as depdency are resolved
+[    9.694796] Enter: dla_enable_operation
+[    9.695006] Enable PDP operation index 2 ROI 0
+[    9.695245] group id 0 rdma id 0
+[    9.695600] rdma needed 1
+[    9.695892] Enter: dla_op_enabled
+[    9.696087] Exit: dla_op_enabled
+[    9.696277] Exit: dla_enable_operation status=0
+[    9.696511] 2 HWLs done, totally 7 layers
+[    9.696774] Enter: dla_free_op_desc op desc index 0 ROI 0
+[    9.697296] Exit: dla_free_op_desc
+[    9.697520] Enter: dla_dequeue_operation
+[    9.697741] Dequeue op from SDP processor, index=6 ROI=0
+[    9.698001] Enter: dla_submit_operation
+[    9.698220] Prepare SDP operation index 6 ROI 0 dep_count 0
+[    9.698493] Enter: dla_prepare_operation
+[    9.699034] processor:SDP group:0, rdma_group:0 available
+[    9.699328] Enter: dla_read_config
+[    9.699586] dla_data_read(src_index = 6): mapped dma_buf(handle = 9, offset = 0) to vaddr = 0xffff000040003000
+[    9.700117] dla_data_read(src_index = 7): mapped dma_buf(handle = 10, offset = 0) to vaddr = 0xffff000040004000
+[    9.700683] *********************************************************
+[    9.701017] NVDLA FW ROI[0]: dla_sdp_surface_desc
+[    9.701279] ---------------------------------------------------------
+[    9.701737] src_data            = [ dla_data_cube =>
+[    9.702091]     type          = 2
+[    9.702317]     address       = -1
+[    9.702531]     offset        = 0
+[    9.702745]     width         = 1
+[    9.702951]     height        = 1
+[    9.703178]     channel       = a
+[    9.703393]     size          = 32
+[    9.703638]     line_stride   = 32
+[    9.703851]     surf_stride   = 32
+[    9.704063]     plane_stride  = 0
+[    9.704301] ]
+[    9.704321] x1_data             = [ dla_data_cube =>
+[    9.704700]     type          = 0
+[    9.704904]     address       = 1
+[    9.705109]     offset        = 12000
+[    9.705332]     width         = 1
+[    9.705538]     height        = 1
+[    9.705745]     channel       = a
+[    9.705968]     size          = 20
+[    9.706199]     line_stride   = 32
+[    9.706449]     surf_stride   = 32
+[    9.706710]     plane_stride  = 0
+[    9.706971] ]
+[    9.706995] x2_data             = [ dla_data_cube =>
+[    9.707438]     type          = 0
+[    9.707658]     address       = 0
+[    9.707879]     offset        = 0
+[    9.708118]     width         = 0
+[    9.708336]     height        = 0
+[    9.708562]     channel       = 0
+[    9.708815]     size          = 0
+[    9.709061]     line_stride   = 0
+[    9.709308]     surf_stride   = 0
+[    9.709559]     plane_stride  = 0
+[    9.709832] ]
+[    9.709850] y_data              = [ dla_data_cube =>
+[    9.710290]     type          = 0
+[    9.710529]     address       = 0
+[    9.710765]     offset        = 0
+[    9.711003]     width         = 0
+[    9.711257]     height        = 0
+[    9.711500]     channel       = 0
+[    9.711729]     size          = 0
+[    9.711969]     line_stride   = 0
+[    9.712212]     surf_stride   = 0
+[    9.712440]     plane_stride  = 0
+[    9.712674] ]
+[    9.712691] dst_data            = [ dla_data_cube =>
+[    9.713141]     type          = 0
+[    9.713357]     address       = 2
+[    9.713601]     offset        = 4000
+[    9.713856]     width         = 1
+[    9.714059]     height        = 1
+[    9.714316]     channel       = a
+[    9.714556]     size          = 32
+[    9.714821]     line_stride   = 32
+[    9.715101]     surf_stride   = 32
+[    9.715358]     plane_stride  = 0
+[    9.715545] ]
+[    9.715564] *********************************************************
+[    9.716012] NVDLA FW ROI[0]: dla_sdp_op_desc
+[    9.716312] ---------------------------------------------------------
+[    9.716690] src_precision    = 2
+[    9.716930] dst_precision    = 2
+[    9.717162] lut_index        = -1
+[    9.717389] out_cvt          =
+[    9.717630] [ scale = 1, truncate = 0, enable = 0, offset = 0 ]
+[    9.718002] conv_mode        = 0
+[    9.718217] batch_num        = 1
+[    9.718479] batch_stride     = 0
+[    9.718709] x1_op            = [ dla_sdp_op =>
+[    9.719025]     enable         = 1
+[    9.719265]     alu_type       = 2
+[    9.719491]     type           = 2
+[    9.719690]     mode           = 1
+[    9.719883]     act            = 0
+[    9.720078]     shift_value    = 0
+[    9.720276]     truncate       = 0
+[    9.720472]     precision      = 2
+[    9.720669]     alu_operand    = 0
+[    9.720865]     mul_operand    = 1
+[    9.721050] cvt.alu_cvt          =
+[    9.721253] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.721535] cvt.mul_cvt          =
+[    9.721732] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.722026] ]
+[    9.722152] x2_op            = [ dla_sdp_op =>
+[    9.722379]     enable         = 0
+[    9.722567]     alu_type       = 0
+[    9.722754]     type           = 0
+[    9.722966]     mode           = 0
+[    9.723201]     act            = 0
+[    9.723469]     shift_value    = 0
+[    9.723750]     truncate       = 0
+[    9.723979]     precision      = 0
+[    9.724259]     alu_operand    = 0
+[    9.724521]     mul_operand    = 0
+[    9.724758] cvt.alu_cvt          =
+[    9.725006] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.725335] cvt.mul_cvt          =
+[    9.725599] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.725935] ]
+[    9.726070] y_op             = [ dla_sdp_op =>
+[    9.726404]     enable         = 0
+[    9.726676]     alu_type       = 0
+[    9.726950]     type           = 0
+[    9.727230]     mode           = 0
+[    9.727443]     act            = 0
+[    9.727679]     shift_value    = 0
+[    9.727938]     truncate       = 0
+[    9.728190]     precision      = 0
+[    9.728445]     alu_operand    = 0
+[    9.728706]     mul_operand    = 0
+[    9.728956] cvt.alu_cvt          =
+[    9.729224] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.729571] cvt.mul_cvt          =
+[    9.729826] [ scale = 0, truncate = 0, enable = 0, offset = 0 ]
+[    9.730238] ]
+[    9.730368] Exit: dla_read_config
+[    9.730601] Exit: dla_prepare_operation status=0
+[    9.730838] Enter: dla_program_operation
+[    9.731060] Program SDP operation index 6 ROI 0 Group[0]
+[    9.731573] 
+[    9.731573] entered processor_sdp_program():
+[    9.731992] sdp skip getting src_addr
+[    9.731992] 
+[    9.732363] sdp getting dst_addr:
+[    9.732551] entered dla_get_dma_cube_address(index = 2, offset = 0x4000):
+[    9.732933] entered dla_get_dma_address(index = 2):
+[    9.733214] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.733518] entered dla_read_dma_address(index = 2):
+[    9.733867] pass to nvdla_gem_dma_addr(fd = handles[index=2] = 6):
+[    9.734279] *phys_addr = 0xc0008000 + 0x0
+[    9.734535] exiting dla_get_dma_address(), got dst_ptr = c0008000 (index = 2)
+[    9.734928] back to dla_get_dma_cube_address: dst_ptr += 0x4000
+[    9.735280] sdp dst_addr = 0xc000c000
+[    9.735280] 
+[    9.735601] sdp getting x1_addr:
+[    9.735826] entered dla_get_dma_cube_address(index = 1, offset = 0x12000):
+[    9.736212] entered dla_get_dma_address(index = 1):
+[    9.736507] in branch dla_get_dma_address(DESTINATION_DMA):
+[    9.736845] entered dla_read_dma_address(index = 1):
+[    9.737158] pass to nvdla_gem_dma_addr(fd = handles[index=1] = 5):
+[    9.737525] *phys_addr = 0xc0200000 + 0x0
+[    9.737780] exiting dla_get_dma_address(), got dst_ptr = c0200000 (index = 1)
+[    9.738186] back to dla_get_dma_cube_address: dst_ptr += 0x12000
+[    9.738530] sdp x1_addr = 0xc0212000
+[    9.738530] 
+[    9.738845] sdp skip getting x2_addr
+[    9.738845] 
+[    9.739167] sdp skip getting y_addr
+[    9.739167] 
+[    9.740715] no desc get due to index==-1
+[    9.740971] no desc get due to index==-1
+[    9.741239] no desc get due to index==-1
+[    9.741490] no desc get due to index==-1
+[    9.741795] no desc get due to index==-1
+[    9.742046] no desc get due to index==-1
+[    9.742297] Enter: dla_op_programmed
+[    9.742537] Exit: dla_op_programmed
+[    9.742783] Exit: dla_program_operation status=0
+[    9.743066] Enter: dla_enable_operation
+[    9.743343] Enable SDP operation index 6 ROI 0
+[    9.743830] Enter: dla_op_enabled
+[    9.744067] Update dependency operation index 5 ROI 0 DEP_COUNT=2
+[    9.744433] Exit: dla_op_enabled
+[    9.744657] Exit: dla_enable_operation status=0
+[    9.744927] Exit: dla_submit_operation
+[    9.745164] Exit: dla_dequeue_operation
+[    9.745412] Enter: dla_free_op_desc op desc index 1 ROI 0
+[    9.745758] Exit: dla_free_op_desc
+[    9.745994] Exit:dla_op_completion processor SDP group0 status=0
+[    9.746340] Exit:dla_handle_events, ret:0
+[    9.746586] Enter:dla_handle_events, processor:PDP
+[    9.746866] Exit:dla_handle_events, ret:0
+[    9.747119] Enter:dla_handle_events, processor:CDP
+[    9.747414] Exit:dla_handle_events, ret:0
+[    9.747689] Enter:dla_handle_events, processor:RUBIK
+[    9.747977] Exit:dla_handle_events, ret:0
+[    9.754012] Enter:dla_handle_events, processor:BDMA
+[    9.754410] Exit:dla_handle_events, ret:0
+[    9.754658] Enter:dla_handle_events, processor:Convolution
+[    9.754966] Exit:dla_handle_events, ret:0
+[    9.755209] Enter:dla_handle_events, processor:SDP
+[    9.755493] Exit:dla_handle_events, ret:0
+[    9.755732] Enter:dla_handle_events, processor:PDP
+[    9.756019] Handle op complete event, processor PDP group 0
+[    9.756374] Enter:dla_op_completion processor PDP group0
+[    9.756690] Completed PDP operation index 2 ROI 0
+[    9.756986] Update dependency operation index 3 ROI 0 DEP_COUNT=1
+[    9.757334] enable Convolution in dla_update_dependency as depdency are resolved
+[    9.757781] Enter: dla_enable_operation
+[    9.758056] Enable Convolution operation index 3 ROI 0
+[    9.758898] Enter: dla_op_enabled
+[    9.759136] Exit: dla_op_enabled
+[    9.759403] Exit: dla_enable_operation status=0
+[    9.759696] 3 HWLs done, totally 7 layers
+[    9.759970] Enter: dla_dequeue_operation
+[    9.760264] exit PDP as there's no further operation
+[    9.760599] Exit: dla_dequeue_operation
+[    9.760884] Enter: dla_free_op_desc op desc index 2 ROI 0
+[    9.761299] Exit: dla_free_op_desc
+[    9.761553] Exit:dla_op_completion processor PDP group0 status=0
+[    9.761932] Exit:dla_handle_events, ret:0
+[    9.762202] Enter:dla_handle_events, processor:CDP
+[    9.762517] Exit:dla_handle_events, ret:0
+[    9.762797] Enter:dla_handle_events, processor:RUBIK
+[    9.763125] Exit:dla_handle_events, ret:0
+[    9.783935] Enter:dla_handle_events, processor:BDMA
+[    9.784280] Exit:dla_handle_events, ret:0
+[    9.784520] Enter:dla_handle_events, processor:Convolution
+[    9.784786] Exit:dla_handle_events, ret:0
+[    9.785001] Enter:dla_handle_events, processor:SDP
+[    9.785260] Exit:dla_handle_events, ret:0
+[    9.785484] Enter:dla_handle_events, processor:PDP
+[    9.785734] Exit:dla_handle_events, ret:0
+[    9.785945] Enter:dla_handle_events, processor:CDP
+[    9.786207] Exit:dla_handle_events, ret:0
+[    9.786418] Enter:dla_handle_events, processor:RUBIK
+[    9.786675] Exit:dla_handle_events, ret:0
+[    9.793652] Enter:dla_handle_events, processor:BDMA
+[    9.793991] Exit:dla_handle_events, ret:0
+[    9.794264] Enter:dla_handle_events, processor:Convolution
+[    9.794593] Exit:dla_handle_events, ret:0
+[    9.794845] Enter:dla_handle_events, processor:SDP
+[    9.795150] Exit:dla_handle_events, ret:0
+[    9.795405] Enter:dla_handle_events, processor:PDP
+[    9.795697] Exit:dla_handle_events, ret:0
+[    9.795969] Enter:dla_handle_events, processor:CDP
+[    9.796296] Exit:dla_handle_events, ret:0
+[    9.796570] Enter:dla_handle_events, processor:RUBIK
+[    9.796891] Exit:dla_handle_events, ret:0
+[    9.807850] Enter:dla_handle_events, processor:BDMA
+[    9.808238] Exit:dla_handle_events, ret:0
+[    9.808497] Enter:dla_handle_events, processor:Convolution
+[    9.808802] Handle cdma data done event, processor Convolution group 1
+[    9.809168] Exit:dla_handle_events, ret:0
+[    9.809460] Enter:dla_handle_events, processor:SDP
+[    9.809805] Exit:dla_handle_events, ret:0
+[    9.810091] Enter:dla_handle_events, processor:PDP
+[    9.810438] Exit:dla_handle_events, ret:0
+[    9.810717] Enter:dla_handle_events, processor:CDP
+[    9.811015] Exit:dla_handle_events, ret:0
+[    9.811297] Enter:dla_handle_events, processor:RUBIK
+[    9.811559] Exit:dla_handle_events, ret:0
+[   10.066344] Enter:dla_handle_events, processor:BDMA
+[   10.067163] Exit:dla_handle_events, ret:0
+[   10.067506] Enter:dla_handle_events, processor:Convolution
+[   10.067926] Handle cdma weight done event, processor Convolution group 1
+[   10.068400] Handle op complete event, processor Convolution group 1
+[   10.068803] Enter:dla_op_completion processor Convolution group1
+[   10.069164] Completed Convolution operation index 3 ROI 0
+[   10.069464] 4 HWLs done, totally 7 layers
+[   10.069692] Enter: dla_dequeue_operation
+[   10.069936] exit Convolution as there's no further operation
+[   10.070241] Exit: dla_dequeue_operation
+[   10.070491] Exit:dla_op_completion processor Convolution group1 status=0
+[   10.070911] Exit:dla_handle_events, ret:0
+[   10.071184] Enter:dla_handle_events, processor:SDP
+[   10.071444] Handle op complete event, processor SDP group 1
+[   10.071803] Enter:dla_op_completion processor SDP group1
+[   10.072167] Completed SDP operation index 4 ROI 0
+[   10.072519] Update dependency operation index 5 ROI 0 DEP_COUNT=1
+[   10.072943] enable Convolution in dla_update_dependency as depdency are resolved
+[   10.073414] Enter: dla_enable_operation
+[   10.073691] Enable Convolution operation index 5 ROI 0
+[   10.074680] Enter: dla_op_enabled
+[   10.074952] Exit: dla_op_enabled
+[   10.075210] Exit: dla_enable_operation status=0
+[   10.075540] 5 HWLs done, totally 7 layers
+[   10.075838] Enter: dla_free_op_desc op desc index 3 ROI 0
+[   10.076295] Exit: dla_free_op_desc
+[   10.076535] Enter: dla_dequeue_operation
+[   10.076819] exit SDP as there's no further operation
+[   10.077172] Exit: dla_dequeue_operation
+[   10.077435] Enter: dla_free_op_desc op desc index 4 ROI 0
+[   10.077779] Exit: dla_free_op_desc
+[   10.078021] Exit:dla_op_completion processor SDP group1 status=0
+[   10.078388] Exit:dla_handle_events, ret:0
+[   10.078643] Enter:dla_handle_events, processor:PDP
+[   10.078934] Exit:dla_handle_events, ret:0
+[   10.079170] Enter:dla_handle_events, processor:CDP
+[   10.079464] Exit:dla_handle_events, ret:0
+[   10.079720] Enter:dla_handle_events, processor:RUBIK
+[   10.080012] Exit:dla_handle_events, ret:0
+[   10.165833] Enter:dla_handle_events, processor:BDMA
+[   10.166281] Exit:dla_handle_events, ret:0
+[   10.166578] Enter:dla_handle_events, processor:Convolution
+[   10.166955] Handle cdma data done event, processor Convolution group 0
+[   10.167367] Exit:dla_handle_events, ret:0
+[   10.167662] Enter:dla_handle_events, processor:SDP
+[   10.168004] Exit:dla_handle_events, ret:0
+[   10.168296] Enter:dla_handle_events, processor:PDP
+[   10.168592] Exit:dla_handle_events, ret:0
+[   10.168850] Enter:dla_handle_events, processor:CDP
+[   10.169240] Exit:dla_handle_events, ret:0
+[   10.169487] Enter:dla_handle_events, processor:RUBIK
+[   10.169791] Exit:dla_handle_events, ret:0
+[   10.173605] Enter:dla_handle_events, processor:BDMA
+[   10.174070] Exit:dla_handle_events, ret:0
+[   10.174378] Enter:dla_handle_events, processor:Convolution
+[   10.174723] Handle cdma weight done event, processor Convolution group 0
+[   10.175185] Handle op complete event, processor Convolution group 0
+[   10.175590] Enter:dla_op_completion processor Convolution group0
+[   10.175969] Completed Convolution operation index 5 ROI 0
+[   10.176392] 6 HWLs done, totally 7 layers
+[   10.176616] Enter: dla_dequeue_operation
+[   10.176853] exit Convolution as there's no further operation
+[   10.177223] Exit: dla_dequeue_operation
+[   10.177499] Exit:dla_op_completion processor Convolution group0 status=0
+[   10.177934] Exit:dla_handle_events, ret:0
+[   10.178217] Enter:dla_handle_events, processor:SDP
+[   10.178539] Handle op complete event, processor SDP group 0
+[   10.178911] Enter:dla_op_completion processor SDP group0
+[   10.179270] Completed SDP operation index 6 ROI 0
+[   10.179593] 7 HWLs done, totally 7 layers
+[   10.179898] Enter: dla_free_op_desc op desc index 5 ROI 0
+[   10.180348] Exit: dla_free_op_desc
+[   10.180675] Enter: dla_free_op_desc op desc index 6 ROI 0
+[   10.181101] Exit: dla_free_op_desc
+[   10.181404] Exit:dla_op_completion processor SDP group0 status=0
+[   10.181801] Exit:dla_handle_events, ret:0
+[   10.182087] Enter:dla_handle_events, processor:PDP
+[   10.182397] Exit:dla_handle_events, ret:0
+[   10.182681] Enter:dla_handle_events, processor:CDP
+[   10.182997] Exit:dla_handle_events, ret:0
+[   10.183262] Enter:dla_handle_events, processor:RUBIK
+[   10.183524] Exit:dla_handle_events, ret:0
+[   10.205151] reset engine done
 Work Found!
 Work Done
-execution time = 7103174.000000 s
+execution time = 1789040.000000 s
 Shutdown signal received, exiting
 Test pass
 # 

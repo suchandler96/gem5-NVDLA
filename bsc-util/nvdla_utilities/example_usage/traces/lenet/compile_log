@@ -1653,8 +1653,8 @@ libnvdla<3> 	out_cvt enable 0
 libnvdla<3> 	out_cvt scale 1
 libnvdla<3> 	out_cvt offset 0
 libnvdla<3> 	out_cvt truncate 0
-libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=2270fa0 originalOffset=2271014 offset=74 interface=1 subInterface=4 relocType=1
-libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=2270fa0 originalOffset=2271018 offset=78 interface=1 subInterface=4 relocType=2
+libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=d631f50 originalOffset=d631fc4 offset=74 interface=1 subInterface=4 relocType=1
+libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=d631f50 originalOffset=d631fc8 offset=78 interface=1 subInterface=4 relocType=2
 libnvdla<3> Softmax node @ op_slot = 0 batch_id = 0
 libnvdla<3> 	src addr=2[98304]
 libnvdla<3> 	dst addr=4[0]
@@ -1670,6 +1670,6 @@ libnvdla<3> 	dst format=3
 libnvdla<3> 	dst width=1
 libnvdla<3> 	dst height=1
 libnvdla<3> 	dst channel=10
-libnvdla<3> gathered reloc entry: address id=4 writeId=13 useBase=22770f0 originalOffset=2277202 offset=112 interface=2 subInterface=4 relocType=1
-libnvdla<3> gathered reloc entry: address id=4 writeId=13 useBase=22770f0 originalOffset=2277206 offset=116 interface=2 subInterface=4 relocType=2
+libnvdla<3> gathered reloc entry: address id=4 writeId=13 useBase=d638160 originalOffset=d638272 offset=112 interface=2 subInterface=4 relocType=1
+libnvdla<3> gathered reloc entry: address id=4 writeId=13 useBase=d638160 originalOffset=d638276 offset=116 interface=2 subInterface=4 relocType=2
 closing wisdom context...

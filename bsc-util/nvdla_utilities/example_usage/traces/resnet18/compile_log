@@ -5299,7 +5299,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-1 & sdp-bn-1
-libnvdla<3> Replace sdp-bn-1 with bias-24
+libnvdla<3> Replace sdp-bn-1 with bias-23
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-225 tsd: tsd-225 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -5733,10 +5733,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-1 & bias-24
+libnvdla<3> Try Merging: dc-conv-1 & bias-23
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-24 & sdp-scale-1
+libnvdla<3> Try Merging: bias-23 & sdp-scale-1
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-226 tsd: tsd-226 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -6167,7 +6167,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-1 & sdp-bn-22
-libnvdla<3> Replace sdp-bn-22 with bias-25
+libnvdla<3> Replace sdp-bn-22 with bias-24
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-227 tsd: tsd-227 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -6597,10 +6597,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-1 & bias-25
+libnvdla<3> Try Merging: dc-conv-1 & bias-24
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-25 & bias-1
+libnvdla<3> Try Merging: bias-24 & bias-1
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -7025,7 +7025,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-1 & bias-25
+libnvdla<3> Try Merging: dc-conv-1 & bias-24
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-2 & sdp-nop-2
@@ -7455,7 +7455,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-2 & sdp-bn-2
-libnvdla<3> Replace sdp-bn-2 with bias-25
+libnvdla<3> Replace sdp-bn-2 with bias-24
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-228 tsd: tsd-228 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -7879,10 +7879,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-2 & bias-25
+libnvdla<3> Try Merging: dc-conv-2 & bias-24
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-25 & sdp-scale-2
+libnvdla<3> Try Merging: bias-24 & sdp-scale-2
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-229 tsd: tsd-229 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -8303,7 +8303,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-2 & sdp-bn-23
-libnvdla<3> Replace sdp-bn-23 with bias-26
+libnvdla<3> Replace sdp-bn-23 with bias-25
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-230 tsd: tsd-230 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -8723,10 +8723,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-2 & bias-26
+libnvdla<3> Try Merging: dc-conv-2 & bias-25
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-26 & bias-2
+libnvdla<3> Try Merging: bias-25 & bias-2
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -9141,10 +9141,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-2 & bias-26
+libnvdla<3> Try Merging: dc-conv-2 & bias-25
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-26 & act-1
+libnvdla<3> Try Merging: bias-25 & act-1
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -9557,7 +9557,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-2 & bias-26
+libnvdla<3> Try Merging: dc-conv-2 & bias-25
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-3 & sdp-nop-3
@@ -9975,7 +9975,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-3 & sdp-bn-3
-libnvdla<3> Replace sdp-bn-3 with bias-26
+libnvdla<3> Replace sdp-bn-3 with bias-25
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-231 tsd: tsd-231 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -10387,10 +10387,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-3 & bias-26
+libnvdla<3> Try Merging: dc-conv-3 & bias-25
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-26 & sdp-scale-3
+libnvdla<3> Try Merging: bias-25 & sdp-scale-3
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-232 tsd: tsd-232 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -10799,7 +10799,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-3 & sdp-bn-24
-libnvdla<3> Replace sdp-bn-24 with bias-27
+libnvdla<3> Replace sdp-bn-24 with bias-26
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-233 tsd: tsd-233 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -11207,10 +11207,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-3 & bias-27
+libnvdla<3> Try Merging: dc-conv-3 & bias-26
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-27 & bias-3
+libnvdla<3> Try Merging: bias-26 & bias-3
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -11613,7 +11613,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-3 & bias-27
+libnvdla<3> Try Merging: dc-conv-3 & bias-26
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: ew-0 & act-2
@@ -12420,7 +12420,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-4 & sdp-bn-4
-libnvdla<3> Replace sdp-bn-4 with bias-27
+libnvdla<3> Replace sdp-bn-4 with bias-26
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-234 tsd: tsd-234 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -12820,10 +12820,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-4 & bias-27
+libnvdla<3> Try Merging: dc-conv-4 & bias-26
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-27 & sdp-scale-4
+libnvdla<3> Try Merging: bias-26 & sdp-scale-4
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-235 tsd: tsd-235 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -19695,7 +19695,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-7 & sdp-bn-28
-libnvdla<3> Replace sdp-bn-28 with bias-29
+libnvdla<3> Replace sdp-bn-28 with bias-28
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-245 tsd: tsd-245 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -20057,10 +20057,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-7 & bias-29
+libnvdla<3> Try Merging: dc-conv-7 & bias-28
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-29 & bias-7
+libnvdla<3> Try Merging: bias-28 & bias-7
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -20417,10 +20417,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-7 & bias-29
+libnvdla<3> Try Merging: dc-conv-7 & bias-28
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-29 & act-5
+libnvdla<3> Try Merging: bias-28 & act-5
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -20775,7 +20775,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-7 & bias-29
+libnvdla<3> Try Merging: dc-conv-7 & bias-28
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-8 & sdp-nop-8
@@ -21135,7 +21135,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-8 & sdp-bn-8
-libnvdla<3> Replace sdp-bn-8 with bias-30
+libnvdla<3> Replace sdp-bn-8 with bias-28
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-246 tsd: tsd-246 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -21489,10 +21489,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-8 & bias-30
+libnvdla<3> Try Merging: dc-conv-8 & bias-28
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-30 & sdp-scale-8
+libnvdla<3> Try Merging: bias-28 & sdp-scale-8
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-247 tsd: tsd-247 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -21843,7 +21843,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-8 & sdp-bn-29
-libnvdla<3> Replace sdp-bn-29 with bias-30
+libnvdla<3> Replace sdp-bn-29 with bias-29
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-248 tsd: tsd-248 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -22193,10 +22193,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-8 & bias-30
+libnvdla<3> Try Merging: dc-conv-8 & bias-29
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-30 & bias-8
+libnvdla<3> Try Merging: bias-29 & bias-8
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -22541,7 +22541,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-8 & bias-30
+libnvdla<3> Try Merging: dc-conv-8 & bias-29
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: ew-2 & act-6
@@ -23232,7 +23232,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-9 & sdp-bn-9
-libnvdla<3> Replace sdp-bn-9 with bias-31
+libnvdla<3> Replace sdp-bn-9 with bias-29
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-249 tsd: tsd-249 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -23574,10 +23574,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-9 & bias-31
+libnvdla<3> Try Merging: dc-conv-9 & bias-29
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-31 & sdp-scale-9
+libnvdla<3> Try Merging: bias-29 & sdp-scale-9
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-250 tsd: tsd-250 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -23916,7 +23916,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-9 & sdp-bn-30
-libnvdla<3> Replace sdp-bn-30 with bias-32
+libnvdla<3> Replace sdp-bn-30 with bias-30
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-251 tsd: tsd-251 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -24254,10 +24254,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-9 & bias-32
+libnvdla<3> Try Merging: dc-conv-9 & bias-30
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-32 & bias-9
+libnvdla<3> Try Merging: bias-30 & bias-9
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -24590,10 +24590,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-9 & bias-32
+libnvdla<3> Try Merging: dc-conv-9 & bias-30
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-32 & act-7
+libnvdla<3> Try Merging: bias-30 & act-7
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -24924,7 +24924,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-9 & bias-32
+libnvdla<3> Try Merging: dc-conv-9 & bias-30
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-10 & sdp-nop-10
@@ -25260,7 +25260,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-10 & sdp-bn-10
-libnvdla<3> Replace sdp-bn-10 with bias-33
+libnvdla<3> Replace sdp-bn-10 with bias-31
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-252 tsd: tsd-252 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -25590,10 +25590,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-10 & bias-33
+libnvdla<3> Try Merging: dc-conv-10 & bias-31
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-33 & sdp-scale-10
+libnvdla<3> Try Merging: bias-31 & sdp-scale-10
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-253 tsd: tsd-253 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -25920,7 +25920,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-10 & sdp-bn-31
-libnvdla<3> Replace sdp-bn-31 with bias-33
+libnvdla<3> Replace sdp-bn-31 with bias-31
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-254 tsd: tsd-254 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -26246,10 +26246,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-10 & bias-33
+libnvdla<3> Try Merging: dc-conv-10 & bias-31
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-33 & bias-10
+libnvdla<3> Try Merging: bias-31 & bias-10
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -26570,7 +26570,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-10 & bias-33
+libnvdla<3> Try Merging: dc-conv-10 & bias-31
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: ew-3 & act-8
@@ -27213,7 +27213,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-11 & sdp-bn-11
-libnvdla<3> Replace sdp-bn-11 with bias-33
+libnvdla<3> Replace sdp-bn-11 with bias-32
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-255 tsd: tsd-255 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -27531,10 +27531,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-11 & bias-33
+libnvdla<3> Try Merging: dc-conv-11 & bias-32
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-33 & sdp-scale-11
+libnvdla<3> Try Merging: bias-32 & sdp-scale-11
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-256 tsd: tsd-256 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -27849,7 +27849,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-11 & sdp-bn-32
-libnvdla<3> Replace sdp-bn-32 with bias-33
+libnvdla<3> Replace sdp-bn-32 with bias-32
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-257 tsd: tsd-257 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -28163,10 +28163,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-11 & bias-33
+libnvdla<3> Try Merging: dc-conv-11 & bias-32
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-33 & bias-11
+libnvdla<3> Try Merging: bias-32 & bias-11
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -28475,7 +28475,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-11 & bias-33
+libnvdla<3> Try Merging: dc-conv-11 & bias-32
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-12 & sdp-nop-12
@@ -28789,7 +28789,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-12 & sdp-bn-12
-libnvdla<3> Replace sdp-bn-12 with bias-33
+libnvdla<3> Replace sdp-bn-12 with bias-32
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-258 tsd: tsd-258 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -29097,10 +29097,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-12 & bias-33
+libnvdla<3> Try Merging: dc-conv-12 & bias-32
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-33 & sdp-scale-12
+libnvdla<3> Try Merging: bias-32 & sdp-scale-12
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-259 tsd: tsd-259 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -29405,7 +29405,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-12 & sdp-bn-33
-libnvdla<3> Replace sdp-bn-33 with bias-34
+libnvdla<3> Replace sdp-bn-33 with bias-33
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-260 tsd: tsd-260 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -29709,10 +29709,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-12 & bias-34
+libnvdla<3> Try Merging: dc-conv-12 & bias-33
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-34 & bias-12
+libnvdla<3> Try Merging: bias-33 & bias-12
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -30011,10 +30011,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-12 & bias-34
+libnvdla<3> Try Merging: dc-conv-12 & bias-33
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-34 & act-9
+libnvdla<3> Try Merging: bias-33 & act-9
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -30311,7 +30311,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-12 & bias-34
+libnvdla<3> Try Merging: dc-conv-12 & bias-33
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-13 & sdp-nop-13
@@ -30613,7 +30613,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-13 & sdp-bn-13
-libnvdla<3> Replace sdp-bn-13 with bias-34
+libnvdla<3> Replace sdp-bn-13 with bias-33
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-261 tsd: tsd-261 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -30909,10 +30909,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-13 & bias-34
+libnvdla<3> Try Merging: dc-conv-13 & bias-33
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-34 & sdp-scale-13
+libnvdla<3> Try Merging: bias-33 & sdp-scale-13
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-262 tsd: tsd-262 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -31205,7 +31205,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-13 & sdp-bn-34
-libnvdla<3> Replace sdp-bn-34 with bias-34
+libnvdla<3> Replace sdp-bn-34 with bias-33
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-263 tsd: tsd-263 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -31497,10 +31497,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-13 & bias-34
+libnvdla<3> Try Merging: dc-conv-13 & bias-33
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-34 & bias-13
+libnvdla<3> Try Merging: bias-33 & bias-13
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -31787,7 +31787,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-13 & bias-34
+libnvdla<3> Try Merging: dc-conv-13 & bias-33
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: ew-4 & act-10
@@ -32362,7 +32362,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-14 & sdp-bn-14
-libnvdla<3> Replace sdp-bn-14 with bias-35
+libnvdla<3> Replace sdp-bn-14 with bias-34
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-264 tsd: tsd-264 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -32646,10 +32646,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-14 & bias-35
+libnvdla<3> Try Merging: dc-conv-14 & bias-34
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-35 & sdp-scale-14
+libnvdla<3> Try Merging: bias-34 & sdp-scale-14
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-265 tsd: tsd-265 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -32930,7 +32930,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-14 & sdp-bn-35
-libnvdla<3> Replace sdp-bn-35 with bias-35
+libnvdla<3> Replace sdp-bn-35 with bias-34
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-266 tsd: tsd-266 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -33210,10 +33210,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-14 & bias-35
+libnvdla<3> Try Merging: dc-conv-14 & bias-34
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-35 & bias-14
+libnvdla<3> Try Merging: bias-34 & bias-14
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -33488,10 +33488,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-14 & bias-35
+libnvdla<3> Try Merging: dc-conv-14 & bias-34
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-35 & act-11
+libnvdla<3> Try Merging: bias-34 & act-11
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -33764,7 +33764,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-14 & bias-35
+libnvdla<3> Try Merging: dc-conv-14 & bias-34
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-15 & sdp-nop-15
@@ -34042,7 +34042,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-15 & sdp-bn-15
-libnvdla<3> Replace sdp-bn-15 with bias-36
+libnvdla<3> Replace sdp-bn-15 with bias-34
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-267 tsd: tsd-267 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -34314,10 +34314,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-15 & bias-36
+libnvdla<3> Try Merging: dc-conv-15 & bias-34
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-36 & sdp-scale-15
+libnvdla<3> Try Merging: bias-34 & sdp-scale-15
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-268 tsd: tsd-268 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -34586,7 +34586,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-15 & sdp-bn-36
-libnvdla<3> Replace sdp-bn-36 with bias-36
+libnvdla<3> Replace sdp-bn-36 with bias-34
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-269 tsd: tsd-269 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -34854,10 +34854,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-15 & bias-36
+libnvdla<3> Try Merging: dc-conv-15 & bias-34
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-36 & bias-15
+libnvdla<3> Try Merging: bias-34 & bias-15
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -35120,7 +35120,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-15 & bias-36
+libnvdla<3> Try Merging: dc-conv-15 & bias-34
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: ew-5 & act-12
@@ -35647,7 +35647,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-16 & sdp-bn-16
-libnvdla<3> Replace sdp-bn-16 with bias-37
+libnvdla<3> Replace sdp-bn-16 with bias-35
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-270 tsd: tsd-270 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -35907,10 +35907,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-16 & bias-37
+libnvdla<3> Try Merging: dc-conv-16 & bias-35
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-37 & sdp-scale-16
+libnvdla<3> Try Merging: bias-35 & sdp-scale-16
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-271 tsd: tsd-271 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -36167,7 +36167,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-16 & sdp-bn-37
-libnvdla<3> Replace sdp-bn-37 with bias-37
+libnvdla<3> Replace sdp-bn-37 with bias-35
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-272 tsd: tsd-272 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -36423,10 +36423,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-16 & bias-37
+libnvdla<3> Try Merging: dc-conv-16 & bias-35
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-37 & bias-16
+libnvdla<3> Try Merging: bias-35 & bias-16
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -36677,7 +36677,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-16 & bias-37
+libnvdla<3> Try Merging: dc-conv-16 & bias-35
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-17 & sdp-nop-17
@@ -36933,7 +36933,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-17 & sdp-bn-17
-libnvdla<3> Replace sdp-bn-17 with bias-37
+libnvdla<3> Replace sdp-bn-17 with bias-35
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-273 tsd: tsd-273 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -37183,10 +37183,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-17 & bias-37
+libnvdla<3> Try Merging: dc-conv-17 & bias-35
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-37 & sdp-scale-17
+libnvdla<3> Try Merging: bias-35 & sdp-scale-17
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-274 tsd: tsd-274 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -37433,7 +37433,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-17 & sdp-bn-38
-libnvdla<3> Replace sdp-bn-38 with bias-38
+libnvdla<3> Replace sdp-bn-38 with bias-36
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-275 tsd: tsd-275 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -37679,10 +37679,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-17 & bias-38
+libnvdla<3> Try Merging: dc-conv-17 & bias-36
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-38 & bias-17
+libnvdla<3> Try Merging: bias-36 & bias-17
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -37923,10 +37923,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-17 & bias-38
+libnvdla<3> Try Merging: dc-conv-17 & bias-36
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-38 & act-13
+libnvdla<3> Try Merging: bias-36 & act-13
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -38165,7 +38165,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-17 & bias-38
+libnvdla<3> Try Merging: dc-conv-17 & bias-36
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-18 & sdp-nop-18
@@ -38409,7 +38409,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-18 & sdp-bn-18
-libnvdla<3> Replace sdp-bn-18 with bias-38
+libnvdla<3> Replace sdp-bn-18 with bias-37
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-276 tsd: tsd-276 registered
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -38647,10 +38647,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-18 & bias-38
+libnvdla<3> Try Merging: dc-conv-18 & bias-37
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-38 & sdp-scale-18
+libnvdla<3> Try Merging: bias-37 & sdp-scale-18
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-277 tsd: tsd-277 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -38884,8 +38884,8 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-18 & sdp-bn-39
-libnvdla<3> Replace sdp-bn-39 with bias-39
+libnvdla<3> Try Merging: dc-conv-18 & sdp-bn-38
+libnvdla<3> Replace sdp-bn-38 with bias-38
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-278 tsd: tsd-278 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -39119,10 +39119,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-18 & bias-39
+libnvdla<3> Try Merging: dc-conv-18 & bias-38
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-39 & bias-18
+libnvdla<3> Try Merging: bias-38 & bias-18
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -39351,7 +39351,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-18 & bias-39
+libnvdla<3> Try Merging: dc-conv-18 & bias-38
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: ew-6 & act-14
@@ -39810,7 +39810,7 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-19 & sdp-bn-19
-libnvdla<3> Replace sdp-bn-19 with bias-39
+libnvdla<3> Replace sdp-bn-19 with bias-38
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-279 tsd: tsd-279 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -40036,10 +40036,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-19 & bias-39
+libnvdla<3> Try Merging: dc-conv-19 & bias-38
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-39 & sdp-scale-19
+libnvdla<3> Try Merging: bias-38 & sdp-scale-19
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-280 tsd: tsd-280 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -40261,8 +40261,8 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-19 & sdp-bn-40
-libnvdla<3> Replace sdp-bn-40 with bias-40
+libnvdla<3> Try Merging: dc-conv-19 & sdp-bn-39
+libnvdla<3> Replace sdp-bn-39 with bias-39
 libnvdla<3> Merging: Sucess
 libnvdla<3> edge: e-281 tsd: tsd-281 registered
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
@@ -40484,10 +40484,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-19 & bias-40
+libnvdla<3> Try Merging: dc-conv-19 & bias-39
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-40 & bias-19
+libnvdla<3> Try Merging: bias-39 & bias-19
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -40704,10 +40704,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-19 & bias-40
+libnvdla<3> Try Merging: dc-conv-19 & bias-39
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Merging: bias-40 & act-15
+libnvdla<3> Try Merging: bias-39 & act-15
 libnvdla<3> Merging: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -40922,7 +40922,7 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Merging: dc-conv-19 & bias-40
+libnvdla<3> Try Merging: dc-conv-19 & bias-39
 libnvdla<3> Merging: Not Feasible
 libnvdla<3> 
 libnvdla<3> Try Merging: dc-conv-20 & sdp-nop-20
@@ -55266,19 +55266,19 @@ libnvdla<3> 		n-198:split-0/:	(in)e-0[1x3x224x224][tsd-1][tt-1], 	(out)e-285[1x3
 libnvdla<3> 		n-0:dc-conv-0/conv1:	(Aux)e-93[64x3x7x7][tsd-0][tt-4], 	(in)e-285[1x3x68x224][tsd-287][tt-3], 	(out)e-94[1x64x33x112][tsd-87][tt-8], 	(out)e-291 
 libnvdla<3> 		n-137:bias-23/:	(in)e-94[1x64x33x112][tsd-87][tt-8], 	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(out)e-286[1x64x33x112][tsd-289][tt-3], 	(out)e-292 
 libnvdla<3> 		n-200:dc-conv-21/conv1:	(Aux)e-93[64x3x7x7][tsd-0][tt-4], 	(in)e-289[1x3x68x224][tsd-286][tt-3], 	(in)e-291 	(out)e-288[1x64x31x112][tsd-290][tt-8], 	(out)e-297 
-libnvdla<3> 		n-201:bias-41/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-288[1x64x31x112][tsd-290][tt-8], 	(in)e-292 	(out)e-290[1x64x31x112][tsd-291][tt-3], 	(out)e-298 
+libnvdla<3> 		n-201:bias-42/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-288[1x64x31x112][tsd-290][tt-8], 	(in)e-292 	(out)e-290[1x64x31x112][tsd-291][tt-3], 	(out)e-298 
 libnvdla<3> 		n-202:dc-conv-22/conv1:	(Aux)e-93[64x3x7x7][tsd-0][tt-4], 	(in)e-295[1x3x68x224][tsd-285][tt-3], 	(in)e-297 	(out)e-294[1x64x31x112][tsd-292][tt-8], 	(out)e-303 
-libnvdla<3> 		n-203:bias-42/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-294[1x64x31x112][tsd-292][tt-8], 	(in)e-298 	(out)e-296[1x64x31x112][tsd-293][tt-3], 	(out)e-304 
+libnvdla<3> 		n-203:bias-43/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-294[1x64x31x112][tsd-292][tt-8], 	(in)e-298 	(out)e-296[1x64x31x112][tsd-293][tt-3], 	(out)e-304 
 libnvdla<3> 		n-204:dc-conv-23/conv1:	(Aux)e-93[64x3x7x7][tsd-0][tt-4], 	(in)e-301[1x3x37x224][tsd-288][tt-3], 	(in)e-303 	(out)e-300[1x64x17x112][tsd-294][tt-8], 
-libnvdla<3> 		n-205:bias-43/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-300[1x64x17x112][tsd-294][tt-8], 	(in)e-304 	(out)e-302[1x64x17x112][tsd-295][tt-3], 
+libnvdla<3> 		n-205:bias-44/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-300[1x64x17x112][tsd-294][tt-8], 	(in)e-304 	(out)e-302[1x64x17x112][tsd-295][tt-3], 
 libnvdla<3> 		n-199:concat-0/:	(in)e-286[1x64x33x112][tsd-289][tt-3], 	(in)e-290[1x64x31x112][tsd-291][tt-3], 	(in)e-296[1x64x31x112][tsd-293][tt-3], 	(in)e-302[1x64x17x112][tsd-295][tt-3], 	(out)e-4[1x64x112x112][tsd-92][tt-3], 
 libnvdla<3> 		n-6:pdp-0/pool1:	(in)e-4[1x64x112x112][tsd-92][tt-3], 	(out)e-5[1x64x56x56][tsd-93][tt-3], 
 libnvdla<3> 		n-7:dc-conv-1/res2a_branch1:	(in)e-5[1x64x56x56][tsd-93][tt-3], 	(Aux)e-99[64x64x1x1][tsd-5][tt-4], 	(out)e-100[1x64x56x56][tsd-94][tt-8], 
-libnvdla<3> 		n-140:bias-25/:	(in)e-100[1x64x56x56][tsd-94][tt-8], 	(Aux)e-227[1x64x1x1][tsd-227][tt-5], 	(out)e-8[1x64x56x56][tsd-98][tt-3], 
+libnvdla<3> 		n-140:bias-24/:	(in)e-100[1x64x56x56][tsd-94][tt-8], 	(Aux)e-227[1x64x1x1][tsd-227][tt-5], 	(out)e-8[1x64x56x56][tsd-98][tt-3], 
 libnvdla<3> 		n-12:dc-conv-2/res2a_branch2a:	(in)e-5[1x64x56x56][tsd-93][tt-3], 	(Aux)e-105[64x64x3x3][tsd-6][tt-4], 	(out)e-106[1x64x56x56][tsd-99][tt-8], 
-libnvdla<3> 		n-143:bias-26/:	(in)e-106[1x64x56x56][tsd-99][tt-8], 	(Aux)e-230[1x64x1x1][tsd-230][tt-5], 	(out)e-12[1x64x56x56][tsd-104][tt-3], 
+libnvdla<3> 		n-143:bias-25/:	(in)e-106[1x64x56x56][tsd-99][tt-8], 	(Aux)e-230[1x64x1x1][tsd-230][tt-5], 	(out)e-12[1x64x56x56][tsd-104][tt-3], 
 libnvdla<3> 		n-18:dc-conv-3/res2a_branch2b:	(in)e-12[1x64x56x56][tsd-104][tt-3], 	(Aux)e-111[64x64x3x3][tsd-13][tt-4], 	(out)e-112[1x64x56x56][tsd-105][tt-8], 
-libnvdla<3> 		n-146:bias-27/:	(in)e-112[1x64x56x56][tsd-105][tt-8], 	(Aux)e-233[1x64x1x1][tsd-233][tt-5], 	(out)e-15[1x64x56x56][tsd-109][tt-3], 
+libnvdla<3> 		n-146:bias-26/:	(in)e-112[1x64x56x56][tsd-105][tt-8], 	(Aux)e-233[1x64x1x1][tsd-233][tt-5], 	(out)e-15[1x64x56x56][tsd-109][tt-3], 
 libnvdla<3> 		n-23:ew-0/res2a:	(in)e-8[1x64x56x56][tsd-98][tt-3], 	(in)e-15[1x64x56x56][tsd-109][tt-3], 	(out)e-17[1x64x56x56][tsd-111][tt-3], 
 libnvdla<3> 		n-25:dc-conv-4/res2b_branch2a:	(in)e-17[1x64x56x56][tsd-111][tt-3], 	(Aux)e-117[64x64x3x3][tsd-17][tt-4], 	(out)e-118[1x64x56x56][tsd-112][tt-8], 
 libnvdla<3> 		n-149:bias-27/:	(in)e-118[1x64x56x56][tsd-112][tt-8], 	(Aux)e-236[1x64x1x1][tsd-236][tt-5], 	(out)e-21[1x64x56x56][tsd-117][tt-3], 
@@ -55288,36 +55288,36 @@ libnvdla<3> 		n-36:ew-1/res2b:	(in)e-17[1x64x56x56][tsd-111][tt-3], 	(in)e-24[1x
 libnvdla<3> 		n-38:dc-conv-6/res3a_branch1:	(in)e-26[1x64x56x56][tsd-124][tt-3], 	(Aux)e-129[128x64x1x1][tsd-25][tt-4], 	(out)e-130[1x128x28x28][tsd-125][tt-8], 
 libnvdla<3> 		n-155:bias-28/:	(in)e-130[1x128x28x28][tsd-125][tt-8], 	(Aux)e-242[1x128x1x1][tsd-242][tt-5], 	(out)e-29[1x128x28x28][tsd-129][tt-3], 
 libnvdla<3> 		n-43:dc-conv-7/res3a_branch2a:	(in)e-26[1x64x56x56][tsd-124][tt-3], 	(Aux)e-135[128x64x3x3][tsd-26][tt-4], 	(out)e-136[1x128x28x28][tsd-130][tt-8], 
-libnvdla<3> 		n-158:bias-29/:	(in)e-136[1x128x28x28][tsd-130][tt-8], 	(Aux)e-245[1x128x1x1][tsd-245][tt-5], 	(out)e-33[1x128x28x28][tsd-135][tt-3], 
+libnvdla<3> 		n-158:bias-28/:	(in)e-136[1x128x28x28][tsd-130][tt-8], 	(Aux)e-245[1x128x1x1][tsd-245][tt-5], 	(out)e-33[1x128x28x28][tsd-135][tt-3], 
 libnvdla<3> 		n-49:dc-conv-8/res3a_branch2b:	(in)e-33[1x128x28x28][tsd-135][tt-3], 	(Aux)e-141[128x128x3x3][tsd-33][tt-4], 	(out)e-142[1x128x28x28][tsd-136][tt-8], 
-libnvdla<3> 		n-161:bias-30/:	(in)e-142[1x128x28x28][tsd-136][tt-8], 	(Aux)e-248[1x128x1x1][tsd-248][tt-5], 	(out)e-36[1x128x28x28][tsd-140][tt-3], 
+libnvdla<3> 		n-161:bias-29/:	(in)e-142[1x128x28x28][tsd-136][tt-8], 	(Aux)e-248[1x128x1x1][tsd-248][tt-5], 	(out)e-36[1x128x28x28][tsd-140][tt-3], 
 libnvdla<3> 		n-54:ew-2/res3a:	(in)e-29[1x128x28x28][tsd-129][tt-3], 	(in)e-36[1x128x28x28][tsd-140][tt-3], 	(out)e-38[1x128x28x28][tsd-142][tt-3], 
 libnvdla<3> 		n-56:dc-conv-9/res3b_branch2a:	(in)e-38[1x128x28x28][tsd-142][tt-3], 	(Aux)e-147[128x128x3x3][tsd-37][tt-4], 	(out)e-148[1x128x28x28][tsd-143][tt-8], 
-libnvdla<3> 		n-164:bias-32/:	(in)e-148[1x128x28x28][tsd-143][tt-8], 	(Aux)e-251[1x128x1x1][tsd-251][tt-5], 	(out)e-42[1x128x28x28][tsd-148][tt-3], 
+libnvdla<3> 		n-164:bias-30/:	(in)e-148[1x128x28x28][tsd-143][tt-8], 	(Aux)e-251[1x128x1x1][tsd-251][tt-5], 	(out)e-42[1x128x28x28][tsd-148][tt-3], 
 libnvdla<3> 		n-62:dc-conv-10/res3b_branch2b:	(in)e-42[1x128x28x28][tsd-148][tt-3], 	(Aux)e-153[128x128x3x3][tsd-41][tt-4], 	(out)e-154[1x128x28x28][tsd-149][tt-8], 
-libnvdla<3> 		n-167:bias-33/:	(in)e-154[1x128x28x28][tsd-149][tt-8], 	(Aux)e-254[1x128x1x1][tsd-254][tt-5], 	(out)e-45[1x128x28x28][tsd-153][tt-3], 
+libnvdla<3> 		n-167:bias-31/:	(in)e-154[1x128x28x28][tsd-149][tt-8], 	(Aux)e-254[1x128x1x1][tsd-254][tt-5], 	(out)e-45[1x128x28x28][tsd-153][tt-3], 
 libnvdla<3> 		n-67:ew-3/res3b:	(in)e-38[1x128x28x28][tsd-142][tt-3], 	(in)e-45[1x128x28x28][tsd-153][tt-3], 	(out)e-47[1x128x28x28][tsd-155][tt-3], 
 libnvdla<3> 		n-69:dc-conv-11/res4a_branch1:	(in)e-47[1x128x28x28][tsd-155][tt-3], 	(Aux)e-159[256x128x1x1][tsd-45][tt-4], 	(out)e-160[1x256x14x14][tsd-156][tt-8], 
-libnvdla<3> 		n-170:bias-33/:	(in)e-160[1x256x14x14][tsd-156][tt-8], 	(Aux)e-257[1x256x1x1][tsd-257][tt-5], 	(out)e-50[1x256x14x14][tsd-160][tt-3], 
+libnvdla<3> 		n-170:bias-32/:	(in)e-160[1x256x14x14][tsd-156][tt-8], 	(Aux)e-257[1x256x1x1][tsd-257][tt-5], 	(out)e-50[1x256x14x14][tsd-160][tt-3], 
 libnvdla<3> 		n-74:dc-conv-12/res4a_branch2a:	(in)e-47[1x128x28x28][tsd-155][tt-3], 	(Aux)e-165[256x128x3x3][tsd-46][tt-4], 	(out)e-166[1x256x14x14][tsd-161][tt-8], 
-libnvdla<3> 		n-173:bias-34/:	(in)e-166[1x256x14x14][tsd-161][tt-8], 	(Aux)e-260[1x256x1x1][tsd-260][tt-5], 	(out)e-54[1x256x14x14][tsd-166][tt-3], 
+libnvdla<3> 		n-173:bias-33/:	(in)e-166[1x256x14x14][tsd-161][tt-8], 	(Aux)e-260[1x256x1x1][tsd-260][tt-5], 	(out)e-54[1x256x14x14][tsd-166][tt-3], 
 libnvdla<3> 		n-80:dc-conv-13/res4a_branch2b:	(in)e-54[1x256x14x14][tsd-166][tt-3], 	(Aux)e-171[256x256x3x3][tsd-53][tt-4], 	(out)e-172[1x256x14x14][tsd-167][tt-8], 
-libnvdla<3> 		n-176:bias-34/:	(in)e-172[1x256x14x14][tsd-167][tt-8], 	(Aux)e-263[1x256x1x1][tsd-263][tt-5], 	(out)e-57[1x256x14x14][tsd-171][tt-3], 
+libnvdla<3> 		n-176:bias-33/:	(in)e-172[1x256x14x14][tsd-167][tt-8], 	(Aux)e-263[1x256x1x1][tsd-263][tt-5], 	(out)e-57[1x256x14x14][tsd-171][tt-3], 
 libnvdla<3> 		n-85:ew-4/res4a:	(in)e-50[1x256x14x14][tsd-160][tt-3], 	(in)e-57[1x256x14x14][tsd-171][tt-3], 	(out)e-59[1x256x14x14][tsd-173][tt-3], 
 libnvdla<3> 		n-87:dc-conv-14/res4b_branch2a:	(in)e-59[1x256x14x14][tsd-173][tt-3], 	(Aux)e-177[256x256x3x3][tsd-57][tt-4], 	(out)e-178[1x256x14x14][tsd-174][tt-8], 
-libnvdla<3> 		n-179:bias-35/:	(in)e-178[1x256x14x14][tsd-174][tt-8], 	(Aux)e-266[1x256x1x1][tsd-266][tt-5], 	(out)e-63[1x256x14x14][tsd-179][tt-3], 
+libnvdla<3> 		n-179:bias-34/:	(in)e-178[1x256x14x14][tsd-174][tt-8], 	(Aux)e-266[1x256x1x1][tsd-266][tt-5], 	(out)e-63[1x256x14x14][tsd-179][tt-3], 
 libnvdla<3> 		n-93:dc-conv-15/res4b_branch2b:	(in)e-63[1x256x14x14][tsd-179][tt-3], 	(Aux)e-183[256x256x3x3][tsd-61][tt-4], 	(out)e-184[1x256x14x14][tsd-180][tt-8], 
-libnvdla<3> 		n-182:bias-36/:	(in)e-184[1x256x14x14][tsd-180][tt-8], 	(Aux)e-269[1x256x1x1][tsd-269][tt-5], 	(out)e-66[1x256x14x14][tsd-184][tt-3], 
+libnvdla<3> 		n-182:bias-34/:	(in)e-184[1x256x14x14][tsd-180][tt-8], 	(Aux)e-269[1x256x1x1][tsd-269][tt-5], 	(out)e-66[1x256x14x14][tsd-184][tt-3], 
 libnvdla<3> 		n-98:ew-5/res4b:	(in)e-59[1x256x14x14][tsd-173][tt-3], 	(in)e-66[1x256x14x14][tsd-184][tt-3], 	(out)e-68[1x256x14x14][tsd-186][tt-3], 
 libnvdla<3> 		n-100:dc-conv-16/res5a_branch1:	(in)e-68[1x256x14x14][tsd-186][tt-3], 	(Aux)e-189[512x256x1x1][tsd-65][tt-4], 	(out)e-190[1x512x7x7][tsd-187][tt-8], 
-libnvdla<3> 		n-185:bias-37/:	(in)e-190[1x512x7x7][tsd-187][tt-8], 	(Aux)e-272[1x512x1x1][tsd-272][tt-5], 	(out)e-71[1x512x7x7][tsd-191][tt-3], 
+libnvdla<3> 		n-185:bias-35/:	(in)e-190[1x512x7x7][tsd-187][tt-8], 	(Aux)e-272[1x512x1x1][tsd-272][tt-5], 	(out)e-71[1x512x7x7][tsd-191][tt-3], 
 libnvdla<3> 		n-105:dc-conv-17/res5a_branch2a:	(in)e-68[1x256x14x14][tsd-186][tt-3], 	(Aux)e-195[512x256x3x3][tsd-66][tt-4], 	(out)e-196[1x512x7x7][tsd-192][tt-8], 
-libnvdla<3> 		n-188:bias-38/:	(in)e-196[1x512x7x7][tsd-192][tt-8], 	(Aux)e-275[1x512x1x1][tsd-275][tt-5], 	(out)e-75[1x512x7x7][tsd-197][tt-3], 
+libnvdla<3> 		n-188:bias-36/:	(in)e-196[1x512x7x7][tsd-192][tt-8], 	(Aux)e-275[1x512x1x1][tsd-275][tt-5], 	(out)e-75[1x512x7x7][tsd-197][tt-3], 
 libnvdla<3> 		n-111:dc-conv-18/res5a_branch2b:	(in)e-75[1x512x7x7][tsd-197][tt-3], 	(Aux)e-201[512x512x3x3][tsd-73][tt-4], 	(out)e-202[1x512x7x7][tsd-198][tt-8], 
-libnvdla<3> 		n-191:bias-39/:	(in)e-202[1x512x7x7][tsd-198][tt-8], 	(Aux)e-278[1x512x1x1][tsd-278][tt-5], 	(out)e-78[1x512x7x7][tsd-202][tt-3], 
+libnvdla<3> 		n-191:bias-38/:	(in)e-202[1x512x7x7][tsd-198][tt-8], 	(Aux)e-278[1x512x1x1][tsd-278][tt-5], 	(out)e-78[1x512x7x7][tsd-202][tt-3], 
 libnvdla<3> 		n-116:ew-6/res5a:	(in)e-71[1x512x7x7][tsd-191][tt-3], 	(in)e-78[1x512x7x7][tsd-202][tt-3], 	(out)e-80[1x512x7x7][tsd-204][tt-3], 
 libnvdla<3> 		n-118:dc-conv-19/res5b_branch2a:	(in)e-80[1x512x7x7][tsd-204][tt-3], 	(Aux)e-207[512x512x3x3][tsd-77][tt-4], 	(out)e-208[1x512x7x7][tsd-205][tt-8], 
-libnvdla<3> 		n-194:bias-40/:	(in)e-208[1x512x7x7][tsd-205][tt-8], 	(Aux)e-281[1x512x1x1][tsd-281][tt-5], 	(out)e-84[1x512x7x7][tsd-210][tt-3], 
+libnvdla<3> 		n-194:bias-39/:	(in)e-208[1x512x7x7][tsd-205][tt-8], 	(Aux)e-281[1x512x1x1][tsd-281][tt-5], 	(out)e-84[1x512x7x7][tsd-210][tt-3], 
 libnvdla<3> 		n-124:dc-conv-20/res5b_branch2b:	(in)e-84[1x512x7x7][tsd-210][tt-3], 	(Aux)e-213[512x512x3x3][tsd-81][tt-4], 	(out)e-214[1x512x7x7][tsd-211][tt-8], 
 libnvdla<3> 		n-197:bias-41/:	(in)e-214[1x512x7x7][tsd-211][tt-8], 	(Aux)e-284[1x512x1x1][tsd-284][tt-5], 	(out)e-87[1x512x7x7][tsd-215][tt-3], 
 libnvdla<3> 		n-129:ew-7/res5b:	(in)e-80[1x512x7x7][tsd-204][tt-3], 	(in)e-87[1x512x7x7][tsd-215][tt-3], 	(out)e-89[1x512x7x7][tsd-217][tt-3], 
@@ -55326,18 +55326,18 @@ libnvdla<3> 		n-132:fc-0/fc1000:	(in)e-90[1x512x1x1][tsd-218][tt-3], 	(Aux)e-219
 libnvdla<3> 		n-133:bias-21/fc1000:	(Aux)e-220[1x1000x1x1][tsd-86][tt-5], 	(in)e-221[1x1000x1x1][tsd-219][tt-8], 	(out)e-91[1x1000x1x1][tsd-220][tt-3], 
 libnvdla<3> 		n-134:cpu-sm-0/prob:	(in)e-91[1x1000x1x1][tsd-220][tt-3], 	(out)e-92[1x1000x1x1][tsd-221][tt-2], 
 libnvdla<3> 
-libnvdla<3> Try Fusing: bias-25 & ew-0
-libnvdla<3> ew-0 sources: bias-25 & bias-27 eltNodeDistance: 2 c2p: 0 p2c: 0
-libnvdla<3> Eltwise merge NOT feasible for bias-25 & ew-0. Eltwise op source nodes dependency requirements. eltNodeDistance: 2
+libnvdla<3> Try Fusing: bias-24 & ew-0
+libnvdla<3> ew-0 sources: bias-24 & bias-26 eltNodeDistance: 2 c2p: 0 p2c: 0
+libnvdla<3> Eltwise merge NOT feasible for bias-24 & ew-0. Eltwise op source nodes dependency requirements. eltNodeDistance: 2
 libnvdla<3> Fusing: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Fusing: bias-27 & ew-0
-libnvdla<3> ew-0 sources: bias-27 & bias-25 eltNodeDistance: 1 c2p: 0 p2c: 0
-libnvdla<3> SDP fusion feasible for bias-27 & ew-0
-libnvdla<3> configureSDPSuperOpSubEngine: bias-27 in sdp-super-0 x1
+libnvdla<3> Try Fusing: bias-26 & ew-0
+libnvdla<3> ew-0 sources: bias-26 & bias-24 eltNodeDistance: 1 c2p: 0 p2c: 0
+libnvdla<3> SDP fusion feasible for bias-26 & ew-0
+libnvdla<3> configureSDPSuperOpSubEngine: bias-26 in sdp-super-0 x1
 libnvdla<3> configureSDPSuperOpSubEngine: ew-0 in sdp-super-0 x2
 libnvdla<3> SDP x2 fusion parent: dc-conv-3
-libnvdla<3> elt x2 fusion compute edge e-305 betn bias-25 & dc-conv-3
+libnvdla<3> elt x2 fusion compute edge e-305 betn bias-24 & dc-conv-3
 libnvdla<3> Fusing: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -55788,14 +55788,14 @@ libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
 libnvdla<3> Try Fusing: bias-28 & ew-2
-libnvdla<3> ew-2 sources: bias-28 & bias-30 eltNodeDistance: 2 c2p: 0 p2c: 0
+libnvdla<3> ew-2 sources: bias-28 & bias-29 eltNodeDistance: 2 c2p: 0 p2c: 0
 libnvdla<3> Eltwise merge NOT feasible for bias-28 & ew-2. Eltwise op source nodes dependency requirements. eltNodeDistance: 2
 libnvdla<3> Fusing: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Fusing: bias-30 & ew-2
-libnvdla<3> ew-2 sources: bias-30 & bias-28 eltNodeDistance: 1 c2p: 0 p2c: 0
-libnvdla<3> SDP fusion feasible for bias-30 & ew-2
-libnvdla<3> configureSDPSuperOpSubEngine: bias-30 in sdp-super-2 x1
+libnvdla<3> Try Fusing: bias-29 & ew-2
+libnvdla<3> ew-2 sources: bias-29 & bias-28 eltNodeDistance: 1 c2p: 0 p2c: 0
+libnvdla<3> SDP fusion feasible for bias-29 & ew-2
+libnvdla<3> configureSDPSuperOpSubEngine: bias-29 in sdp-super-2 x1
 libnvdla<3> configureSDPSuperOpSubEngine: ew-2 in sdp-super-2 x2
 libnvdla<3> SDP x2 fusion parent: dc-conv-8
 libnvdla<3> elt x2 fusion compute edge e-307 betn bias-28 & dc-conv-8
@@ -56017,10 +56017,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Fusing: bias-33 & ew-3
-libnvdla<3> ew-3 sources: bias-33 & sdp-super-2 eltNodeDistance: 1 c2p: 1 p2c: 0
-libnvdla<3> SDP fusion feasible for bias-33 & ew-3
-libnvdla<3> configureSDPSuperOpSubEngine: bias-33 in sdp-super-3 x1
+libnvdla<3> Try Fusing: bias-31 & ew-3
+libnvdla<3> ew-3 sources: bias-31 & sdp-super-2 eltNodeDistance: 1 c2p: 1 p2c: 0
+libnvdla<3> SDP fusion feasible for bias-31 & ew-3
+libnvdla<3> configureSDPSuperOpSubEngine: bias-31 in sdp-super-3 x1
 libnvdla<3> configureSDPSuperOpSubEngine: ew-3 in sdp-super-3 x2
 libnvdla<3> SDP x2 fusion parent: dc-conv-10
 libnvdla<3> elt x2 fusion compute edge e-308 betn sdp-super-2 & dc-conv-10
@@ -56240,18 +56240,18 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Fusing: bias-33 & ew-4
-libnvdla<3> ew-4 sources: bias-33 & bias-34 eltNodeDistance: 2 c2p: 0 p2c: 0
-libnvdla<3> Eltwise merge NOT feasible for bias-33 & ew-4. Eltwise op source nodes dependency requirements. eltNodeDistance: 2
+libnvdla<3> Try Fusing: bias-32 & ew-4
+libnvdla<3> ew-4 sources: bias-32 & bias-33 eltNodeDistance: 2 c2p: 0 p2c: 0
+libnvdla<3> Eltwise merge NOT feasible for bias-32 & ew-4. Eltwise op source nodes dependency requirements. eltNodeDistance: 2
 libnvdla<3> Fusing: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Fusing: bias-34 & ew-4
-libnvdla<3> ew-4 sources: bias-34 & bias-33 eltNodeDistance: 1 c2p: 0 p2c: 0
-libnvdla<3> SDP fusion feasible for bias-34 & ew-4
-libnvdla<3> configureSDPSuperOpSubEngine: bias-34 in sdp-super-4 x1
+libnvdla<3> Try Fusing: bias-33 & ew-4
+libnvdla<3> ew-4 sources: bias-33 & bias-32 eltNodeDistance: 1 c2p: 0 p2c: 0
+libnvdla<3> SDP fusion feasible for bias-33 & ew-4
+libnvdla<3> configureSDPSuperOpSubEngine: bias-33 in sdp-super-4 x1
 libnvdla<3> configureSDPSuperOpSubEngine: ew-4 in sdp-super-4 x2
 libnvdla<3> SDP x2 fusion parent: dc-conv-13
-libnvdla<3> elt x2 fusion compute edge e-309 betn bias-33 & dc-conv-13
+libnvdla<3> elt x2 fusion compute edge e-309 betn bias-32 & dc-conv-13
 libnvdla<3> Fusing: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -56466,10 +56466,10 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Fusing: bias-36 & ew-5
-libnvdla<3> ew-5 sources: bias-36 & sdp-super-4 eltNodeDistance: 1 c2p: 1 p2c: 0
-libnvdla<3> SDP fusion feasible for bias-36 & ew-5
-libnvdla<3> configureSDPSuperOpSubEngine: bias-36 in sdp-super-5 x1
+libnvdla<3> Try Fusing: bias-34 & ew-5
+libnvdla<3> ew-5 sources: bias-34 & sdp-super-4 eltNodeDistance: 1 c2p: 1 p2c: 0
+libnvdla<3> SDP fusion feasible for bias-34 & ew-5
+libnvdla<3> configureSDPSuperOpSubEngine: bias-34 in sdp-super-5 x1
 libnvdla<3> configureSDPSuperOpSubEngine: ew-5 in sdp-super-5 x2
 libnvdla<3> SDP x2 fusion parent: dc-conv-15
 libnvdla<3> elt x2 fusion compute edge e-310 betn sdp-super-4 & dc-conv-15
@@ -56685,18 +56685,18 @@ libnvdla<3> tb-219 for tsd-219 for e-221 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-220 for tsd-220 for e-91 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> tb-221 for tsd-221 for e-92 with NVDLA_FEATURE_DATA_FP16
 libnvdla<3> 
-libnvdla<3> Try Fusing: bias-37 & ew-6
-libnvdla<3> ew-6 sources: bias-37 & bias-39 eltNodeDistance: 2 c2p: 0 p2c: 0
-libnvdla<3> Eltwise merge NOT feasible for bias-37 & ew-6. Eltwise op source nodes dependency requirements. eltNodeDistance: 2
+libnvdla<3> Try Fusing: bias-35 & ew-6
+libnvdla<3> ew-6 sources: bias-35 & bias-38 eltNodeDistance: 2 c2p: 0 p2c: 0
+libnvdla<3> Eltwise merge NOT feasible for bias-35 & ew-6. Eltwise op source nodes dependency requirements. eltNodeDistance: 2
 libnvdla<3> Fusing: Not Feasible
 libnvdla<3> 
-libnvdla<3> Try Fusing: bias-39 & ew-6
-libnvdla<3> ew-6 sources: bias-39 & bias-37 eltNodeDistance: 1 c2p: 0 p2c: 0
-libnvdla<3> SDP fusion feasible for bias-39 & ew-6
-libnvdla<3> configureSDPSuperOpSubEngine: bias-39 in sdp-super-6 x1
+libnvdla<3> Try Fusing: bias-38 & ew-6
+libnvdla<3> ew-6 sources: bias-38 & bias-35 eltNodeDistance: 1 c2p: 0 p2c: 0
+libnvdla<3> SDP fusion feasible for bias-38 & ew-6
+libnvdla<3> configureSDPSuperOpSubEngine: bias-38 in sdp-super-6 x1
 libnvdla<3> configureSDPSuperOpSubEngine: ew-6 in sdp-super-6 x2
 libnvdla<3> SDP x2 fusion parent: dc-conv-18
-libnvdla<3> elt x2 fusion compute edge e-311 betn bias-37 & dc-conv-18
+libnvdla<3> elt x2 fusion compute edge e-311 betn bias-35 & dc-conv-18
 libnvdla<3> Fusing: Sucess
 libnvdla<3> e-0 edge already has set surface format NVDLA_FEATURE_DATA_FP16
 libnvdla<3> e-93 edge already has set surface format NVDLA_WEIGHT_DC_FP16
@@ -57332,17 +57332,17 @@ libnvdla<3> 		n-198:split-0/:	(in)e-0[1x3x224x224][tsd-1][tt-1], 	(out)e-285[1x3
 libnvdla<3> 		n-0:dc-conv-0/conv1:	(Aux)e-93[64x3x7x7][tsd-0][tt-4], 	(in)e-285[1x3x68x224][tsd-287][tt-3], 	(out)e-94[1x64x33x112][tsd-87][tt-8], 	(out)e-291 
 libnvdla<3> 		n-137:bias-23/:	(in)e-94[1x64x33x112][tsd-87][tt-8], 	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(out)e-286[1x64x33x112][tsd-289][tt-3], 	(out)e-292 
 libnvdla<3> 		n-200:dc-conv-21/conv1:	(Aux)e-93[64x3x7x7][tsd-0][tt-4], 	(in)e-289[1x3x68x224][tsd-286][tt-3], 	(in)e-291 	(out)e-288[1x64x31x112][tsd-290][tt-8], 	(out)e-297 
-libnvdla<3> 		n-201:bias-41/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-288[1x64x31x112][tsd-290][tt-8], 	(in)e-292 	(out)e-290[1x64x31x112][tsd-291][tt-3], 	(out)e-298 
+libnvdla<3> 		n-201:bias-42/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-288[1x64x31x112][tsd-290][tt-8], 	(in)e-292 	(out)e-290[1x64x31x112][tsd-291][tt-3], 	(out)e-298 
 libnvdla<3> 		n-202:dc-conv-22/conv1:	(Aux)e-93[64x3x7x7][tsd-0][tt-4], 	(in)e-295[1x3x68x224][tsd-285][tt-3], 	(in)e-297 	(out)e-294[1x64x31x112][tsd-292][tt-8], 	(out)e-303 
-libnvdla<3> 		n-203:bias-42/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-294[1x64x31x112][tsd-292][tt-8], 	(in)e-298 	(out)e-296[1x64x31x112][tsd-293][tt-3], 	(out)e-304 
+libnvdla<3> 		n-203:bias-43/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-294[1x64x31x112][tsd-292][tt-8], 	(in)e-298 	(out)e-296[1x64x31x112][tsd-293][tt-3], 	(out)e-304 
 libnvdla<3> 		n-204:dc-conv-23/conv1:	(Aux)e-93[64x3x7x7][tsd-0][tt-4], 	(in)e-301[1x3x37x224][tsd-288][tt-3], 	(in)e-303 	(out)e-300[1x64x17x112][tsd-294][tt-8], 
-libnvdla<3> 		n-205:bias-43/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-300[1x64x17x112][tsd-294][tt-8], 	(in)e-304 	(out)e-302[1x64x17x112][tsd-295][tt-3], 
+libnvdla<3> 		n-205:bias-44/:	(Aux)e-224[1x64x1x1][tsd-224][tt-5], 	(in)e-300[1x64x17x112][tsd-294][tt-8], 	(in)e-304 	(out)e-302[1x64x17x112][tsd-295][tt-3], 
 libnvdla<3> 		n-199:concat-0/:	(in)e-286[1x64x33x112][tsd-289][tt-3], 	(in)e-290[1x64x31x112][tsd-291][tt-3], 	(in)e-296[1x64x31x112][tsd-293][tt-3], 	(in)e-302[1x64x17x112][tsd-295][tt-3], 	(out)e-4[1x64x112x112][tsd-92][tt-3], 
 libnvdla<3> 		n-6:pdp-0/pool1:	(in)e-4[1x64x112x112][tsd-92][tt-3], 	(out)e-5[1x64x56x56][tsd-93][tt-3], 
 libnvdla<3> 		n-7:dc-conv-1/res2a_branch1:	(in)e-5[1x64x56x56][tsd-93][tt-3], 	(Aux)e-99[64x64x1x1][tsd-5][tt-4], 	(out)e-100[1x64x56x56][tsd-94][tt-8], 
-libnvdla<3> 		n-140:bias-25/:	(in)e-100[1x64x56x56][tsd-94][tt-8], 	(Aux)e-227[1x64x1x1][tsd-227][tt-5], 	(out)e-8[1x64x56x56][tsd-98][tt-3], 	(out)e-305 
+libnvdla<3> 		n-140:bias-24/:	(in)e-100[1x64x56x56][tsd-94][tt-8], 	(Aux)e-227[1x64x1x1][tsd-227][tt-5], 	(out)e-8[1x64x56x56][tsd-98][tt-3], 	(out)e-305 
 libnvdla<3> 		n-12:dc-conv-2/res2a_branch2a:	(in)e-5[1x64x56x56][tsd-93][tt-3], 	(Aux)e-105[64x64x3x3][tsd-6][tt-4], 	(out)e-106[1x64x56x56][tsd-99][tt-8], 
-libnvdla<3> 		n-143:bias-26/:	(in)e-106[1x64x56x56][tsd-99][tt-8], 	(Aux)e-230[1x64x1x1][tsd-230][tt-5], 	(out)e-12[1x64x56x56][tsd-104][tt-3], 
+libnvdla<3> 		n-143:bias-25/:	(in)e-106[1x64x56x56][tsd-99][tt-8], 	(Aux)e-230[1x64x1x1][tsd-230][tt-5], 	(out)e-12[1x64x56x56][tsd-104][tt-3], 
 libnvdla<3> 		n-18:dc-conv-3/res2a_branch2b:	(in)e-12[1x64x56x56][tsd-104][tt-3], 	(Aux)e-111[64x64x3x3][tsd-13][tt-4], 	(in)e-305 	(out)e-112[1x64x56x56][tsd-105][tt-8], 
 libnvdla<3> 		n-206:sdp-super-0/:	(in)e-8[1x64x56x56][tsd-98][tt-3], 	(in)e-112[1x64x56x56][tsd-105][tt-8], 	(Aux)e-233[1x64x1x1][tsd-233][tt-5], 	(out)e-17[1x64x56x56][tsd-111][tt-3], 	(out)e-306 
 libnvdla<3> 		n-25:dc-conv-4/res2b_branch2a:	(in)e-17[1x64x56x56][tsd-111][tt-3], 	(Aux)e-117[64x64x3x3][tsd-17][tt-4], 	(out)e-118[1x64x56x56][tsd-112][tt-8], 
@@ -57352,31 +57352,31 @@ libnvdla<3> 		n-207:sdp-super-1/:	(in)e-17[1x64x56x56][tsd-111][tt-3], 	(in)e-12
 libnvdla<3> 		n-38:dc-conv-6/res3a_branch1:	(in)e-26[1x64x56x56][tsd-124][tt-3], 	(Aux)e-129[128x64x1x1][tsd-25][tt-4], 	(out)e-130[1x128x28x28][tsd-125][tt-8], 
 libnvdla<3> 		n-155:bias-28/:	(in)e-130[1x128x28x28][tsd-125][tt-8], 	(Aux)e-242[1x128x1x1][tsd-242][tt-5], 	(out)e-29[1x128x28x28][tsd-129][tt-3], 	(out)e-307 
 libnvdla<3> 		n-43:dc-conv-7/res3a_branch2a:	(in)e-26[1x64x56x56][tsd-124][tt-3], 	(Aux)e-135[128x64x3x3][tsd-26][tt-4], 	(out)e-136[1x128x28x28][tsd-130][tt-8], 
-libnvdla<3> 		n-158:bias-29/:	(in)e-136[1x128x28x28][tsd-130][tt-8], 	(Aux)e-245[1x128x1x1][tsd-245][tt-5], 	(out)e-33[1x128x28x28][tsd-135][tt-3], 
+libnvdla<3> 		n-158:bias-28/:	(in)e-136[1x128x28x28][tsd-130][tt-8], 	(Aux)e-245[1x128x1x1][tsd-245][tt-5], 	(out)e-33[1x128x28x28][tsd-135][tt-3], 
 libnvdla<3> 		n-49:dc-conv-8/res3a_branch2b:	(in)e-33[1x128x28x28][tsd-135][tt-3], 	(Aux)e-141[128x128x3x3][tsd-33][tt-4], 	(in)e-307 	(out)e-142[1x128x28x28][tsd-136][tt-8], 
 libnvdla<3> 		n-208:sdp-super-2/:	(in)e-29[1x128x28x28][tsd-129][tt-3], 	(in)e-142[1x128x28x28][tsd-136][tt-8], 	(Aux)e-248[1x128x1x1][tsd-248][tt-5], 	(out)e-38[1x128x28x28][tsd-142][tt-3], 	(out)e-308 
 libnvdla<3> 		n-56:dc-conv-9/res3b_branch2a:	(in)e-38[1x128x28x28][tsd-142][tt-3], 	(Aux)e-147[128x128x3x3][tsd-37][tt-4], 	(out)e-148[1x128x28x28][tsd-143][tt-8], 
-libnvdla<3> 		n-164:bias-32/:	(in)e-148[1x128x28x28][tsd-143][tt-8], 	(Aux)e-251[1x128x1x1][tsd-251][tt-5], 	(out)e-42[1x128x28x28][tsd-148][tt-3], 
+libnvdla<3> 		n-164:bias-30/:	(in)e-148[1x128x28x28][tsd-143][tt-8], 	(Aux)e-251[1x128x1x1][tsd-251][tt-5], 	(out)e-42[1x128x28x28][tsd-148][tt-3], 
 libnvdla<3> 		n-62:dc-conv-10/res3b_branch2b:	(in)e-42[1x128x28x28][tsd-148][tt-3], 	(Aux)e-153[128x128x3x3][tsd-41][tt-4], 	(in)e-308 	(out)e-154[1x128x28x28][tsd-149][tt-8], 
 libnvdla<3> 		n-209:sdp-super-3/:	(in)e-38[1x128x28x28][tsd-142][tt-3], 	(in)e-154[1x128x28x28][tsd-149][tt-8], 	(Aux)e-254[1x128x1x1][tsd-254][tt-5], 	(out)e-47[1x128x28x28][tsd-155][tt-3], 
 libnvdla<3> 		n-69:dc-conv-11/res4a_branch1:	(in)e-47[1x128x28x28][tsd-155][tt-3], 	(Aux)e-159[256x128x1x1][tsd-45][tt-4], 	(out)e-160[1x256x14x14][tsd-156][tt-8], 
-libnvdla<3> 		n-170:bias-33/:	(in)e-160[1x256x14x14][tsd-156][tt-8], 	(Aux)e-257[1x256x1x1][tsd-257][tt-5], 	(out)e-50[1x256x14x14][tsd-160][tt-3], 	(out)e-309 
+libnvdla<3> 		n-170:bias-32/:	(in)e-160[1x256x14x14][tsd-156][tt-8], 	(Aux)e-257[1x256x1x1][tsd-257][tt-5], 	(out)e-50[1x256x14x14][tsd-160][tt-3], 	(out)e-309 
 libnvdla<3> 		n-74:dc-conv-12/res4a_branch2a:	(in)e-47[1x128x28x28][tsd-155][tt-3], 	(Aux)e-165[256x128x3x3][tsd-46][tt-4], 	(out)e-166[1x256x14x14][tsd-161][tt-8], 
-libnvdla<3> 		n-173:bias-34/:	(in)e-166[1x256x14x14][tsd-161][tt-8], 	(Aux)e-260[1x256x1x1][tsd-260][tt-5], 	(out)e-54[1x256x14x14][tsd-166][tt-3], 
+libnvdla<3> 		n-173:bias-33/:	(in)e-166[1x256x14x14][tsd-161][tt-8], 	(Aux)e-260[1x256x1x1][tsd-260][tt-5], 	(out)e-54[1x256x14x14][tsd-166][tt-3], 
 libnvdla<3> 		n-80:dc-conv-13/res4a_branch2b:	(in)e-54[1x256x14x14][tsd-166][tt-3], 	(Aux)e-171[256x256x3x3][tsd-53][tt-4], 	(in)e-309 	(out)e-172[1x256x14x14][tsd-167][tt-8], 
 libnvdla<3> 		n-210:sdp-super-4/:	(in)e-50[1x256x14x14][tsd-160][tt-3], 	(in)e-172[1x256x14x14][tsd-167][tt-8], 	(Aux)e-263[1x256x1x1][tsd-263][tt-5], 	(out)e-59[1x256x14x14][tsd-173][tt-3], 	(out)e-310 
 libnvdla<3> 		n-87:dc-conv-14/res4b_branch2a:	(in)e-59[1x256x14x14][tsd-173][tt-3], 	(Aux)e-177[256x256x3x3][tsd-57][tt-4], 	(out)e-178[1x256x14x14][tsd-174][tt-8], 
-libnvdla<3> 		n-179:bias-35/:	(in)e-178[1x256x14x14][tsd-174][tt-8], 	(Aux)e-266[1x256x1x1][tsd-266][tt-5], 	(out)e-63[1x256x14x14][tsd-179][tt-3], 
+libnvdla<3> 		n-179:bias-34/:	(in)e-178[1x256x14x14][tsd-174][tt-8], 	(Aux)e-266[1x256x1x1][tsd-266][tt-5], 	(out)e-63[1x256x14x14][tsd-179][tt-3], 
 libnvdla<3> 		n-93:dc-conv-15/res4b_branch2b:	(in)e-63[1x256x14x14][tsd-179][tt-3], 	(Aux)e-183[256x256x3x3][tsd-61][tt-4], 	(in)e-310 	(out)e-184[1x256x14x14][tsd-180][tt-8], 
 libnvdla<3> 		n-211:sdp-super-5/:	(in)e-59[1x256x14x14][tsd-173][tt-3], 	(in)e-184[1x256x14x14][tsd-180][tt-8], 	(Aux)e-269[1x256x1x1][tsd-269][tt-5], 	(out)e-68[1x256x14x14][tsd-186][tt-3], 
 libnvdla<3> 		n-100:dc-conv-16/res5a_branch1:	(in)e-68[1x256x14x14][tsd-186][tt-3], 	(Aux)e-189[512x256x1x1][tsd-65][tt-4], 	(out)e-190[1x512x7x7][tsd-187][tt-8], 
-libnvdla<3> 		n-185:bias-37/:	(in)e-190[1x512x7x7][tsd-187][tt-8], 	(Aux)e-272[1x512x1x1][tsd-272][tt-5], 	(out)e-71[1x512x7x7][tsd-191][tt-3], 	(out)e-311 
+libnvdla<3> 		n-185:bias-35/:	(in)e-190[1x512x7x7][tsd-187][tt-8], 	(Aux)e-272[1x512x1x1][tsd-272][tt-5], 	(out)e-71[1x512x7x7][tsd-191][tt-3], 	(out)e-311 
 libnvdla<3> 		n-105:dc-conv-17/res5a_branch2a:	(in)e-68[1x256x14x14][tsd-186][tt-3], 	(Aux)e-195[512x256x3x3][tsd-66][tt-4], 	(out)e-196[1x512x7x7][tsd-192][tt-8], 
-libnvdla<3> 		n-188:bias-38/:	(in)e-196[1x512x7x7][tsd-192][tt-8], 	(Aux)e-275[1x512x1x1][tsd-275][tt-5], 	(out)e-75[1x512x7x7][tsd-197][tt-3], 
+libnvdla<3> 		n-188:bias-36/:	(in)e-196[1x512x7x7][tsd-192][tt-8], 	(Aux)e-275[1x512x1x1][tsd-275][tt-5], 	(out)e-75[1x512x7x7][tsd-197][tt-3], 
 libnvdla<3> 		n-111:dc-conv-18/res5a_branch2b:	(in)e-75[1x512x7x7][tsd-197][tt-3], 	(Aux)e-201[512x512x3x3][tsd-73][tt-4], 	(in)e-311 	(out)e-202[1x512x7x7][tsd-198][tt-8], 
 libnvdla<3> 		n-212:sdp-super-6/:	(in)e-71[1x512x7x7][tsd-191][tt-3], 	(in)e-202[1x512x7x7][tsd-198][tt-8], 	(Aux)e-278[1x512x1x1][tsd-278][tt-5], 	(out)e-80[1x512x7x7][tsd-204][tt-3], 	(out)e-312 
 libnvdla<3> 		n-118:dc-conv-19/res5b_branch2a:	(in)e-80[1x512x7x7][tsd-204][tt-3], 	(Aux)e-207[512x512x3x3][tsd-77][tt-4], 	(out)e-208[1x512x7x7][tsd-205][tt-8], 
-libnvdla<3> 		n-194:bias-40/:	(in)e-208[1x512x7x7][tsd-205][tt-8], 	(Aux)e-281[1x512x1x1][tsd-281][tt-5], 	(out)e-84[1x512x7x7][tsd-210][tt-3], 
+libnvdla<3> 		n-194:bias-39/:	(in)e-208[1x512x7x7][tsd-205][tt-8], 	(Aux)e-281[1x512x1x1][tsd-281][tt-5], 	(out)e-84[1x512x7x7][tsd-210][tt-3], 
 libnvdla<3> 		n-124:dc-conv-20/res5b_branch2b:	(in)e-84[1x512x7x7][tsd-210][tt-3], 	(Aux)e-213[512x512x3x3][tsd-81][tt-4], 	(in)e-312 	(out)e-214[1x512x7x7][tsd-211][tt-8], 
 libnvdla<3> 		n-213:sdp-super-7/:	(in)e-80[1x512x7x7][tsd-204][tt-3], 	(in)e-214[1x512x7x7][tsd-211][tt-8], 	(Aux)e-284[1x512x1x1][tsd-284][tt-5], 	(out)e-89[1x512x7x7][tsd-217][tt-3], 
 libnvdla<3> 		n-131:pdp-1/pool5:	(in)e-89[1x512x7x7][tsd-217][tt-3], 	(out)e-90[1x512x1x1][tsd-218][tt-3], 
@@ -57388,45 +57388,45 @@ libnvdla<3> 	producer: [, , , , , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-21(annId:2):OP_PROGRAMMED, , bias-23(annId:1):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=1 node=bias-23.B0 deps=1
 libnvdla<3> 	producer: [, dc-conv-0(annId:0):OP_PROGRAMMED, , , , , , , , , ]
-libnvdla<3> 	consumer: [, , , bias-41(annId:3):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, , , bias-42(annId:3):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=2 node=dc-conv-21.B0 deps=2
 libnvdla<3> 	producer: [, dc-conv-0(annId:0):OP_PROGRAMMED, , , , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-22(annId:4):OP_PROGRAMMED, , bias-41(annId:3):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=3 node=bias-41.B0 deps=2
+libnvdla<3> 	consumer: [, dc-conv-22(annId:4):OP_PROGRAMMED, , bias-42(annId:3):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=3 node=bias-42.B0 deps=2
 libnvdla<3> 	producer: [, dc-conv-21(annId:2):OP_PROGRAMMED, , bias-23(annId:1):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, , , bias-42(annId:5):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, , , bias-43(annId:5):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=4 node=dc-conv-22.B0 deps=2
 libnvdla<3> 	producer: [, dc-conv-21(annId:2):OP_PROGRAMMED, , , , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-23(annId:6):OP_PROGRAMMED, , bias-42(annId:5):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=5 node=bias-42.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-22(annId:4):OP_PROGRAMMED, , bias-41(annId:3):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, , , bias-43(annId:7):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-23(annId:6):OP_PROGRAMMED, , bias-43(annId:5):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=5 node=bias-43.B0 deps=2
+libnvdla<3> 	producer: [, dc-conv-22(annId:4):OP_PROGRAMMED, , bias-42(annId:3):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, , , bias-44(annId:7):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=6 node=dc-conv-23.B0 deps=2
 libnvdla<3> 	producer: [, dc-conv-22(annId:4):OP_PROGRAMMED, , , , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-1(annId:9):OP_PROGRAMMED, , bias-43(annId:7):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=7 node=bias-43.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-23(annId:6):OP_PROGRAMMED, , bias-42(annId:5):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, , , bias-25(annId:10):OP_PROGRAMMED, pdp-0(annId:8):OP_COMPLETED, , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-1(annId:9):OP_PROGRAMMED, , bias-44(annId:7):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=7 node=bias-44.B0 deps=2
+libnvdla<3> 	producer: [, dc-conv-23(annId:6):OP_PROGRAMMED, , bias-43(annId:5):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, , , bias-24(annId:10):OP_PROGRAMMED, pdp-0(annId:8):OP_COMPLETED, , , , , , ]
 libnvdla<3> annid=8 node=pdp-0.B0 deps=1
-libnvdla<3> 	producer: [, , , bias-43(annId:7):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	producer: [, , , bias-44(annId:7):OP_COMPLETED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-1(annId:9):OP_COMPLETED, , , pdp-1(annId:49):OP_PROGRAMMED, , , , , , ]
 libnvdla<3> annid=9 node=dc-conv-1.B0 deps=3
 libnvdla<3> 	producer: [, dc-conv-23(annId:6):OP_PROGRAMMED, , , pdp-0(annId:8):OP_COMPLETED, , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-2(annId:11):OP_PROGRAMMED, , bias-25(annId:10):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=10 node=bias-25.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-1(annId:9):OP_PROGRAMMED, , bias-43(annId:7):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-2(annId:11):OP_COMPLETED, , bias-26(annId:12):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-2(annId:11):OP_PROGRAMMED, , bias-24(annId:10):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=10 node=bias-24.B0 deps=2
+libnvdla<3> 	producer: [, dc-conv-1(annId:9):OP_PROGRAMMED, , bias-44(annId:7):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-2(annId:11):OP_COMPLETED, , bias-25(annId:12):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=11 node=dc-conv-2.B0 deps=3
-libnvdla<3> 	producer: [, dc-conv-1(annId:9):OP_PROGRAMMED, , bias-25(annId:10):OP_COMPLETED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-3(annId:13):OP_PROGRAMMED, , bias-26(annId:12):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=12 node=bias-26.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-2(annId:11):OP_PROGRAMMED, , bias-25(annId:10):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-1(annId:9):OP_PROGRAMMED, , bias-24(annId:10):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-3(annId:13):OP_PROGRAMMED, , bias-25(annId:12):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=12 node=bias-25.B0 deps=2
+libnvdla<3> 	producer: [, dc-conv-2(annId:11):OP_PROGRAMMED, , bias-24(annId:10):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-3(annId:13):OP_COMPLETED, , sdp-super-0(annId:14):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=13 node=dc-conv-3.B0 deps=3
-libnvdla<3> 	producer: [, dc-conv-2(annId:11):OP_PROGRAMMED, , bias-26(annId:12):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-2(annId:11):OP_PROGRAMMED, , bias-25(annId:12):OP_COMPLETED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-4(annId:15):OP_PROGRAMMED, , sdp-super-0(annId:14):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=14 node=sdp-super-0.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-3(annId:13):OP_PROGRAMMED, , bias-26(annId:12):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-3(annId:13):OP_PROGRAMMED, , bias-25(annId:12):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-4(annId:15):OP_COMPLETED, , bias-27(annId:16):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=15 node=dc-conv-4.B0 deps=3
 libnvdla<3> 	producer: [, dc-conv-3(annId:13):OP_PROGRAMMED, , sdp-super-0(annId:14):OP_COMPLETED, , , , , , , ]
@@ -57445,90 +57445,90 @@ libnvdla<3> 	producer: [, dc-conv-5(annId:17):OP_PROGRAMMED, , sdp-super-1(annId
 libnvdla<3> 	consumer: [, dc-conv-7(annId:21):OP_PROGRAMMED, , bias-28(annId:20):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=20 node=bias-28.B0 deps=2
 libnvdla<3> 	producer: [, dc-conv-6(annId:19):OP_PROGRAMMED, , sdp-super-1(annId:18):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-7(annId:21):OP_COMPLETED, , bias-29(annId:22):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-7(annId:21):OP_COMPLETED, , bias-28(annId:22):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=21 node=dc-conv-7.B0 deps=3
 libnvdla<3> 	producer: [, dc-conv-6(annId:19):OP_PROGRAMMED, , bias-28(annId:20):OP_COMPLETED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-8(annId:23):OP_PROGRAMMED, , bias-29(annId:22):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=22 node=bias-29.B0 deps=2
+libnvdla<3> 	consumer: [, dc-conv-8(annId:23):OP_PROGRAMMED, , bias-28(annId:22):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=22 node=bias-28.B0 deps=2
 libnvdla<3> 	producer: [, dc-conv-7(annId:21):OP_PROGRAMMED, , bias-28(annId:20):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-8(annId:23):OP_COMPLETED, , sdp-super-2(annId:24):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=23 node=dc-conv-8.B0 deps=3
-libnvdla<3> 	producer: [, dc-conv-7(annId:21):OP_PROGRAMMED, , bias-29(annId:22):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-7(annId:21):OP_PROGRAMMED, , bias-28(annId:22):OP_COMPLETED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-9(annId:25):OP_PROGRAMMED, , sdp-super-2(annId:24):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=24 node=sdp-super-2.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-8(annId:23):OP_PROGRAMMED, , bias-29(annId:22):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-9(annId:25):OP_COMPLETED, , bias-32(annId:26):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-8(annId:23):OP_PROGRAMMED, , bias-28(annId:22):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-9(annId:25):OP_COMPLETED, , bias-30(annId:26):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=25 node=dc-conv-9.B0 deps=3
 libnvdla<3> 	producer: [, dc-conv-8(annId:23):OP_PROGRAMMED, , sdp-super-2(annId:24):OP_COMPLETED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-10(annId:27):OP_PROGRAMMED, , bias-32(annId:26):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=26 node=bias-32.B0 deps=2
+libnvdla<3> 	consumer: [, dc-conv-10(annId:27):OP_PROGRAMMED, , bias-30(annId:26):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=26 node=bias-30.B0 deps=2
 libnvdla<3> 	producer: [, dc-conv-9(annId:25):OP_PROGRAMMED, , sdp-super-2(annId:24):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-10(annId:27):OP_COMPLETED, , sdp-super-3(annId:28):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=27 node=dc-conv-10.B0 deps=3
-libnvdla<3> 	producer: [, dc-conv-9(annId:25):OP_PROGRAMMED, , bias-32(annId:26):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-9(annId:25):OP_PROGRAMMED, , bias-30(annId:26):OP_COMPLETED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-11(annId:29):OP_PROGRAMMED, , sdp-super-3(annId:28):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=28 node=sdp-super-3.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-10(annId:27):OP_PROGRAMMED, , bias-32(annId:26):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-11(annId:29):OP_COMPLETED, , bias-33(annId:30):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-10(annId:27):OP_PROGRAMMED, , bias-30(annId:26):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-11(annId:29):OP_COMPLETED, , bias-32(annId:30):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=29 node=dc-conv-11.B0 deps=3
 libnvdla<3> 	producer: [, dc-conv-10(annId:27):OP_PROGRAMMED, , sdp-super-3(annId:28):OP_COMPLETED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-12(annId:31):OP_PROGRAMMED, , bias-33(annId:30):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=30 node=bias-33.B0 deps=2
+libnvdla<3> 	consumer: [, dc-conv-12(annId:31):OP_PROGRAMMED, , bias-32(annId:30):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=30 node=bias-32.B0 deps=2
 libnvdla<3> 	producer: [, dc-conv-11(annId:29):OP_PROGRAMMED, , sdp-super-3(annId:28):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-12(annId:31):OP_COMPLETED, , bias-34(annId:32):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-12(annId:31):OP_COMPLETED, , bias-33(annId:32):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=31 node=dc-conv-12.B0 deps=3
-libnvdla<3> 	producer: [, dc-conv-11(annId:29):OP_PROGRAMMED, , bias-33(annId:30):OP_COMPLETED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-13(annId:33):OP_PROGRAMMED, , bias-34(annId:32):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=32 node=bias-34.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-12(annId:31):OP_PROGRAMMED, , bias-33(annId:30):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-11(annId:29):OP_PROGRAMMED, , bias-32(annId:30):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-13(annId:33):OP_PROGRAMMED, , bias-33(annId:32):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=32 node=bias-33.B0 deps=2
+libnvdla<3> 	producer: [, dc-conv-12(annId:31):OP_PROGRAMMED, , bias-32(annId:30):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-13(annId:33):OP_COMPLETED, , sdp-super-4(annId:34):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=33 node=dc-conv-13.B0 deps=3
-libnvdla<3> 	producer: [, dc-conv-12(annId:31):OP_PROGRAMMED, , bias-34(annId:32):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-12(annId:31):OP_PROGRAMMED, , bias-33(annId:32):OP_COMPLETED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-14(annId:35):OP_PROGRAMMED, , sdp-super-4(annId:34):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=34 node=sdp-super-4.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-13(annId:33):OP_PROGRAMMED, , bias-34(annId:32):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-14(annId:35):OP_COMPLETED, , bias-35(annId:36):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-13(annId:33):OP_PROGRAMMED, , bias-33(annId:32):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-14(annId:35):OP_COMPLETED, , bias-34(annId:36):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=35 node=dc-conv-14.B0 deps=3
 libnvdla<3> 	producer: [, dc-conv-13(annId:33):OP_PROGRAMMED, , sdp-super-4(annId:34):OP_COMPLETED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-15(annId:37):OP_PROGRAMMED, , bias-35(annId:36):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=36 node=bias-35.B0 deps=2
+libnvdla<3> 	consumer: [, dc-conv-15(annId:37):OP_PROGRAMMED, , bias-34(annId:36):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=36 node=bias-34.B0 deps=2
 libnvdla<3> 	producer: [, dc-conv-14(annId:35):OP_PROGRAMMED, , sdp-super-4(annId:34):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-15(annId:37):OP_COMPLETED, , sdp-super-5(annId:38):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=37 node=dc-conv-15.B0 deps=3
-libnvdla<3> 	producer: [, dc-conv-14(annId:35):OP_PROGRAMMED, , bias-35(annId:36):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-14(annId:35):OP_PROGRAMMED, , bias-34(annId:36):OP_COMPLETED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-16(annId:39):OP_PROGRAMMED, , sdp-super-5(annId:38):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=38 node=sdp-super-5.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-15(annId:37):OP_PROGRAMMED, , bias-35(annId:36):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-16(annId:39):OP_COMPLETED, , bias-37(annId:40):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-15(annId:37):OP_PROGRAMMED, , bias-34(annId:36):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-16(annId:39):OP_COMPLETED, , bias-35(annId:40):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=39 node=dc-conv-16.B0 deps=3
 libnvdla<3> 	producer: [, dc-conv-15(annId:37):OP_PROGRAMMED, , sdp-super-5(annId:38):OP_COMPLETED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-17(annId:41):OP_PROGRAMMED, , bias-37(annId:40):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=40 node=bias-37.B0 deps=2
+libnvdla<3> 	consumer: [, dc-conv-17(annId:41):OP_PROGRAMMED, , bias-35(annId:40):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=40 node=bias-35.B0 deps=2
 libnvdla<3> 	producer: [, dc-conv-16(annId:39):OP_PROGRAMMED, , sdp-super-5(annId:38):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-17(annId:41):OP_COMPLETED, , bias-38(annId:42):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-17(annId:41):OP_COMPLETED, , bias-36(annId:42):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=41 node=dc-conv-17.B0 deps=3
-libnvdla<3> 	producer: [, dc-conv-16(annId:39):OP_PROGRAMMED, , bias-37(annId:40):OP_COMPLETED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-18(annId:43):OP_PROGRAMMED, , bias-38(annId:42):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=42 node=bias-38.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-17(annId:41):OP_PROGRAMMED, , bias-37(annId:40):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-16(annId:39):OP_PROGRAMMED, , bias-35(annId:40):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-18(annId:43):OP_PROGRAMMED, , bias-36(annId:42):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=42 node=bias-36.B0 deps=2
+libnvdla<3> 	producer: [, dc-conv-17(annId:41):OP_PROGRAMMED, , bias-35(annId:40):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-18(annId:43):OP_COMPLETED, , sdp-super-6(annId:44):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=43 node=dc-conv-18.B0 deps=3
-libnvdla<3> 	producer: [, dc-conv-17(annId:41):OP_PROGRAMMED, , bias-38(annId:42):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-17(annId:41):OP_PROGRAMMED, , bias-36(annId:42):OP_COMPLETED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-19(annId:45):OP_PROGRAMMED, , sdp-super-6(annId:44):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=44 node=sdp-super-6.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-18(annId:43):OP_PROGRAMMED, , bias-38(annId:42):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-19(annId:45):OP_COMPLETED, , bias-40(annId:46):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-18(annId:43):OP_PROGRAMMED, , bias-36(annId:42):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	consumer: [, dc-conv-19(annId:45):OP_COMPLETED, , bias-39(annId:46):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=45 node=dc-conv-19.B0 deps=3
 libnvdla<3> 	producer: [, dc-conv-18(annId:43):OP_PROGRAMMED, , sdp-super-6(annId:44):OP_COMPLETED, , , , , , , ]
-libnvdla<3> 	consumer: [, dc-conv-20(annId:47):OP_PROGRAMMED, , bias-40(annId:46):OP_PROGRAMMED, , , , , , , ]
-libnvdla<3> annid=46 node=bias-40.B0 deps=2
+libnvdla<3> 	consumer: [, dc-conv-20(annId:47):OP_PROGRAMMED, , bias-39(annId:46):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> annid=46 node=bias-39.B0 deps=2
 libnvdla<3> 	producer: [, dc-conv-19(annId:45):OP_PROGRAMMED, , sdp-super-6(annId:44):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> 	consumer: [, dc-conv-20(annId:47):OP_COMPLETED, , sdp-super-7(annId:48):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=47 node=dc-conv-20.B0 deps=3
-libnvdla<3> 	producer: [, dc-conv-19(annId:45):OP_PROGRAMMED, , bias-40(annId:46):OP_COMPLETED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-19(annId:45):OP_PROGRAMMED, , bias-39(annId:46):OP_COMPLETED, , , , , , , ]
 libnvdla<3> 	consumer: [, fc-0(annId:50):OP_PROGRAMMED, , sdp-super-7(annId:48):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> annid=48 node=sdp-super-7.B0 deps=2
-libnvdla<3> 	producer: [, dc-conv-20(annId:47):OP_PROGRAMMED, , bias-40(annId:46):OP_PROGRAMMED, , , , , , , ]
+libnvdla<3> 	producer: [, dc-conv-20(annId:47):OP_PROGRAMMED, , bias-39(annId:46):OP_PROGRAMMED, , , , , , , ]
 libnvdla<3> 	consumer: [, , , bias-21(annId:51):OP_PROGRAMMED, pdp-1(annId:49):OP_COMPLETED, , , , , , ]
 libnvdla<3> annid=49 node=pdp-1.B0 deps=2
 libnvdla<3> 	producer: [, , , sdp-super-7(annId:48):OP_COMPLETED, pdp-0(annId:8):OP_PROGRAMMED, , , , , , ]
@@ -57568,21 +57568,21 @@ libnvdla<3> 	done node=bias-23 rc=0
 libnvdla<3> 	node=dc-conv-21 anno=0.2 in=[tsd-286] aux=[tsd-0] io=[] out=[tsd-290]
 libnvdla<3> 		tsd=tsd-290 (stream tensor)
 libnvdla<3> 	done node=dc-conv-21 rc=0
-libnvdla<3> 	node=bias-41 anno=0.3 in=[tsd-290] aux=[tsd-224] io=[] out=[tsd-291]
+libnvdla<3> 	node=bias-42 anno=0.3 in=[tsd-290] aux=[tsd-224] io=[] out=[tsd-291]
 libnvdla<3> 		tsd=tsd-290 (stream tensor)
-libnvdla<3> 	done node=bias-41 rc=0
+libnvdla<3> 	done node=bias-42 rc=0
 libnvdla<3> 	node=dc-conv-22 anno=0.4 in=[tsd-285] aux=[tsd-0] io=[] out=[tsd-292]
 libnvdla<3> 		tsd=tsd-292 (stream tensor)
 libnvdla<3> 	done node=dc-conv-22 rc=0
-libnvdla<3> 	node=bias-42 anno=0.5 in=[tsd-292] aux=[tsd-224] io=[] out=[tsd-293]
+libnvdla<3> 	node=bias-43 anno=0.5 in=[tsd-292] aux=[tsd-224] io=[] out=[tsd-293]
 libnvdla<3> 		tsd=tsd-292 (stream tensor)
-libnvdla<3> 	done node=bias-42 rc=0
+libnvdla<3> 	done node=bias-43 rc=0
 libnvdla<3> 	node=dc-conv-23 anno=0.6 in=[tsd-288] aux=[tsd-0] io=[] out=[tsd-294]
 libnvdla<3> 		tsd=tsd-294 (stream tensor)
 libnvdla<3> 	done node=dc-conv-23 rc=0
-libnvdla<3> 	node=bias-43 anno=0.7 in=[tsd-294] aux=[tsd-224] io=[] out=[tsd-295]
+libnvdla<3> 	node=bias-44 anno=0.7 in=[tsd-294] aux=[tsd-224] io=[] out=[tsd-295]
 libnvdla<3> 		tsd=tsd-294 (stream tensor)
-libnvdla<3> 	done node=bias-43 rc=0
+libnvdla<3> 	done node=bias-44 rc=0
 libnvdla<3> 	done node=concat-0 rc=0
 libnvdla<3> 	node=pdp-0 anno=0.8 in=[tsd-92] aux=[] io=[] out=[tsd-93]
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-93/tb-93 aux=0 pooling=1
@@ -57596,16 +57596,16 @@ libnvdla<3> [MEMTOOL] t = 4	dc-conv-1's	AUX	tb-5-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-5 batch-0 inside GLOBAL_DRAM_POOL@40960
 libnvdla<3> 			tsd=tsd-5 set content pooled=1
 libnvdla<3> 	done node=dc-conv-1 rc=0
-libnvdla<3> 	node=bias-25 anno=0.10 in=[tsd-94] aux=[tsd-227] io=[] out=[tsd-98]
+libnvdla<3> 	node=bias-24 anno=0.10 in=[tsd-94] aux=[tsd-227] io=[] out=[tsd-98]
 libnvdla<3> 		tsd=tsd-94 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-227/tb-227 aux=1 pooling=1
-libnvdla<3> [MEMTOOL] t = 5	bias-25's	AUX	tb-227-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 5	bias-24's	AUX	tb-227-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-227 batch-0 inside GLOBAL_DRAM_POOL@36864
 libnvdla<3> 			tsd=tsd-227 set content pooled=1
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-98/tb-98 aux=0 pooling=1
-libnvdla<3> [MEMTOOL] t = 6	bias-25's	OUTPUT	tb-98-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 6	bias-24's	OUTPUT	tb-98-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-98 batch-0 inside LOCAL_DRAM_POOL@2621440
-libnvdla<3> 	done node=bias-25 rc=0
+libnvdla<3> 	done node=bias-24 rc=0
 libnvdla<3> 	node=dc-conv-2 anno=0.11 in=[tsd-93] aux=[tsd-6] io=[] out=[tsd-99]
 libnvdla<3> 		tsd=tsd-99 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-6/tb-6 aux=1 pooling=1
@@ -57613,16 +57613,16 @@ libnvdla<3> [MEMTOOL] t = 7	dc-conv-2's	AUX	tb-6-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-6 batch-0 inside GLOBAL_DRAM_POOL@131072
 libnvdla<3> 			tsd=tsd-6 set content pooled=1
 libnvdla<3> 	done node=dc-conv-2 rc=0
-libnvdla<3> 	node=bias-26 anno=0.12 in=[tsd-99] aux=[tsd-230] io=[] out=[tsd-104]
+libnvdla<3> 	node=bias-25 anno=0.12 in=[tsd-99] aux=[tsd-230] io=[] out=[tsd-104]
 libnvdla<3> 		tsd=tsd-99 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-230/tb-230 aux=1 pooling=1
-libnvdla<3> [MEMTOOL] t = 8	bias-26's	AUX	tb-230-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 8	bias-25's	AUX	tb-230-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-230 batch-0 inside GLOBAL_DRAM_POOL@49152
 libnvdla<3> 			tsd=tsd-230 set content pooled=1
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-104/tb-104 aux=0 pooling=1
-libnvdla<3> [MEMTOOL] t = 9	bias-26's	OUTPUT	tb-104-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 9	bias-25's	OUTPUT	tb-104-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-104 batch-0 inside LOCAL_DRAM_POOL@3145728
-libnvdla<3> 	done node=bias-26 rc=0
+libnvdla<3> 	done node=bias-25 rc=0
 libnvdla<3> 	node=dc-conv-3 anno=0.13 in=[tsd-104] aux=[tsd-13] io=[] out=[tsd-105]
 libnvdla<3> 		tsd=tsd-105 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-13/tb-13 aux=1 pooling=1
@@ -57696,16 +57696,16 @@ libnvdla<3> [MEMTOOL] t = 22	dc-conv-7's	AUX	tb-26-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-26 batch-0 inside GLOBAL_DRAM_POOL@786432
 libnvdla<3> 			tsd=tsd-26 set content pooled=1
 libnvdla<3> 	done node=dc-conv-7 rc=0
-libnvdla<3> 	node=bias-29 anno=0.22 in=[tsd-130] aux=[tsd-245] io=[] out=[tsd-135]
+libnvdla<3> 	node=bias-28 anno=0.22 in=[tsd-130] aux=[tsd-245] io=[] out=[tsd-135]
 libnvdla<3> 		tsd=tsd-130 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-245/tb-245 aux=1 pooling=1
-libnvdla<3> [MEMTOOL] t = 23	bias-29's	AUX	tb-245-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 23	bias-28's	AUX	tb-245-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-245 batch-0 inside GLOBAL_DRAM_POOL@86016
 libnvdla<3> 			tsd=tsd-245 set content pooled=1
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-135/tb-135 aux=0 pooling=1
-libnvdla<3> [MEMTOOL] t = 24	bias-29's	OUTPUT	tb-135-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 24	bias-28's	OUTPUT	tb-135-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-135 batch-0 inside LOCAL_DRAM_POOL@5505024
-libnvdla<3> 	done node=bias-29 rc=0
+libnvdla<3> 	done node=bias-28 rc=0
 libnvdla<3> 	node=dc-conv-8 anno=0.23 in=[tsd-135] aux=[tsd-33] io=[] out=[tsd-136]
 libnvdla<3> 		tsd=tsd-136 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-33/tb-33 aux=1 pooling=1
@@ -57729,16 +57729,16 @@ libnvdla<3> [MEMTOOL] t = 28	dc-conv-9's	AUX	tb-37-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-37 batch-0 inside GLOBAL_DRAM_POOL@1572864
 libnvdla<3> 			tsd=tsd-37 set content pooled=1
 libnvdla<3> 	done node=dc-conv-9 rc=0
-libnvdla<3> 	node=bias-32 anno=0.26 in=[tsd-143] aux=[tsd-251] io=[] out=[tsd-148]
+libnvdla<3> 	node=bias-30 anno=0.26 in=[tsd-143] aux=[tsd-251] io=[] out=[tsd-148]
 libnvdla<3> 		tsd=tsd-143 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-251/tb-251 aux=1 pooling=1
-libnvdla<3> [MEMTOOL] t = 29	bias-32's	AUX	tb-251-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 29	bias-30's	AUX	tb-251-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-251 batch-0 inside GLOBAL_DRAM_POOL@94208
 libnvdla<3> 			tsd=tsd-251 set content pooled=1
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-148/tb-148 aux=0 pooling=1
-libnvdla<3> [MEMTOOL] t = 30	bias-32's	OUTPUT	tb-148-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 30	bias-30's	OUTPUT	tb-148-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-148 batch-0 inside LOCAL_DRAM_POOL@6029312
-libnvdla<3> 	done node=bias-32 rc=0
+libnvdla<3> 	done node=bias-30 rc=0
 libnvdla<3> 	node=dc-conv-10 anno=0.27 in=[tsd-148] aux=[tsd-41] io=[] out=[tsd-149]
 libnvdla<3> 		tsd=tsd-149 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-41/tb-41 aux=1 pooling=1
@@ -57762,16 +57762,16 @@ libnvdla<3> [MEMTOOL] t = 34	dc-conv-11's	AUX	tb-45-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-45 batch-0 inside GLOBAL_DRAM_POOL@655360
 libnvdla<3> 			tsd=tsd-45 set content pooled=1
 libnvdla<3> 	done node=dc-conv-11 rc=0
-libnvdla<3> 	node=bias-33 anno=0.30 in=[tsd-156] aux=[tsd-257] io=[] out=[tsd-160]
+libnvdla<3> 	node=bias-32 anno=0.30 in=[tsd-156] aux=[tsd-257] io=[] out=[tsd-160]
 libnvdla<3> 		tsd=tsd-156 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-257/tb-257 aux=1 pooling=1
-libnvdla<3> [MEMTOOL] t = 35	bias-33's	AUX	tb-257-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 35	bias-32's	AUX	tb-257-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-257 batch-0 inside GLOBAL_DRAM_POOL@102400
 libnvdla<3> 			tsd=tsd-257 set content pooled=1
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-160/tb-160 aux=0 pooling=1
-libnvdla<3> [MEMTOOL] t = 36	bias-33's	OUTPUT	tb-160-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 36	bias-32's	OUTPUT	tb-160-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-160 batch-0 inside LOCAL_DRAM_POOL@6553600
-libnvdla<3> 	done node=bias-33 rc=0
+libnvdla<3> 	done node=bias-32 rc=0
 libnvdla<3> 	node=dc-conv-12 anno=0.31 in=[tsd-155] aux=[tsd-46] io=[] out=[tsd-161]
 libnvdla<3> 		tsd=tsd-161 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-46/tb-46 aux=1 pooling=1
@@ -57779,16 +57779,16 @@ libnvdla<3> [MEMTOOL] t = 37	dc-conv-12's	AUX	tb-46-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-46 batch-0 inside GLOBAL_DRAM_POOL@3145728
 libnvdla<3> 			tsd=tsd-46 set content pooled=1
 libnvdla<3> 	done node=dc-conv-12 rc=0
-libnvdla<3> 	node=bias-34 anno=0.32 in=[tsd-161] aux=[tsd-260] io=[] out=[tsd-166]
+libnvdla<3> 	node=bias-33 anno=0.32 in=[tsd-161] aux=[tsd-260] io=[] out=[tsd-166]
 libnvdla<3> 		tsd=tsd-161 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-260/tb-260 aux=1 pooling=1
-libnvdla<3> [MEMTOOL] t = 38	bias-34's	AUX	tb-260-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 38	bias-33's	AUX	tb-260-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-260 batch-0 inside GLOBAL_DRAM_POOL@106496
 libnvdla<3> 			tsd=tsd-260 set content pooled=1
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-166/tb-166 aux=0 pooling=1
-libnvdla<3> [MEMTOOL] t = 39	bias-34's	OUTPUT	tb-166-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 39	bias-33's	OUTPUT	tb-166-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-166 batch-0 inside LOCAL_DRAM_POOL@6684672
-libnvdla<3> 	done node=bias-34 rc=0
+libnvdla<3> 	done node=bias-33 rc=0
 libnvdla<3> 	node=dc-conv-13 anno=0.33 in=[tsd-166] aux=[tsd-53] io=[] out=[tsd-167]
 libnvdla<3> 		tsd=tsd-167 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-53/tb-53 aux=1 pooling=1
@@ -57812,16 +57812,16 @@ libnvdla<3> [MEMTOOL] t = 43	dc-conv-14's	AUX	tb-57-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-57 batch-0 inside GLOBAL_DRAM_POOL@6291456
 libnvdla<3> 			tsd=tsd-57 set content pooled=1
 libnvdla<3> 	done node=dc-conv-14 rc=0
-libnvdla<3> 	node=bias-35 anno=0.36 in=[tsd-174] aux=[tsd-266] io=[] out=[tsd-179]
+libnvdla<3> 	node=bias-34 anno=0.36 in=[tsd-174] aux=[tsd-266] io=[] out=[tsd-179]
 libnvdla<3> 		tsd=tsd-174 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-266/tb-266 aux=1 pooling=1
-libnvdla<3> [MEMTOOL] t = 44	bias-35's	AUX	tb-266-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 44	bias-34's	AUX	tb-266-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-266 batch-0 inside GLOBAL_DRAM_POOL@114688
 libnvdla<3> 			tsd=tsd-266 set content pooled=1
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-179/tb-179 aux=0 pooling=1
-libnvdla<3> [MEMTOOL] t = 45	bias-35's	OUTPUT	tb-179-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 45	bias-34's	OUTPUT	tb-179-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-179 batch-0 inside LOCAL_DRAM_POOL@6946816
-libnvdla<3> 	done node=bias-35 rc=0
+libnvdla<3> 	done node=bias-34 rc=0
 libnvdla<3> 	node=dc-conv-15 anno=0.37 in=[tsd-179] aux=[tsd-61] io=[] out=[tsd-180]
 libnvdla<3> 		tsd=tsd-180 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-61/tb-61 aux=1 pooling=1
@@ -57845,16 +57845,16 @@ libnvdla<3> [MEMTOOL] t = 49	dc-conv-16's	AUX	tb-65-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-65 batch-0 inside GLOBAL_DRAM_POOL@2621440
 libnvdla<3> 			tsd=tsd-65 set content pooled=1
 libnvdla<3> 	done node=dc-conv-16 rc=0
-libnvdla<3> 	node=bias-37 anno=0.40 in=[tsd-187] aux=[tsd-272] io=[] out=[tsd-191]
+libnvdla<3> 	node=bias-35 anno=0.40 in=[tsd-187] aux=[tsd-272] io=[] out=[tsd-191]
 libnvdla<3> 		tsd=tsd-187 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-272/tb-272 aux=1 pooling=1
-libnvdla<3> [MEMTOOL] t = 50	bias-37's	AUX	tb-272-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 50	bias-35's	AUX	tb-272-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-272 batch-0 inside GLOBAL_DRAM_POOL@122880
 libnvdla<3> 			tsd=tsd-272 set content pooled=1
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-191/tb-191 aux=0 pooling=1
-libnvdla<3> [MEMTOOL] t = 51	bias-37's	OUTPUT	tb-191-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 51	bias-35's	OUTPUT	tb-191-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-191 batch-0 inside LOCAL_DRAM_POOL@7208960
-libnvdla<3> 	done node=bias-37 rc=0
+libnvdla<3> 	done node=bias-35 rc=0
 libnvdla<3> 	node=dc-conv-17 anno=0.41 in=[tsd-186] aux=[tsd-66] io=[] out=[tsd-192]
 libnvdla<3> 		tsd=tsd-192 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-66/tb-66 aux=1 pooling=1
@@ -57862,16 +57862,16 @@ libnvdla<3> [MEMTOOL] t = 52	dc-conv-17's	AUX	tb-66-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-66 batch-0 inside GLOBAL_DRAM_POOL@12582912
 libnvdla<3> 			tsd=tsd-66 set content pooled=1
 libnvdla<3> 	done node=dc-conv-17 rc=0
-libnvdla<3> 	node=bias-38 anno=0.42 in=[tsd-192] aux=[tsd-275] io=[] out=[tsd-197]
+libnvdla<3> 	node=bias-36 anno=0.42 in=[tsd-192] aux=[tsd-275] io=[] out=[tsd-197]
 libnvdla<3> 		tsd=tsd-192 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-275/tb-275 aux=1 pooling=1
-libnvdla<3> [MEMTOOL] t = 53	bias-38's	AUX	tb-275-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 53	bias-36's	AUX	tb-275-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-275 batch-0 inside GLOBAL_DRAM_POOL@126976
 libnvdla<3> 			tsd=tsd-275 set content pooled=1
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-197/tb-197 aux=0 pooling=1
-libnvdla<3> [MEMTOOL] t = 54	bias-38's	OUTPUT	tb-197-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 54	bias-36's	OUTPUT	tb-197-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-197 batch-0 inside LOCAL_DRAM_POOL@7274496
-libnvdla<3> 	done node=bias-38 rc=0
+libnvdla<3> 	done node=bias-36 rc=0
 libnvdla<3> 	node=dc-conv-18 anno=0.43 in=[tsd-197] aux=[tsd-73] io=[] out=[tsd-198]
 libnvdla<3> 		tsd=tsd-198 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-73/tb-73 aux=1 pooling=1
@@ -57895,16 +57895,16 @@ libnvdla<3> [MEMTOOL] t = 58	dc-conv-19's	AUX	tb-77-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-77 batch-0 inside GLOBAL_DRAM_POOL@25165824
 libnvdla<3> 			tsd=tsd-77 set content pooled=1
 libnvdla<3> 	done node=dc-conv-19 rc=0
-libnvdla<3> 	node=bias-40 anno=0.46 in=[tsd-205] aux=[tsd-281] io=[] out=[tsd-210]
+libnvdla<3> 	node=bias-39 anno=0.46 in=[tsd-205] aux=[tsd-281] io=[] out=[tsd-210]
 libnvdla<3> 		tsd=tsd-205 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-281/tb-281 aux=1 pooling=1
-libnvdla<3> [MEMTOOL] t = 59	bias-40's	AUX	tb-281-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 59	bias-39's	AUX	tb-281-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-281 batch-0 inside GLOBAL_DRAM_POOL@724992
 libnvdla<3> 			tsd=tsd-281 set content pooled=1
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-210/tb-210 aux=0 pooling=1
-libnvdla<3> [MEMTOOL] t = 60	bias-40's	OUTPUT	tb-210-B0[0;31m	ALLOC [0m
+libnvdla<3> [MEMTOOL] t = 60	bias-39's	OUTPUT	tb-210-B0[0;31m	ALLOC [0m
 libnvdla<3> 			placed tb-210 batch-0 inside LOCAL_DRAM_POOL@7405568
-libnvdla<3> 	done node=bias-40 rc=0
+libnvdla<3> 	done node=bias-39 rc=0
 libnvdla<3> 	node=dc-conv-20 anno=0.47 in=[tsd-210] aux=[tsd-81] io=[] out=[tsd-211]
 libnvdla<3> 		tsd=tsd-211 (stream tensor)
 libnvdla<3> 		resolve placement/alloc for tsd=tsd-81/tb-81 aux=1 pooling=1
@@ -57949,18 +57949,21 @@ libnvdla<3> 			placed tsd-221/tb-221 batch-0 inside DRAM @0
 libnvdla<3> 	done node=cpu-sm-0 rc=0
 libnvdla<3> end memory resolver
 libnvdla<3> (Pool) Memory list entry=1 size=38273024 used=38273024 domain=0 flags=3
-libnvdla<3> 	content: tb-227 @ 36864
-libnvdla<3> 	content: tb-233 @ 53248
+libnvdla<3> 	content: tb-230 @ 49152
 libnvdla<3> 	content: tb-236 @ 57344
-libnvdla<3> 	content: tb-251 @ 94208
+libnvdla<3> 	content: tb-242 @ 81920
+libnvdla<3> 	content: tb-248 @ 90112
 libnvdla<3> 	content: tb-0 @ 0
+libnvdla<3> 	content: tb-263 @ 110592
+libnvdla<3> 	content: tb-266 @ 114688
 libnvdla<3> 	content: tb-272 @ 122880
 libnvdla<3> 	content: tb-275 @ 126976
 libnvdla<3> 	content: tb-278 @ 720896
-libnvdla<3> 	content: tb-281 @ 724992
 libnvdla<3> 	content: tb-284 @ 729088
 libnvdla<3> 	content: tb-239 @ 61440
-libnvdla<3> 	content: tb-260 @ 106496
+libnvdla<3> 	content: tb-269 @ 118784
+libnvdla<3> 	content: tb-254 @ 98304
+libnvdla<3> 	content: tb-281 @ 724992
 libnvdla<3> 	content: tb-6 @ 131072
 libnvdla<3> 	content: tb-5 @ 40960
 libnvdla<3> 	content: tb-13 @ 262144
@@ -57984,15 +57987,12 @@ libnvdla<3> 	content: tb-81 @ 33554432
 libnvdla<3> 	content: tb-85 @ 10485760
 libnvdla<3> 	content: tb-86 @ 733184
 libnvdla<3> 	content: tb-224 @ 32768
+libnvdla<3> 	content: tb-227 @ 36864
+libnvdla<3> 	content: tb-233 @ 53248
+libnvdla<3> 	content: tb-251 @ 94208
+libnvdla<3> 	content: tb-260 @ 106496
 libnvdla<3> 	content: tb-245 @ 86016
-libnvdla<3> 	content: tb-263 @ 110592
-libnvdla<3> 	content: tb-242 @ 81920
-libnvdla<3> 	content: tb-254 @ 98304
-libnvdla<3> 	content: tb-230 @ 49152
-libnvdla<3> 	content: tb-269 @ 118784
-libnvdla<3> 	content: tb-248 @ 90112
 libnvdla<3> 	content: tb-257 @ 102400
-libnvdla<3> 	content: tb-266 @ 114688
 libnvdla<3> 
 libnvdla<3> (Pool) Memory list entry=2 size=7544832 used=7542752 domain=0 flags=1
 libnvdla<3> 
@@ -61302,6 +61302,6 @@ libnvdla<3> 	dst format=3
 libnvdla<3> 	dst width=1
 libnvdla<3> 	dst height=1
 libnvdla<3> 	dst channel=1000
-libnvdla<3> gathered reloc entry: address id=4 writeId=13 useBase=15e1ae0 originalOffset=15e1bf2 offset=112 interface=2 subInterface=4 relocType=1
-libnvdla<3> gathered reloc entry: address id=4 writeId=13 useBase=15e1ae0 originalOffset=15e1bf6 offset=116 interface=2 subInterface=4 relocType=2
+libnvdla<3> gathered reloc entry: address id=4 writeId=13 useBase=3248be0 originalOffset=3248cf2 offset=112 interface=2 subInterface=4 relocType=1
+libnvdla<3> gathered reloc entry: address id=4 writeId=13 useBase=3248be0 originalOffset=3248cf6 offset=116 interface=2 subInterface=4 relocType=2
 closing wisdom context...

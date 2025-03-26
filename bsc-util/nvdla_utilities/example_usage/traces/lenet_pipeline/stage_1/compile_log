@@ -393,8 +393,8 @@ libnvdla<3> 	dst height 12
 libnvdla<3> 	dst channel 20
 libnvdla<3> 	dst linestride 384
 libnvdla<3> 	dst surfstride 4608
-libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=26ea400 originalOffset=26ea474 offset=74 interface=1 subInterface=4 relocType=1
-libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=26ea400 originalOffset=26ea478 offset=78 interface=1 subInterface=4 relocType=2
-libnvdla<3> gathered reloc entry: address id=4 writeId=8 useBase=26ea400 originalOffset=26ea93c offset=53c interface=1 subInterface=4 relocType=1
-libnvdla<3> gathered reloc entry: address id=4 writeId=8 useBase=26ea400 originalOffset=26ea940 offset=540 interface=1 subInterface=4 relocType=2
+libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=1483a400 originalOffset=1483a474 offset=74 interface=1 subInterface=4 relocType=1
+libnvdla<3> gathered reloc entry: address id=3 writeId=8 useBase=1483a400 originalOffset=1483a478 offset=78 interface=1 subInterface=4 relocType=2
+libnvdla<3> gathered reloc entry: address id=4 writeId=8 useBase=1483a400 originalOffset=1483a93c offset=53c interface=1 subInterface=4 relocType=1
+libnvdla<3> gathered reloc entry: address id=4 writeId=8 useBase=1483a400 originalOffset=1483a940 offset=540 interface=1 subInterface=4 relocType=2
 closing wisdom context...
