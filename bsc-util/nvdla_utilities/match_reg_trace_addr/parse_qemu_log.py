@@ -135,11 +135,17 @@ class Workload:
                 usr_pfx = os.popen("cd ~/ && pwd").readlines()[0].strip().rstrip('/')
                 bin_dir_in_docker = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                     "../../../ext/rtl/model_nvdla")).replace(usr_pfx, "/home")
-                trace_in_docker = os.path.abspath(os.path.join(self.in_dir, "trace.bin").replace(usr_pfx, "/home"))
+                trace_path = os.path.join(self.in_dir, "trace.bin")
+                if not os.path.exists(trace_path):
+                    # rtl_mem_rd_wr using VNV_nvdla requires a trace.bin, so call the perl script to convert it.
+                    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../input_txn_to_verilator.pl")
+                    os.system("perl " + script_path + " " + os.path.join(self.in_dir, "input.txn") + " " +
+                              os.path.join(self.in_dir, "trace.bin"))
+                trace_in_docker = os.path.abspath(trace_path.replace(usr_pfx, "/home"))
                 nvdla_cpp_log_in_docker = nvdla_cpp_log.replace(usr_pfx, "/home")
                 cmd = "cat /root/.bashrc | grep export | grep verilator > /root/envs && source /root/envs && cd " + \
-                      bin_dir_in_docker + " && make VNV_nvdla OPT=1 && ./VNV_nvdla " + trace_in_docker + " > " + \
-                      nvdla_cpp_log_in_docker + " && exit"
+                      bin_dir_in_docker + " && make VNV_nvdla OPT=1 && echo 'running VNV_nvdla...' && ./VNV_nvdla " + \
+                      trace_in_docker + " > " + nvdla_cpp_log_in_docker + " && exit"
                 found_gem5_nvdla_env = False
                 for line in os.popen("docker images").readlines():
                     words = line.split()
