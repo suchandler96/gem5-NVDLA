@@ -14186,14 +14186,14 @@ index f983830..4740f0c 100644
  ==============================
  
 diff --git a/verif/verilator/Makefile b/verif/verilator/Makefile
-index aa73fac..acaaaea 100644
+index aa73fac..7ea3b36 100644
 --- a/verif/verilator/Makefile
 +++ b/verif/verilator/Makefile
 @@ -6,29 +6,133 @@
  # Hardware License.  For more information, see the "LICENSE" file that came
  # with this distribution.
  
-+MULTI_THREAD = 1
++MULTI_THREAD = 0
 +THREAD_PGO = 0
 +
 +
@@ -14236,9 +14236,9 @@ index aa73fac..acaaaea 100644
 +VERILATOR_PROF_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-std=gnu++14 -fPIC -DNDEBUG -O3 -Ofast -fprofile-generate" -LDFLAGS "--static -fprofile-generate"    # perform first-round profiling data collection
 +VERILATOR_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-std=gnu++14 -fPIC -DNDEBUG -O3 -Ofast -fprofile-use=$(ROOT_PATH)/verilator_prof_LAG.profdata" -LDFLAGS "--static"    # after collecting data with "llvm-profdata merge xxx", use this command
 +
-+VERILATOR_MTPROF_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert --threads 4 --prof-pgo -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-std=gnu++14 -fPIC -DNDEBUG -O3 -Ofast" -LDFLAGS "--static"
-+VERILATOR_MT_PROF_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert --threads 4 $(VLT_PATH) -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-std=gnu++14 -fPIC -DNDEBUG -O3 -Ofast -fprofile-generate" -LDFLAGS "--static -fprofile-generate" 
-+VERILATOR_MT_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert --threads 4 $(VLT_PATH) -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-std=gnu++14 -fPIC -DNDEBUG -O3 -Ofast -fprofile-use=$(ROOT_PATH)/verilator_mt_prof_LAG.profdata" -LDFLAGS "--static" 
++VERILATOR_MTPROF_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert --threads 2 --prof-threads -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-std=gnu++14 -fPIC -DNDEBUG -O3 -Ofast" -LDFLAGS "--static" # for verilator >= v4.222, use --prof-pgo instead of --prof-threads
++VERILATOR_MT_PROF_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert --threads 2 $(VLT_PATH) -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-std=gnu++14 -fPIC -DNDEBUG -O3 -Ofast -fprofile-generate" -LDFLAGS "--static -fprofile-generate" 
++VERILATOR_MT_PARAMS ?= --compiler clang --output-split 30000 --output-split-cfuncs 90000 --noassert --threads 2 $(VLT_PATH) -O3 -UVL_DEBUG -Wno-TIMESCALEMOD -CFLAGS "-std=gnu++14 -fPIC -DNDEBUG -O3 -Ofast -fprofile-use=$(ROOT_PATH)/verilator_mt_prof_LAG.profdata" -LDFLAGS "--static" 
  # Perhaps you need to trace?
  #   VERILATOR_PARAMS += --trace --trace-depth 7 --trace-max-array 8
  
