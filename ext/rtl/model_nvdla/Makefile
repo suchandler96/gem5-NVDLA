@@ -87,5 +87,5 @@ VNV_nvdla: $(foreach file_name,$(VERILATOR_LIBS),$(file_name).o)
 .PHONY: clean
 
 clean:
-	rm -f *.o *.d *.so *.a
+	rm -f *.o *.d *.so *.a VNV_nvdla
 

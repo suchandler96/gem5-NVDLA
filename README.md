@@ -149,7 +149,19 @@ $ docker run -it --rm -v ~/:/home edwinlai99/advp:v1
 (advp)# python3.6 pipeline_compile.py --model-name lenet --caffemodel example_usage/caffe_models/lenet/lenet_iter_10000.caffemodel --prototxts /home/gem5-nvdla/bsc-util/nvdla_utilities/example_usage/traces/lenet_pipeline/stage_1/lenet_stage1.prototxt /home/gem5-nvdla/bsc-util/nvdla_utilities/example_usage/traces/lenet_pipeline/stage_2/lenet_stage2.prototxt --out-dir /home/nvdla/traces/lenet_pipeline/
 ```
 
-## Developer Tips
+# Building Toolchain-related Issues
+## Adapting to More Recent Versions of Toolchains
+The following combination of toolchains has also been tested to work for the gem5_nvdla_env docker image (and probably an update in the future):
+- NVDLA can be built with verilator v4.228 and clang 16.0.6 (clang-16). Clang-16 is not supported from verilator v5.002 to v5.016 (See [here](https://veripool.org/guide/latest/changes.html#verilator-5-018-2023-10-30)), and is again supported starting from v5.018. But if verilator >= v5.002 is used, the verilated NVDLA cannot pass sanity tests (simulation gets stuck at some cycle, for `googlenet_conv2_3x3_int16`). **If anyone finds these newer verilator versions work, please submit an issue and let us know.**
+- Docker image gem5_nvdla_env can also use ubuntu 20.04 as the base. Due to some features in the older version of gem5 that our framework is based on, it cannot run on ubuntu 22.04. Probably in the future a patch file of this framework to gem5 will be provided to adapt it to newer versions of gem5. 
+## Multi-thread simulation
+Multi-thread simulation of verilated NVDLA is tested on verilator v4.228 and clang-16. For verilator v4.040, even replacing `--prof-pgo` with `--prof-threads` in verilator command will cause a segfault. Steps to enable multi-thread simulation:
+1. After applying the `bsc-util/nvdla_utilities/nvdla_hw.patch` patch file to NVDLA/hw repo, modify `nvdla/hw/verif/verilator/Makefile`: turn on the `MULTI_THREAD` and `THREAD_PGO` flags at the beginning of the file. Then compile NVDLA (type `./tools/bin/tmake -build verilator` at NVDLA/hw repo root directory), and then follow step 4 and copy and rename the output files.
+2. Modify `Makefile` at the root of this repo: turn on the `MULTI_THREAD` flag at the beginning. If errors related to verilator occur during compilation of gem5, go to `ext/rtl/SConscript` and check whether `VL_THREADED` macro is defined. Normally `ext/rtl/model_nvdla/Makefile` will automatically handle the aforementioned Sconscript file during compilation but things may go wrong sometimes.
+- If the user wants to apply profile-guided optimization to gem5 (`make nvdlapgo`), please be patient as it nearly triples the compilation time. If the process is interrupted by Ctrl-C, the user needs to recover `src/SConscript` by hand.
+
+
+# Developer Tips
 If you use CLion as your IDE, you may:
 - Include the CMakeLists.txt [here](https://github.com/suchandler96/NVDLAUtil/blob/master/miscellaneous/CMakeLists.txt) in the root of this project so that code indexing works as if it were a normal CMake project.
 - Right click on `configs/` -> mark directory as -> Python Namespace Package.

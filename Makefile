@@ -1,7 +1,7 @@
 MULTI_THREAD = 0
 
 nvdla:
-	cd ext/rtl/model_nvdla && make clean && make library_vcd OPT=1 -j24 && cd ../../../
+	cd ext/rtl/model_nvdla && make clean && make library_vcd OPT=1 MULTI_THREAD=$(MULTI_THREAD) -j24 && cd ../../../
 	CC=clang CXX=clang++ /usr/bin/python3 /usr/bin/scons build/ARM/gem5.fast PYTHON_CONFIG=/usr/bin/python3-config PROTOC=/usr/local/bin/protoc -j 24
 
 nvdlapgo:
