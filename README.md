@@ -1,7 +1,19 @@
 # gem5-NVDLA
-gem5-NVDLA is a specialized version of gem5-RTL that is designed to be used with the NVDLA verilog model. For gem5+RTL framework that this project is based on, see its original repo [gem5-RTL](https://gitlab.bsc.es/glopez/gem5-rtl.git). Here we are showing citation for gem5+RTL, but we have rewritten the installation process to make it more newcomer-friendly.
+gem5-NVDLA is a specialized version of [gem5-RTL](https://gitlab.bsc.es/glopez/gem5-rtl.git) that is designed to be used with the NVDLA verilog model. Apart from specialized adaption of gem5 memory system for NVDLA, this project also enables the conversion from any NVDLA-supported caffe NN model to NVDLA register transaction traces (i.e., something like input.txn [here](https://github.com/nvdla/hw/tree/nvdlav1/verif/traces/traceplayer)). The code and detailed usage of this conversion utility can be found in `bsc-util/nvdla_utilities`. If you find our framework useful, please cite our paper:
+```
+@article{lai2024gem5nvdla,
+title={gem5-NVDLA: A Simulation Framework for Compiling, Scheduling, and Architecture Evaluation on AI System-on-Chips},
+author={Lai, Chengtao and Zhang, Wei},
+journal={ACM Transactions on Design Automation of Electronic Systems},
+volume={29},
+number={5},
+pages={1--20},
+year={2024},
+publisher={ACM New York, NY}
+}
+```
 
-Apart from specialized adaption of gem5 memory system for NVDLA, this project also enables the conversion from any NVDLA-supported caffe NN model to NVDLA register transaction traces (i.e., something like input.txn [here](https://github.com/nvdla/hw/tree/nvdlav1/verif/traces/traceplayer)). The code and detailed usage of this conversion utility can be found in `bsc-util/nvdla_utilities`.
+And if you want to check some details in the original gem5+RTL framework, please also refer to their paper: `gem5 + rtl: A Framework to Enable RTL Models Inside a Full-System Simulator`.
 
 The NVDLA (NVIDIA Deep Learning Accelerator) is a full-stack utility demonstrating how an industry-level accelerator works. With its maintenance stopped in 2018, the public are on their own to make it work from compilation to runtime. Previously the only way to run NVDLA is to instantiate on an FPGA and run NNs physically on board, using the compiler and runtime provided with NVDLA. This, however, leaves memory architects unable to explore memory subsystem in AI accelerator systems, since they require **a simulator** to get statistics with different memory configuration. The aim of this repo is thus to bridge this gap. On one hand, it integrates solutions to all the undocumented bugs and usages required to run NVDLA compiler, runtime, and virtual platform. On the other hand, it provides new capabilities to run NVDLA in a simulator, i.e., to apply scheduling algorithms, SPM allocation and prefetching mechanisms, which enables further exploration with NVDLA.
 
@@ -16,12 +28,12 @@ Here we list the structure of codes apart from the gem5 skeleton:
 7. `bsc-util/nvdla_utilities/example_usage/` includes caffe models, compiled register traces & other log files for multiple testcases, and example sweeping parameter configuration json files.
 
 # Installation and Sample Tests
-Running simulation in a docker environment is strongly recommended as it saves time and effort to install dependencies. However, due to the following environment requirements, we are faced with difficulties to integrate the whole flow (i.e., compiling Caffe NNs into NVDLA register trace, simulation point creation, and simulation) into one docker image, so that commands have to be run from 2 different docker environments as well as a host machine with sudo privilege:
+Running simulation in a docker environment is strongly recommended as it saves time and effort to install dependencies. However, due to some environment requirements, it's difficult to integrate the whole flow (i.e., compiling Caffe NNs into NVDLA register trace, simulation point creation, and simulation) into one docker image. So we have to run commands from 2 different docker environments as well as a host machine with sudo privilege:
 1. Running NVDLA Virtual Platform requires a `edwinlai99/advp` container;
 2. Running full-system simulation involves moving testcase files to a disk image, which requires sudo privilege to the host machine;
 3. Building and running gem5 requires a specialized environment (in a `edwinlai99/gem5_nvdla_env` container).
 
-Fortunately, we provide docker images with all dependencies installed and one-step scripts for each phase (and also steps to build these docker images in `bsc-util/nvdla_utilities/BUILD.md`), so that manual efforts can be minimized. Throughout the whole repo, each example command will be prefixed with `(docker_image_name)#` or `$` to distinguish the running environment. Lines with only a `#` symbol are comments.
+We provide docker images with all dependencies installed and one-step scripts for each phase (and also steps to build these docker images in `bsc-util/nvdla_utilities/BUILD.md`), so that manual efforts can be minimized. Throughout the whole repo, each example command will be prefixed with `(docker_image_name)#` or `$` to distinguish the running environment. Lines with only a `#` symbol are comments.
 
 ## Dependencies
 Gurobi needs to be used on the host machine, and then modify the paths in `bsc-util/nvdla_utilities/match_reg_trace_addr/CVSRAMAlloc/Makefile`. If not installed, the activation-pinning and mixed-pinning strategies cannot run properly.
@@ -153,7 +165,8 @@ $ docker run -it --rm -v ~/:/home edwinlai99/advp:v1
 ## Adapting to More Recent Versions of Toolchains
 The following combination of toolchains has also been tested to work for the gem5_nvdla_env docker image (and probably an update in the future):
 - NVDLA can be built with verilator v4.228 and clang 16.0.6 (clang-16). Clang-16 is not supported from verilator v5.002 to v5.016 (See [here](https://veripool.org/guide/latest/changes.html#verilator-5-018-2023-10-30)), and is again supported starting from v5.018. But if verilator >= v5.002 is used, the verilated NVDLA cannot pass sanity tests (simulation gets stuck at some cycle, for `googlenet_conv2_3x3_int16`). **If anyone finds these newer verilator versions work, please submit an issue and let us know.**
-- Docker image gem5_nvdla_env can also use ubuntu 20.04 as the base. Due to some features in the older version of gem5 that our framework is based on, it cannot run on ubuntu 22.04. Probably in the future a patch file of this framework to gem5 will be provided to adapt it to newer versions of gem5. 
+- Docker image gem5_nvdla_env can also use ubuntu 20.04 as the base, but 22.04 doesn't work. This is because our framework is based on an older version of gem5 that doesn't support ubuntu 22.04. Probably in the future we will provide a patch file of this framework so that it can be easily installed to newer versions of gem5.
+
 ## Multi-thread simulation
 Multi-thread simulation of verilated NVDLA is tested on verilator v4.228 and clang-16. For verilator v4.040, even replacing `--prof-pgo` with `--prof-threads` in verilator command will cause a segfault. Steps to enable multi-thread simulation:
 1. After applying the `bsc-util/nvdla_utilities/nvdla_hw.patch` patch file to NVDLA/hw repo, modify `nvdla/hw/verif/verilator/Makefile`: turn on the `MULTI_THREAD` and `THREAD_PGO` flags at the beginning of the file. Then compile NVDLA (type `./tools/bin/tmake -build verilator` at NVDLA/hw repo root directory), and then follow step 4 and copy and rename the output files.

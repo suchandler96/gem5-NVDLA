@@ -13,6 +13,8 @@ import pickle
 import multiprocessing as mp
 from params import *
 
+''' The paramerter sweep script is modified from the one in SMAUG (https://github.com/harvard-acc/smaug).'''
+
 param_types = {
     "little-cpu-clock": LittleCPUClockParam,
     "freq-ratio": FreqRatioParam,
